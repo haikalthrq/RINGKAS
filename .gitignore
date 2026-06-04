@@ -1,0 +1,63 @@
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs and runtime artifacts
+*.log
+*.out
+*.err
+*.pid
+*.pid.lock
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+**/appsettings.Production.json
+**/appsettings.*.local.json
+**/appsettings.Local.json
+**/secrets.json
+
+# .NET / ASP.NET Core
+**/bin/
+**/obj/
+**/TestResults/
+**/publish/
+*.user
+*.rsuser
+*.suo
+
+# Node / React / Vite
+**/node_modules/
+**/dist/
+**/coverage/
+**/.vite/
+**/.turbo/
+**/.cache/
+
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/*.pyo
+**/*.pyd
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.tox/
+**/.venv/
+**/venv/
+
+# Docker / local runtime
+docker-compose.override.yml
+**/*.sqlite
+**/*.db
+**/tmp/
+**/temp/
