@@ -471,48 +471,8 @@ Examples requiring approval:
 
 ---
 
-## 13. Commit and Timeline Policy
 
-`RINGKAS_TASKS.md` contains `target_commit_date`.
-
-This date is a **milestone planning field**, not an instruction to falsify Git history.
-
-Agents must not:
-
-1. Create misleading commit history.
-2. Backdate commits to imply work happened earlier if it did not.
-3. Write commit messages that claim completed work when only placeholder exists.
-4. Hide AI-generated work or actual implementation timing.
-
-Allowed:
-
-1. Use `target_commit_date` to plan task sequence.
-2. Mention historical milestone dates in documentation.
-3. Use truthful commit messages.
-4. Use one commit per logical task or small task group.
-
-Recommended commit message format:
-
-```text
-<type>(<area>): <short description>
-```
-
-Examples:
-
-```text
-docs(requirements): add project baseline documents
-chore(repo): scaffold monorepo structure
-feat(api): add ASP.NET health endpoint
-feat(worker): add PyMuPDF parser interface
-feat(retrieval): add RRF fusion pipeline
-feat(chat): add grounded Q&A endpoint
-test(worker): add ingestion smoke test
-docs(setup): update MVP local setup guide
-```
-
----
-
-## 14. Branch Policy
+## 13. Branch Policy
 
 Recommended default:
 
@@ -540,7 +500,7 @@ Rules:
 
 ---
 
-## 15. Definition of Done
+## 14. Definition of Done
 
 A task can be marked `done` only if:
 
@@ -556,7 +516,7 @@ A task can be marked `done` only if:
 
 ---
 
-## 16. Blocker Handling
+## 15. Blocker Handling
 
 If subagent encounters blocker, it must stop and report.
 
@@ -588,7 +548,7 @@ Decision needed from Supervisor:
 
 ---
 
-## 17. Handling TBDs
+## 16. Handling TBDs
 
 Agents must not invent final values for unresolved TBD items.
 
@@ -620,7 +580,7 @@ Forbidden approach:
 
 ---
 
-## 18. Security Rules
+## 17. Security Rules
 
 Agents must never commit:
 
@@ -654,7 +614,7 @@ PDF_STORAGE_PATH=/data/ringkas/pdfs
 
 ---
 
-## 19. Grounded Answer Generation Rules
+## 18. Grounded Answer Generation Rules
 
 Any agent working on generation must enforce these rules in prompt and code:
 
@@ -671,7 +631,7 @@ Any agent working on generation must enforce these rules in prompt and code:
 
 ---
 
-## 20. Admin UI Scope Rules
+## 19. Admin UI Scope Rules
 
 Admin UI MVP may include only:
 
@@ -691,7 +651,7 @@ Admin UI MVP must not include:
 
 ---
 
-## 21. Recommended Workflow for Current Default Setup
+## 20. Recommended Workflow for Current Default Setup
 
 Because current default is **1 Supervisor + 1 Subagent**, use this workflow:
 
@@ -718,7 +678,7 @@ Recommended early execution order:
 
 ---
 
-## 22. When to Add More Subagents
+## 21. When to Add More Subagents
 
 Add more subagents only if:
 
@@ -752,7 +712,7 @@ Do not start with too many subagents if repo is still empty.
 
 ---
 
-## 23. Minimal Prompt for Supervisor Agent
+## 22. Minimal Prompt for Supervisor Agent
 
 ```markdown
 You are the RINGKAS Supervisor Agent.
@@ -776,7 +736,7 @@ Non-negotiable:
 
 ---
 
-## 24. Minimal Prompt for Subagent Executor
+## 23. Minimal Prompt for Subagent Executor
 
 ```markdown
 You are the RINGKAS Subagent Executor.
@@ -796,7 +756,7 @@ You must:
 
 ---
 
-## 25. Final Rule
+## 24. Final Rule
 
 When in doubt, agents must choose the safer option:
 
