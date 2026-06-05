@@ -1,0 +1,97 @@
+name: ringkas
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ringkas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ringkas}
+      POSTGRES_USER: ${POSTGRES_USER:-ringkas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-locally}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ringkas} -d ${POSTGRES_DB:-ringkas}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ringkas
+
+  qdrant:
+    image: qdrant/qdrant:v1.13.4
+    container_name: ringkas-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    networks:
+      - ringkas
+
+  # Placeholder only. The real worker will be a Python internal service.
+  rag-worker:
+    image: alpine:3.20
+    container_name: ringkas-rag-worker-placeholder
+    restart: unless-stopped
+    command: ["sh", "-c", "echo 'RINGKAS rag-worker placeholder'; trap : TERM INT; sleep infinity & wait"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://ringkas:change-me-locally@postgres:5432/ringkas}
+      QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
+      PDF_STORAGE_PATH: ${PDF_STORAGE_PATH:-/data/ringkas/pdfs}
+    volumes:
+      - pdf_storage:/data/ringkas/pdfs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    networks:
+      - ringkas
+
+  # Placeholder only. The real API will be ASP.NET Core.
+  api:
+    image: alpine:3.20
+    container_name: ringkas-api-placeholder
+    restart: unless-stopped
+    command: ["sh", "-c", "echo 'RINGKAS API placeholder'; trap : TERM INT; sleep infinity & wait"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://ringkas:change-me-locally@postgres:5432/ringkas}
+      QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
+      PDF_STORAGE_PATH: ${PDF_STORAGE_PATH:-/data/ringkas/pdfs}
+    volumes:
+      - pdf_storage:/data/ringkas/pdfs:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    networks:
+      - ringkas
+
+  # Placeholder only. The real web app will be React + Vite.
+  web:
+    image: alpine:3.20
+    container_name: ringkas-web-placeholder
+    restart: unless-stopped
+    command: ["sh", "-c", "echo 'RINGKAS web placeholder'; trap : TERM INT; sleep infinity & wait"]
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://api:8080}
+    depends_on:
+      - api
+    networks:
+      - ringkas
+
+volumes:
+  postgres_data:
+  qdrant_storage:
+  pdf_storage:
+
+networks:
+  ringkas:
+    driver: bridge
