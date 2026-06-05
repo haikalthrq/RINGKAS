@@ -94,12 +94,12 @@ Jika memang ada pekerjaan nyata yang dilakukan pada tanggal terkait di lokal/pri
 
 | Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
 |---|---:|---|---|---|---|---|---|---|---|
-| T-0001 | 2026-06-01 | P0 | Docs | Add baseline project documentation | None | `docs/` contains Project Brief, PRD, SRD, Technical Spec, Tasks | All docs are present and linked from README | Docs drift from implementation | todo |
-| T-0002 | 2026-06-01 | P0 | Repo | Initialize monorepo structure | T-0001 | `apps/web`, `apps/api`, `services/rag-worker`, `infra`, `docs`, `scripts`, `tests` | Folder structure matches Technical Spec | Agent creates messy structure | todo |
-| T-0003 | 2026-06-02 | P0 | Repo | Add root README | T-0002 | Root `README.md` explains project, architecture, local setup outline | README references docs and constraints | README overclaims features | todo |
-| T-0004 | 2026-06-02 | P0 | Config | Add `.gitignore`, `.editorconfig`, environment examples | T-0002 | `.gitignore`, `.editorconfig`, `.env.example` | Secrets are not committed | Secret leakage | todo |
-| T-0005 | 2026-06-03 | P0 | Infra | Draft Docker Compose baseline | T-0002 | `infra/docker-compose.yml` with PostgreSQL, Qdrant, RAG worker placeholder, API placeholder | Compose file is syntactically valid | Container networking mistakes | todo |
-| T-0006 | 2026-06-03 | P1 | Contracts | Create API contract placeholder | T-0002 | `docs/contracts/api.md` or OpenAPI placeholder | Endpoint groups are listed | Contract not synced with backend | todo |
+| T-0001 | 2026-06-04 | P0 | Docs | Add baseline project documentation | None | `docs/` contains Project Brief, PRD, SRD, Technical Spec, Tasks | All docs are present and linked from README | Docs drift from implementation | todo |
+| T-0002 | 2026-06-04 | P0 | Repo | Initialize monorepo structure | T-0001 | `apps/web`, `apps/api`, `services/rag-worker`, `infra`, `docs`, `scripts`, `tests` | Folder structure matches Technical Spec | Agent creates messy structure | todo |
+| T-0003 | 2026-06-04 | P0 | Repo | Add root README | T-0002 | Root `README.md` explains project, architecture, local setup outline | README references docs and constraints | README overclaims features | todo |
+| T-0004 | 2026-06-04 | P0 | Config | Add `.gitignore`, `.editorconfig`, environment examples | T-0002 | `.gitignore`, `.editorconfig`, `.env.example` | Secrets are not committed | Secret leakage | todo |
+| T-0005 | 2026-06-04 | P0 | Infra | Draft Docker Compose baseline | T-0002 | `infra/docker-compose.yml` with PostgreSQL, Qdrant, RAG worker placeholder, API placeholder | Compose file is syntactically valid | Container networking mistakes | todo |
+| T-0006 | 2026-06-04 | P1 | Contracts | Create API contract placeholder | T-0002 | `docs/contracts/api.md` or OpenAPI placeholder | Endpoint groups are listed | Contract not synced with backend | todo |
 | T-0007 | 2026-06-04 | P1 | Governance | Add contribution and agent safety notes | T-0001 | `docs/CONTRIBUTING.md` or section in README | Non-negotiable constraints are visible | Agent violates scope | todo |
 
 ---
