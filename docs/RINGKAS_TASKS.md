@@ -111,7 +111,7 @@ Backdate diperbolehkan.
 | T-0101 | 2026-06-05 | P0 | Backend | Scaffold ASP.NET Core Web API project | T-0002 | `apps/api` ASP.NET Core project | API runs locally and exposes `/health` | Wrong framework selected | done |
 | T-0102 | 2026-06-05 | P0 | Backend | Add health check endpoint | T-0101 | `GET /health` | Returns healthy response | No deployment observability | done |
 | T-0103 | 2026-06-06 | P0 | Database | Add PostgreSQL configuration | T-0101, T-0005 | API can connect to PostgreSQL | Connection string uses env var | Hardcoded credentials | done |
-| T-0104 | 2026-06-06 | P0 | Database | Add initial EF Core setup | T-0103 | DbContext and first migration setup | Migration runs locally | Bad schema design | todo |
+| T-0104 | 2026-06-06 | P0 | Database | Add initial EF Core setup | T-0103 | DbContext and first migration setup | Migration runs locally | Bad schema design | done |
 | T-0105 | 2026-06-07 | P0 | Auth | Add ASP.NET Core Identity base | T-0104 | User tables and identity configuration | Email-password auth foundation exists | Overcomplicated auth | done |
 | T-0106 | 2026-06-07 | P0 | Auth | Define roles: guest, user, admin/system_maintainer | T-0105 | Role seed or role constants | Admin-only policy can be applied | Role mismatch | done |
 | T-0107 | 2026-06-08 | P0 | Auth | Implement registration and login endpoints | T-0105 | `/api/auth/register`, `/api/auth/login` | User can register/login in dev | Insecure token/session handling | done |
