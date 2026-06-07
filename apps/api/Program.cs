@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Ringkas.Api.Auth;
 using Ringkas.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,11 +37,18 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddScoped<IdentityRoleSeeder>();
 
 var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<IdentityRoleSeeder>();
+    await seeder.SeedAsync();
+}
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
