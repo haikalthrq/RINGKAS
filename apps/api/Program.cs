@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Ringkas.Api.Auth;
 using Ringkas.Api.Data;
+using Ringkas.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +52,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+app.MapAuthEndpoints();
 
 app.Run();
 
