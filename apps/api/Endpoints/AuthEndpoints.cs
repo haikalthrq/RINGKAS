@@ -13,6 +13,8 @@ public static class AuthEndpoints
         group.MapPost("/register", RegisterAsync).AllowAnonymous();
         group.MapPost("/login", LoginAsync).AllowAnonymous();
         group.MapGet("/me", MeAsync).AllowAnonymous();
+        group.MapPost("/email-verification/request", RequestEmailVerificationAsync).AllowAnonymous();
+        group.MapPost("/email-verification/confirm", ConfirmEmailVerificationAsync).AllowAnonymous();
 
         return endpoints;
     }
@@ -60,6 +62,47 @@ public static class AuthEndpoints
         return Results.Ok(await BuildCurrentUserResponseAsync(userManager, user, authenticated: true));
     }
 
+    private static async Task<IResult> RequestEmailVerificationAsync(
+        HttpContext httpContext,
+        UserManager<ApplicationUser> userManager)
+    {
+        var user = await GetCurrentUserAsync(httpContext, userManager);
+        if (user is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return Results.Ok(new
+            {
+                message = "Email is already verified.",
+                emailConfirmed = true
+            });
+        }
+
+        return Results.Problem(
+            title: "Email verification placeholder.",
+            detail: "Email verification delivery is not implemented in this MVP placeholder.",
+            statusCode: StatusCodes.Status501NotImplemented);
+    }
+
+    private static async Task<IResult> ConfirmEmailVerificationAsync(
+        HttpContext httpContext,
+        UserManager<ApplicationUser> userManager)
+    {
+        var user = await GetCurrentUserAsync(httpContext, userManager);
+        if (user is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        return Results.Problem(
+            title: "Email verification placeholder.",
+            detail: "Email verification confirmation is not implemented in this MVP placeholder.",
+            statusCode: StatusCodes.Status501NotImplemented);
+    }
+
     private static async Task<IResult> LoginAsync(
         LoginRequest request,
         UserManager<ApplicationUser> userManager,
@@ -100,13 +143,13 @@ public static class AuthEndpoints
     {
         if (httpContext.User.Identity?.IsAuthenticated != true)
         {
-            return Results.Ok(new CurrentUserResponse(false, null, null, []));
+            return Results.Ok(new CurrentUserResponse(false, null, null, false, []));
         }
 
         var user = await userManager.GetUserAsync(httpContext.User);
         if (user is null)
         {
-            return Results.Ok(new CurrentUserResponse(false, null, null, []));
+            return Results.Ok(new CurrentUserResponse(false, null, null, false, []));
         }
 
         return Results.Ok(await BuildCurrentUserResponseAsync(userManager, user, authenticated: true));
@@ -118,7 +161,19 @@ public static class AuthEndpoints
         bool authenticated)
     {
         var roles = await userManager.GetRolesAsync(user);
-        return new CurrentUserResponse(authenticated, user.Id, user.Email, roles.ToArray());
+        return new CurrentUserResponse(authenticated, user.Id, user.Email, user.EmailConfirmed, roles.ToArray());
+    }
+
+    private static async Task<ApplicationUser?> GetCurrentUserAsync(
+        HttpContext httpContext,
+        UserManager<ApplicationUser> userManager)
+    {
+        if (httpContext.User.Identity?.IsAuthenticated != true)
+        {
+            return null;
+        }
+
+        return await userManager.GetUserAsync(httpContext.User);
     }
 
     private static IResult InvalidCredentials() => Results.Problem(
