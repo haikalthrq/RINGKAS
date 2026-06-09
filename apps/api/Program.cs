@@ -39,6 +39,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IdentityRoleSeeder>();
+builder.Services.AddSingleton(GoogleOAuthSettings.FromConfiguration(builder.Configuration));
 
 var app = builder.Build();
 

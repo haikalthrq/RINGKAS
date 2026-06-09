@@ -15,6 +15,8 @@ public static class AuthEndpoints
         group.MapGet("/me", MeAsync).AllowAnonymous();
         group.MapPost("/email-verification/request", RequestEmailVerificationAsync).AllowAnonymous();
         group.MapPost("/email-verification/confirm", ConfirmEmailVerificationAsync).AllowAnonymous();
+        group.MapGet("/google", GoogleOAuthStartAsync).AllowAnonymous();
+        group.MapGet("/google/callback", GoogleOAuthCallbackAsync).AllowAnonymous();
 
         return endpoints;
     }
@@ -103,6 +105,12 @@ public static class AuthEndpoints
             statusCode: StatusCodes.Status501NotImplemented);
     }
 
+    private static IResult GoogleOAuthStartAsync(GoogleOAuthSettings googleOAuthSettings) =>
+        GoogleOAuthPlaceholderResult(googleOAuthSettings, "Google OAuth start placeholder.");
+
+    private static IResult GoogleOAuthCallbackAsync(GoogleOAuthSettings googleOAuthSettings) =>
+        GoogleOAuthPlaceholderResult(googleOAuthSettings, "Google OAuth callback placeholder.");
+
     private static async Task<IResult> LoginAsync(
         LoginRequest request,
         UserManager<ApplicationUser> userManager,
@@ -174,6 +182,22 @@ public static class AuthEndpoints
         }
 
         return await userManager.GetUserAsync(httpContext.User);
+    }
+
+    private static IResult GoogleOAuthPlaceholderResult(GoogleOAuthSettings googleOAuthSettings, string title)
+    {
+        if (!googleOAuthSettings.IsConfigured)
+        {
+            return Results.Problem(
+                title: "Google OAuth is disabled.",
+                detail: "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable this placeholder endpoint.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        return Results.Problem(
+            title: title,
+            detail: "Google OAuth is recognized by configuration, but the actual OAuth flow is not implemented yet.",
+            statusCode: StatusCodes.Status501NotImplemented);
     }
 
     private static IResult InvalidCredentials() => Results.Problem(
