@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Ringkas.Api.Auth;
 using Ringkas.Api.Data;
 using Ringkas.Api.Endpoints;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,12 +41,50 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy(RateLimitPolicies.Auth, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: GetRateLimitPartitionKey(httpContext, RateLimitPolicies.Auth),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+
+    options.AddPolicy(RateLimitPolicies.Chat, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: GetRateLimitPartitionKey(httpContext, RateLimitPolicies.Chat),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+
+    options.AddPolicy(RateLimitPolicies.AdminIngestion, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: GetRateLimitPartitionKey(httpContext, RateLimitPolicies.AdminIngestion),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+});
 builder.Services.AddScoped<IdentityRoleSeeder>();
 builder.Services.AddSingleton(GoogleOAuthSettings.FromConfiguration(builder.Configuration));
 
 var app = builder.Build();
 
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 using (var scope = app.Services.CreateScope())
@@ -103,4 +144,17 @@ static string ConvertDatabaseUrl(string databaseUrl)
     }
 
     return builder.ConnectionString;
+}
+
+static string GetRateLimitPartitionKey(HttpContext httpContext, string scope)
+{
+    var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var clientAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+    var identifier = !string.IsNullOrWhiteSpace(userId)
+        ? $"user:{userId}"
+        : !string.IsNullOrWhiteSpace(clientAddress)
+            ? $"ip:{clientAddress}"
+            : $"trace:{httpContext.TraceIdentifier}";
+
+    return $"{scope}:{identifier}";
 }

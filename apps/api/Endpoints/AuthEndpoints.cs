@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Ringkas.Api.Auth;
 using Ringkas.Api.Data;
@@ -9,6 +10,7 @@ public static class AuthEndpoints
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/auth");
+        group.RequireRateLimiting(RateLimitPolicies.Auth);
 
         group.MapPost("/register", RegisterAsync).AllowAnonymous();
         group.MapPost("/login", LoginAsync).AllowAnonymous();
