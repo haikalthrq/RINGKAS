@@ -5,6 +5,7 @@ using Npgsql;
 using Ringkas.Api.Auth;
 using Ringkas.Api.Data;
 using Ringkas.Api.Endpoints;
+using Ringkas.Api.Middleware;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 
@@ -83,6 +84,7 @@ builder.Services.AddSingleton(GoogleOAuthSettings.FromConfiguration(builder.Conf
 
 var app = builder.Build();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
