@@ -35,13 +35,14 @@ Desktop.ini
 *.rsuser
 *.suo
 
-# Node / React / Vite
+# Node / frontend
 **/node_modules/
 **/dist/
 **/coverage/
-**/.vite/
+**/.next/
 **/.turbo/
 **/.cache/
+**/*.tsbuildinfo
 
 # Python
 **/__pycache__/

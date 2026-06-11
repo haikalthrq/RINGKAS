@@ -364,10 +364,16 @@ Alur query MVP:
 
 MVP menggunakan:
 
-- backend/API utama di VPS/server biasa;
+- Next.js + TypeScript dengan App Router sebagai frontend/web presentation layer dan API consumer terhadap ASP.NET Core;
+- ASP.NET Core Web API sebagai main backend/API dan source of truth untuk domain logic dan authorization;
+- Python RAG Worker sebagai internal processing service yang tidak public-facing;
 - local persistent storage untuk PDF;
-- PostgreSQL untuk metadata dan data aplikasi;
+- PostgreSQL untuk metadata, auth, job, dan log;
 - Qdrant untuk vector database.
+
+Next.js tidak menggantikan ASP.NET Core sebagai backend utama dan tidak mengakses PostgreSQL atau Qdrant secara langsung. Authentication, authorization, Chat/Q&A API, document search API, admin ingestion API, rate limiting, application logging, dan core business logic tetap berada di ASP.NET Core.
+
+MVP dapat menjalankan container Next.js frontend, ASP.NET Core API, Python RAG Worker, PostgreSQL, dan Qdrant melalui Docker Compose pada satu VPS.
 
 PDF disimpan lokal pada MVP dan dapat dimigrasikan ke object storage jika skala meningkat.
 

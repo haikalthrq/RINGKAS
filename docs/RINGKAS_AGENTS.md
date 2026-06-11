@@ -148,8 +148,11 @@ Tidak boleh:
 
 Scope:
 
-- `apps/web`
-- React + Vite
+- Hanya `apps/web`
+- Next.js + TypeScript
+- App Router
+- Frontend/web presentation layer
+- API consumer terhadap ASP.NET Core Web API
 - Auth pages
 - Chat UI
 - Document search UI
@@ -158,7 +161,12 @@ Scope:
 
 Tidak boleh:
 
-- Mengganti React + Vite ke Next.js tanpa approval.
+- Mengganti Next.js dengan Vite atau frontend framework lain.
+- Memindahkan core backend logic, authentication, authorization, Chat/Q&A API, document search API, admin ingestion API, rate limiting, atau application logging ke Next.js.
+- Mengakses PostgreSQL atau Qdrant secara langsung.
+- Menggunakan sumber data backend selain ASP.NET Core Web API tanpa approval Supervisor.
+- Menggunakan Next.js Route Handlers untuk selain kebutuhan frontend-specific yang sangat terbatas tanpa approval Supervisor.
+- Meletakkan secrets backend di client bundle.
 - Menambahkan dashboard analytics kompleks.
 - Menambahkan fitur upload dokumen user.
 - Menyembunyikan citation atau limitation warning dari user.
@@ -232,9 +240,9 @@ Tidak boleh:
 
 ### 6.1 Architecture Constraints
 
-1. Backend/API utama wajib ASP.NET Core jika memungkinkan.
-2. Python RAG Worker adalah service internal, bukan public-facing backend utama.
-3. Frontend MVP menggunakan React + Vite.
+1. ASP.NET Core Web API adalah main backend/API dan source of truth untuk domain logic dan authorization.
+2. Python RAG Worker adalah internal processing service, bukan public-facing backend utama.
+3. Frontend MVP menggunakan Next.js + TypeScript dengan App Router sebagai presentation layer dan API consumer terhadap ASP.NET Core.
 4. Monorepo wajib modular.
 5. Deployment MVP menggunakan satu VPS.
 6. Docker Compose digunakan untuk MVP.
@@ -242,6 +250,8 @@ Tidak boleh:
 8. Qdrant container digunakan untuk vector database.
 9. PDF storage berada di `/data/ringkas/pdfs`.
 10. Object storage adalah future plan, bukan MVP core.
+
+Next.js API Routes, Route Handlers, Server Actions, atau server-side features tidak boleh digunakan untuk mengambil alih core backend responsibilities dari ASP.NET Core tanpa keputusan arsitektur baru dan approval eksplisit.
 
 ### 6.2 RAG Constraints
 
@@ -725,9 +735,10 @@ Your job:
 - Prevent scope creep.
 
 Non-negotiable:
-- ASP.NET Core is the main backend.
-- Python RAG Worker is internal only.
-- React + Vite is the frontend.
+- ASP.NET Core Web API is the main backend/API and source of truth for domain logic and authorization.
+- Python RAG Worker is an internal processing service only.
+- Next.js + TypeScript with App Router is the frontend/web presentation layer and API consumer terhadap ASP.NET Core.
+- Next.js must not access PostgreSQL or Qdrant directly or take over core backend responsibilities.
 - PostgreSQL and Qdrant are required.
 - OCR is out of MVP.
 - Docling is future plan only.
@@ -748,7 +759,8 @@ You must:
 - Do not add out-of-scope features.
 - Do not add OCR.
 - Do not make Docling production parser.
-- Do not replace ASP.NET Core, PostgreSQL, Qdrant, or React + Vite.
+- Do not replace ASP.NET Core, PostgreSQL, Qdrant, or Next.js + TypeScript.
+- Do not move core backend responsibilities into Next.js or access databases from `apps/web`.
 - Report all changed files.
 - Report acceptance criteria status.
 - Stop and report blocker if requirement is ambiguous.

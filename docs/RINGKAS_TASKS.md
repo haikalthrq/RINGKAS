@@ -56,20 +56,22 @@ Jika memang ada pekerjaan nyata yang dilakukan pada tanggal terkait di lokal/pri
 
 ## 5. Global Non-Negotiable Constraints
 
-1. Backend/API utama wajib menggunakan **ASP.NET Core** jika memungkinkan.
+1. Main backend/API wajib menggunakan **ASP.NET Core Web API** sebagai source of truth untuk domain logic dan authorization.
 2. Python hanya digunakan sebagai **internal RAG Worker**, bukan public-facing backend utama.
-3. MVP bersifat **text-first**.
-4. OCR tidak masuk MVP.
-5. Parser utama MVP adalah **PyMuPDF** di Python RAG Worker.
-6. Docling hanya future plan / kandidat eksperimen.
-7. Vector database menggunakan **Qdrant**.
-8. Metadata, auth, chat history, ingestion status, dan logs disimpan di **PostgreSQL**.
-9. Deployment MVP menggunakan **1 VPS** dan **Docker Compose**.
-10. PDF disimpan lokal di `/data/ringkas/pdfs`.
-11. Semua jawaban substantif wajib punya citation.
-12. Sistem tidak boleh membuat angka, periode, wilayah, satuan, atau definisi yang tidak ada di sumber.
-13. Jika sumber tidak cukup, sistem wajib memberi batasan atau menolak menjawab substantif.
-14. Evaluasi menggunakan automated-first approach, tetapi manual audit 20% tetap wajib.
+3. Frontend/web presentation layer wajib menggunakan **Next.js + TypeScript** dengan App Router sebagai API consumer terhadap ASP.NET Core.
+4. Next.js tidak boleh mengakses PostgreSQL atau Qdrant secara langsung atau mengambil alih core backend responsibilities.
+5. MVP bersifat **text-first**.
+6. OCR tidak masuk MVP.
+7. Parser utama MVP adalah **PyMuPDF** di Python RAG Worker.
+8. Docling hanya future plan / kandidat eksperimen.
+9. Vector database menggunakan **Qdrant**.
+10. Metadata, auth, chat history, ingestion status, dan logs disimpan di **PostgreSQL**.
+11. Deployment MVP menggunakan **1 VPS** dan **Docker Compose**.
+12. PDF disimpan lokal di `/data/ringkas/pdfs`.
+13. Semua jawaban substantif wajib punya citation.
+14. Sistem tidak boleh membuat angka, periode, wilayah, satuan, atau definisi yang tidak ada di sumber.
+15. Jika sumber tidak cukup, sistem wajib memberi batasan atau menolak menjawab substantif.
+16. Evaluasi menggunakan automated-first approach, tetapi manual audit 20% tetap wajib.
 
 ---
 
@@ -79,7 +81,7 @@ Jika memang ada pekerjaan nyata yang dilakukan pada tanggal terkait di lokal/pri
 |---|---:|---|
 | Phase 0 | 2026-06-01 to 2026-06-04 | Project docs, repo scaffold, baseline architecture |
 | Phase 1 | 2026-06-05 to 2026-06-10 | ASP.NET API foundation, PostgreSQL, Identity |
-| Phase 2 | 2026-06-11 to 2026-06-15 | React + Vite frontend foundation |
+| Phase 2 | 2026-06-11 to 2026-06-15 | Next.js + TypeScript frontend foundation |
 | Phase 3 | 2026-06-16 to 2026-06-23 | Python RAG Worker, ingestion, parsing, chunking |
 | Phase 4 | 2026-06-24 to 2026-06-30 | Embedding, Qdrant indexing, retrieval, citation |
 | Phase 5 | 2026-07-01 to 2026-07-04 | Generation, chat, document search, admin ingestion |
@@ -98,7 +100,7 @@ Jika memang ada pekerjaan nyata yang dilakukan pada tanggal terkait di lokal/pri
 | T-0002 | 2026-06-04 | P0 | Repo | Initialize monorepo structure | T-0001 | `apps/web`, `apps/api`, `services/rag-worker`, `infra`, `docs`, `scripts`, `tests` | Folder structure matches Technical Spec | Agent creates messy structure | todo |
 | T-0003 | 2026-06-04 | P0 | Repo | Add root README | T-0002 | Root `README.md` explains project, architecture, local setup outline | README references docs and constraints | README overclaims features | todo |
 | T-0004 | 2026-06-04 | P0 | Config | Add `.gitignore`, `.editorconfig`, environment examples | T-0002 | `.gitignore`, `.editorconfig`, `.env.example` | Secrets are not committed | Secret leakage | todo |
-| T-0005 | 2026-06-04 | P0 | Infra | Draft Docker Compose baseline | T-0002 | `infra/docker-compose.yml` with PostgreSQL, Qdrant, RAG worker placeholder, API placeholder | Compose file is syntactically valid | Container networking mistakes | todo |
+| T-0005 | 2026-06-04 | P0 | Infra | Draft Docker Compose baseline | T-0002 | `infra/docker-compose.yml` with Next.js web, ASP.NET Core API, Python RAG Worker, PostgreSQL, and Qdrant placeholders | Compose file is syntactically valid | Container networking mistakes | todo |
 | T-0006 | 2026-06-04 | P1 | Contracts | Create API contract placeholder | T-0002 | `docs/contracts/api.md` or OpenAPI placeholder | Endpoint groups are listed | Contract not synced with backend | todo |
 | T-0007 | 2026-06-04 | P1 | Governance | Add contribution and agent safety notes | T-0001 | `docs/CONTRIBUTING.md` or section in README | Non-negotiable constraints are visible | Agent violates scope | todo |
 
@@ -123,19 +125,19 @@ Jika memang ada pekerjaan nyata yang dilakukan pada tanggal terkait di lokal/pri
 
 ---
 
-## Phase 2 — React + Vite Frontend Foundation
+## Phase 2 — Next.js + TypeScript Frontend Foundation
 
 | Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
 |---|---:|---|---|---|---|---|---|---|---|
-| T-0201 | 2026-06-11 | P0 | Frontend | Scaffold React + Vite app | T-0002 | `apps/web` React + Vite project | App runs locally | Agent uses Next.js by mistake | todo |
-| T-0202 | 2026-06-11 | P0 | Frontend | Add base routing | T-0201 | Routes for home, login, register, chat, documents, admin | Navigation works locally | UX fragmentation | todo |
+| T-0201 | 2026-06-11 | P0 | Frontend | Scaffold Next.js + TypeScript application | T-0002 | `apps/web` Next.js + TypeScript project | App runs locally | Wrong frontend framework | todo |
+| T-0202 | 2026-06-11 | P0 | Frontend | Add Next.js App Router structure and layouts | T-0201 | App Router routes and layouts for home, login, register, chat, documents, admin | Navigation works locally | UX fragmentation | todo |
 | T-0203 | 2026-06-12 | P0 | Frontend | Add API client wrapper | T-0201, T-0107 | Shared API client using env API base URL | API calls centralized | Hardcoded API URL | todo |
 | T-0204 | 2026-06-12 | P0 | Frontend | Add auth pages | T-0107, T-0202 | Login/register UI | User can submit credentials | Auth state bugs | todo |
-| T-0205 | 2026-06-13 | P0 | Frontend | Add authenticated layout | T-0204 | Layout for user pages | Protected pages redirect if unauthenticated | Broken route guards | todo |
+| T-0205 | 2026-06-13 | P0 | Frontend | Add protected Next.js application layout | T-0204 | App Router layout for authenticated user pages | Protected pages redirect if unauthenticated | Broken route guards | todo |
 | T-0206 | 2026-06-13 | P1 | Frontend | Add admin route guard placeholder | T-0106, T-0205 | Admin page only visible for admin role | Non-admin cannot access UI route | Admin exposure | todo |
-| T-0207 | 2026-06-14 | P0 | Frontend | Add chat page skeleton | T-0202 | Chat input, answer area, citation area placeholder | UI supports question submission placeholder | UI not aligned with citation policy | todo |
-| T-0208 | 2026-06-14 | P1 | Frontend | Add document search page skeleton | T-0202 | Search input, filters placeholder, result list | UI can display document cards | Search feature delayed | todo |
-| T-0209 | 2026-06-15 | P1 | Frontend | Add admin ingestion page skeleton | T-0206 | Trigger ingestion button, job status panel, log panel placeholder | Only admin can see page | Admin UI grows too much | todo |
+| T-0207 | 2026-06-14 | P0 | Frontend | Add chat page skeleton | T-0202 | Next.js client/server components as needed for chat input, answer area, and citation placeholder | UI supports question submission placeholder | UI not aligned with citation policy | todo |
+| T-0208 | 2026-06-14 | P1 | Frontend | Add document search page skeleton | T-0202 | Next.js client/server components as needed for search input, filters, and result list | UI can display document cards | Search feature delayed | todo |
+| T-0209 | 2026-06-15 | P1 | Frontend | Add admin ingestion page skeleton | T-0206 | Next.js client/server components as needed for ingestion trigger, job status, and short log panels | Only admin can see page | Admin UI grows too much | todo |
 
 ---
 

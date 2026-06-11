@@ -25,6 +25,8 @@ RINGKAS adalah web Retrieval-Augmented Generation (RAG) untuk pencarian, tanya j
 
 MVP RINGKAS berfokus pada publikasi BPS DKI Jakarta tingkat provinsi dalam 5 tahun terakhir. Sistem ditargetkan untuk validasi awal oleh 10–30 user internal, tetapi akses produk mengizinkan public self-registration sehingga perlu kontrol abuse dasar.
 
+Produk disajikan melalui Next.js + TypeScript dengan App Router sebagai frontend/web presentation layer dan API consumer terhadap ASP.NET Core Web API. ASP.NET Core tetap menjadi main backend/API dan source of truth untuk domain logic, authentication, authorization, Chat/Q&A, document search, admin ingestion, rate limiting, dan application logging. Python RAG Worker tetap menjadi internal processing service. Next.js tidak mengakses PostgreSQL atau Qdrant secara langsung.
+
 ---
 
 ## 3. Background and Problem

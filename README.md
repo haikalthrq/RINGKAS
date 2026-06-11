@@ -8,7 +8,7 @@ This repository is in the foundation and planning stage. It is not a completed p
 
 ## Architecture
 
-- Frontend: React + Vite.
+- Frontend: Next.js + TypeScript dengan App Router.
 - Main backend/API: ASP.NET Core.
 - Internal processing service: Python RAG Worker.
 - Database: PostgreSQL for auth, metadata, chat history, ingestion jobs, and logs.
@@ -42,7 +42,7 @@ Full runnable setup is not available yet. Current outline:
 
 - ASP.NET Core is the main backend/API.
 - Python RAG Worker is internal processing only, not a public backend.
-- React + Vite is the frontend.
+- Next.js + TypeScript dengan App Router adalah presentation layer; ASP.NET Core tetap main backend/API.
 - PostgreSQL stores auth, metadata, chat history, ingestion jobs, and logs.
 - Qdrant is the vector database.
 - Docker Compose is the MVP deployment target.

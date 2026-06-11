@@ -25,15 +25,15 @@ Dokumen ini menjadi acuan untuk:
 
 ## 2. Technical Summary
 
-RINGKAS MVP dibangun sebagai aplikasi web RAG berbasis dokumen publikasi BPS DKI Jakarta. Backend utama menggunakan **ASP.NET Core**, sedangkan proses RAG berat dijalankan oleh **Python RAG Worker** internal.
+RINGKAS MVP dibangun sebagai aplikasi web RAG berbasis dokumen publikasi BPS DKI Jakarta. Frontend/web presentation layer menggunakan **Next.js + TypeScript** dengan App Router. **ASP.NET Core Web API** tetap menjadi main backend/API dan source of truth untuk domain logic dan authorization, sedangkan proses RAG berat dijalankan oleh **Python RAG Worker** sebagai internal processing service.
 
 Keputusan arsitektur inti:
 
 | Area | Keputusan MVP |
 |---|---|
-| Main backend | ASP.NET Core |
-| Frontend | React + Vite |
-| RAG processing | Python RAG Worker internal |
+| Main backend | ASP.NET Core Web API |
+| Frontend | Next.js + TypeScript dengan App Router |
+| RAG processing | Python RAG Worker sebagai internal processing service |
 | Database | PostgreSQL |
 | Vector database | Qdrant |
 | Deployment | Satu VPS |
@@ -45,7 +45,7 @@ Keputusan arsitektur inti:
 | Retrieval | Qdrant dense + sparse vector retrieval |
 | Fusion | Reciprocal Rank Fusion / RRF |
 | Generation primary | NVIDIA NIM |
-| Generation fallback | Cloudflare Workers AI |
+| Generation fallback | Cloudflare Workers AI fallback untuk generation |
 | Embedding provider | NVIDIA NIM only |
 | Auth | ASP.NET Core Identity + Google OAuth via backend |
 | Admin UI | Sederhana: trigger ingestion, status job, log ringkas |
@@ -56,8 +56,8 @@ Keputusan arsitektur inti:
 
 ### 3.1 In Scope MVP
 
-- Web application dengan frontend React + Vite.
-- ASP.NET Core sebagai public-facing backend/API.
+- Web application dengan Next.js + TypeScript sebagai frontend/web presentation layer dan API consumer terhadap ASP.NET Core.
+- ASP.NET Core Web API sebagai main backend/API dan source of truth untuk domain logic dan authorization.
 - Python RAG Worker sebagai internal processing service.
 - Ingestion publikasi BPS DKI Jakarta 5 tahun terakhir.
 - Corpus maksimal 300 publikasi untuk MVP.
@@ -98,9 +98,9 @@ Keputusan arsitektur inti:
 
 ```text
 +---------------------------+
-|        React + Vite       |
-|  Web UI: chat, search,    |
-|  auth, admin ingestion    |
+| Next.js + TypeScript      |
+| App Router presentation  |
+| layer / API consumer     |
 +-------------+-------------+
               |
               | HTTPS / REST API
@@ -142,9 +142,21 @@ Keputusan arsitektur inti:
 
 ## 5. Service Responsibilities
 
-### 5.1 ASP.NET Core API
+### 5.1 Next.js Frontend/Web Layer
 
-ASP.NET Core adalah **backend utama** dan satu-satunya public-facing backend untuk MVP.
+Next.js + TypeScript dengan App Router adalah presentation layer dan API consumer terhadap ASP.NET Core Web API. Layer ini menangani halaman, layout, interaksi UI, serta Next.js client/server components sesuai kebutuhan presentation.
+
+Boundary wajib:
+
+- Next.js tidak boleh menggantikan ASP.NET Core sebagai backend utama.
+- Core business logic, authentication, authorization, Chat/Q&A API, document search API, admin ingestion API, rate limiting, dan application logging tetap berada di ASP.NET Core.
+- Next.js tidak boleh mengakses PostgreSQL atau Qdrant secara langsung.
+- Secrets backend tidak boleh masuk ke client bundle.
+- Next.js API Routes, Route Handlers, Server Actions, atau server-side features tidak boleh digunakan untuk mengambil alih core backend responsibilities dari ASP.NET Core tanpa keputusan arsitektur baru dan approval eksplisit.
+
+### 5.2 ASP.NET Core Web API
+
+ASP.NET Core Web API adalah **main backend/API**, satu-satunya public-facing backend untuk MVP, dan source of truth untuk domain logic dan authorization.
 
 Tanggung jawab:
 
@@ -165,7 +177,7 @@ Tanggung jawab:
 
 ASP.NET Core **tidak dipaksa** menjalankan PDF parsing, chunking, RAGAS, atau processing berat lain secara langsung.
 
-### 5.2 Python RAG Worker
+### 5.3 Python RAG Worker
 
 Python RAG Worker adalah service internal, bukan public API.
 
@@ -196,10 +208,10 @@ Monorepo modular digunakan agar AI agent dan developer mudah menjaga konteks.
 ```text
 ringkas/
   apps/
-    web/                    # React + Vite frontend
-    api/                    # ASP.NET Core backend API
+    web/                    # Next.js + TypeScript frontend
+    api/                    # ASP.NET Core Web API
   services/
-    rag-worker/             # Python ingestion/RAG/evaluation worker
+    rag-worker/             # Python internal RAG worker
   infra/
     docker-compose.yml
     caddy/                  # optional reverse proxy config
@@ -226,6 +238,8 @@ ringkas/
 Rules:
 
 - Frontend, API, worker, infra, dan docs harus dipisah jelas.
+- `apps/web` hanya menjadi frontend/web presentation layer dan API consumer terhadap `apps/api`.
+- `apps/web` tidak boleh mengakses PostgreSQL atau Qdrant secara langsung.
 - Shared API contracts disimpan di `docs/` atau `contracts/` jika nanti dibutuhkan.
 - Python worker tidak boleh mencampur logic UI/backend auth.
 - ASP.NET backend tidak boleh diam-diam mengaktifkan OCR atau parser non-MVP.
@@ -238,11 +252,11 @@ Rules:
 
 MVP menggunakan satu VPS untuk:
 
-- ASP.NET Core API.
-- React + Vite frontend.
-- PostgreSQL.
-- Qdrant.
-- Python RAG Worker.
+- Next.js frontend container.
+- ASP.NET Core API container.
+- Python RAG Worker container.
+- PostgreSQL container.
+- Qdrant container.
 - Local PDF storage.
 
 ### 7.2 Containerization
@@ -262,9 +276,7 @@ reverse-proxy    # optional but recommended
 
 Catatan:
 
-- PostgreSQL dan Qdrant wajib container jika keputusan container tetap dipakai.
-- Python RAG Worker direkomendasikan container untuk dependency isolation.
-- ASP.NET API dan frontend boleh container juga untuk reproducibility.
+- Next.js frontend, ASP.NET Core API, Python RAG Worker, PostgreSQL, dan Qdrant dijalankan sebagai container melalui Docker Compose pada satu VPS.
 - Untuk debugging lokal, API/frontend boleh dijalankan langsung tanpa container, tetapi deployment spec tetap berbasis Docker Compose.
 
 ### 7.3 Storage Paths
@@ -1020,7 +1032,12 @@ Rules:
 
 Frontend MVP:
 
-- React + Vite.
+- Next.js + TypeScript.
+- App Router untuk struktur route dan layout.
+- Next.js client/server components sesuai kebutuhan presentation layer.
+- API consumer terhadap ASP.NET Core Web API; tidak mengakses PostgreSQL atau Qdrant secara langsung.
+
+Next.js tidak mengambil alih auth, authorization, chat orchestration, document search, ingestion, rate limiting, application logging, atau core domain logic dari ASP.NET Core. Next.js API Routes, Route Handlers, Server Actions, atau server-side features tidak boleh digunakan untuk mengambil alih core backend responsibilities dari ASP.NET Core tanpa keputusan arsitektur baru dan approval eksplisit.
 
 ### 22.2 Main Pages
 
@@ -1251,9 +1268,9 @@ Worker must not crash the full job for a single failed PDF.
 Recommended implementation order:
 
 1. Setup monorepo.
-2. Setup Docker Compose for PostgreSQL and Qdrant.
+2. Setup Docker Compose for Next.js frontend, ASP.NET Core API, Python RAG Worker, PostgreSQL, and Qdrant.
 3. Scaffold ASP.NET Core API.
-4. Scaffold React + Vite frontend.
+4. Scaffold Next.js + TypeScript frontend dengan App Router.
 5. Scaffold Python RAG Worker.
 6. Implement PostgreSQL schema and migrations.
 7. Implement ingestion job table and admin trigger endpoint.
@@ -1302,21 +1319,23 @@ Note:
 
 AI agents working on RINGKAS must obey:
 
-1. ASP.NET Core is the main backend.
+1. ASP.NET Core Web API is the main backend/API and source of truth for domain logic and authorization.
 2. Python RAG Worker is internal processing service, not public backend.
-3. OCR must not be implemented in MVP.
-4. Docling must not be used as production parser in MVP.
-5. PyMuPDF is the MVP parser.
-6. Embedding provider is NVIDIA NIM only.
-7. Do not add embedding fallback automatically.
-8. All substantive answers require citation.
-9. Do not expose retrieval score as answer accuracy.
-10. Do not add user document upload.
-11. Do not expand admin UI into full document management dashboard.
-12. Do not add dashboard analytics complex.
-13. Do not add public API for third parties.
-14. Keep implementation modular.
-15. Update docs when changing architecture or scope.
+3. Next.js + TypeScript is the frontend/web presentation layer and API consumer terhadap ASP.NET Core.
+4. Next.js must not access PostgreSQL or Qdrant directly or take over core backend responsibilities.
+5. OCR must not be implemented in MVP.
+6. Docling must not be used as production parser in MVP.
+7. PyMuPDF is the MVP parser.
+8. Embedding provider is NVIDIA NIM only.
+9. Do not add embedding fallback automatically.
+10. All substantive answers require citation.
+11. Do not expose retrieval score as answer accuracy.
+12. Do not add user document upload.
+13. Do not expand admin UI into full document management dashboard.
+14. Do not add dashboard analytics complex.
+15. Do not add public API for third parties.
+16. Keep implementation modular.
+17. Update docs when changing architecture or scope.
 
 ---
 

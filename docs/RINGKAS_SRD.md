@@ -23,6 +23,8 @@ SRD ini belum menggantikan Technical Specification, API Specification, Database 
 
 RINGKAS adalah aplikasi web RAG berbasis publikasi BPS. Sistem mengambil metadata dan PDF publikasi BPS dari API BPS, memproses PDF digital menggunakan pipeline text-first, menyimpan metadata di PostgreSQL, menyimpan embedding/chunk di Qdrant, lalu menjawab pertanyaan user menggunakan retrieval hybrid dan LLM generation dengan citation.
 
+Next.js + TypeScript dengan App Router berfungsi sebagai frontend/web presentation layer dan API consumer terhadap ASP.NET Core Web API. ASP.NET Core adalah main backend/API dan source of truth untuk domain logic dan authorization. Python RAG Worker adalah internal processing service dan tidak public-facing.
+
 ---
 
 ## 3. System Scope
@@ -95,7 +97,15 @@ RINGKAS adalah aplikasi web RAG berbasis publikasi BPS. Sistem mengambil metadat
 
 ### AR-001 Runtime
 
-Backend/API utama harus berjalan pada VPS/server biasa.
+MVP harus dapat menjalankan container Next.js frontend, ASP.NET Core API, Python RAG Worker, PostgreSQL, dan Qdrant melalui Docker Compose pada satu VPS.
+
+### AR-001A Frontend Boundary
+
+Next.js tidak boleh menggantikan ASP.NET Core sebagai backend utama atau mengakses PostgreSQL maupun Qdrant secara langsung. Core business logic, authentication, authorization, Chat/Q&A API, document search API, admin ingestion API, rate limiting, dan application logging tetap berada di ASP.NET Core Web API.
+
+### AR-001B Worker Boundary
+
+Python RAG Worker harus tetap menjadi internal processing service dan tidak boleh diekspos sebagai public-facing API.
 
 ### AR-002 Storage
 

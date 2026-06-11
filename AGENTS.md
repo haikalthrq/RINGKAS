@@ -149,7 +149,7 @@ Tidak boleh:
 Scope:
 
 - `apps/web`
-- React + Vite
+- Next.js + TypeScript dengan App Router
 - Auth pages
 - Chat UI
 - Document search UI
@@ -158,7 +158,7 @@ Scope:
 
 Tidak boleh:
 
-- Mengganti React + Vite ke Next.js tanpa approval.
+- Mengganti Next.js dengan Vite atau frontend framework lain.
 - Menambahkan dashboard analytics kompleks.
 - Menambahkan fitur upload dokumen user.
 - Menyembunyikan citation atau limitation warning dari user.
@@ -234,7 +234,7 @@ Tidak boleh:
 
 1. Backend/API utama wajib ASP.NET Core jika memungkinkan.
 2. Python RAG Worker adalah service internal, bukan public-facing backend utama.
-3. Frontend MVP menggunakan React + Vite.
+3. Frontend MVP menggunakan Next.js + TypeScript dengan App Router sebagai presentation layer dan API consumer terhadap ASP.NET Core.
 4. Monorepo wajib modular.
 5. Deployment MVP menggunakan satu VPS.
 6. Docker Compose digunakan untuk MVP.
@@ -727,7 +727,7 @@ Your job:
 Non-negotiable:
 - ASP.NET Core is the main backend.
 - Python RAG Worker is internal only.
-- React + Vite is the frontend.
+- Next.js + TypeScript with App Router is the frontend presentation layer.
 - PostgreSQL and Qdrant are required.
 - OCR is out of MVP.
 - Docling is future plan only.
@@ -748,7 +748,7 @@ You must:
 - Do not add out-of-scope features.
 - Do not add OCR.
 - Do not make Docling production parser.
-- Do not replace ASP.NET Core, PostgreSQL, Qdrant, or React + Vite.
+- Do not replace ASP.NET Core, PostgreSQL, Qdrant, or Next.js + TypeScript.
 - Report all changed files.
 - Report acceptance criteria status.
 - Stop and report blocker if requirement is ambiguous.
