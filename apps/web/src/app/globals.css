@@ -1,0 +1,31 @@
+:root { color-scheme: light; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; color: #1f2937; background: #f7f8fb; }
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; }
+body { min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+.app-shell { min-height: 100vh; padding: 24px; }
+.site-header, .page { max-width: 960px; margin: 0 auto; }
+.brand-block { display: grid; gap: 4px; }
+.site-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border: 1px solid #e5e7eb; border-radius: 16px; background: rgba(255,255,255,.9); backdrop-filter: blur(8px); }
+.brand { font-size: 1.1rem; font-weight: 700; letter-spacing: .08em; }
+.brand-subtitle, .session-note { margin: 0; color: #6b7280; font-size: .9rem; }
+.session-note { max-width: 960px; margin: 12px auto 0; padding: 0 2px; }
+.nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.nav-link { padding: 8px 12px; border-radius: 999px; color: #4b5563; background: #f3f4f6; }
+.nav-link-static { cursor: default; }
+.nav-link.active { color: #111827; background: #dbeafe; }
+.page { padding: 32px 0 0; }
+.page-card { max-width: 720px; padding: 32px; border: 1px solid #e5e7eb; border-radius: 20px; background: #fff; box-shadow: 0 8px 24px rgba(15,23,42,.04); }
+.page-card h1 { margin: 0 0 12px; font-size: clamp(1.8rem,3vw,2.4rem); line-height: 1.15; }
+.page-card p { margin: 0; color: #4b5563; }
+.page-card p + p { margin-top: 12px; }
+.eyebrow { margin-bottom: 12px !important; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #2563eb; }
+.inline-link { display: inline-block; margin-top: 20px; font-weight: 600; color: #2563eb; }
+.auth-card, .auth-form, .field { display: grid; }
+.auth-card { gap: 20px; }.auth-form { gap: 16px; }.field { gap: 8px; font-weight: 600; color: #374151; }
+.field input { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 12px; font: inherit; background: #fff; color: #111827; }
+.field input:disabled, .primary-button:disabled { cursor: not-allowed; opacity: .72; }
+.field-error, .form-error { color: #b91c1c; font-size: .92rem; font-weight: 500; }.form-error { margin: 0; }
+.primary-button { justify-self: start; padding: 12px 18px; border: 0; border-radius: 999px; background: #111827; color: #fff; font: inherit; font-weight: 700; }
+.page-footnote { color: #6b7280 !important; }.status-card { text-align: left; }
+@media (max-width:640px) { .app-shell { padding:16px; }.site-header { flex-direction:column; align-items:flex-start; }.nav { justify-content:flex-start; }.page-card { padding:24px; } }
