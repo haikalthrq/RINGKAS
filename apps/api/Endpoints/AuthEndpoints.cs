@@ -55,9 +55,11 @@ public static class AuthEndpoints
         var roleResult = await userManager.AddToRoleAsync(user, AppRoles.User);
         if (!roleResult.Succeeded)
         {
+            await userManager.DeleteAsync(user);
+
             return Results.Problem(
                 title: "Registration failed.",
-                detail: string.Join(", ", roleResult.Errors.Select(error => error.Description)),
+                detail: "The account could not be completed.",
                 statusCode: StatusCodes.Status500InternalServerError);
         }
 

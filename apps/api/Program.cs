@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using Npgsql;
 using Ringkas.Api.Auth;
 using Ringkas.Api.Data;
@@ -46,38 +47,9 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    options.AddPolicy(RateLimitPolicies.Auth, httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: GetRateLimitPartitionKey(httpContext, RateLimitPolicies.Auth),
-            factory: _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 5,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0,
-                AutoReplenishment = true
-            }));
-
-    options.AddPolicy(RateLimitPolicies.Chat, httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: GetRateLimitPartitionKey(httpContext, RateLimitPolicies.Chat),
-            factory: _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0,
-                AutoReplenishment = true
-            }));
-
-    options.AddPolicy(RateLimitPolicies.AdminIngestion, httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: GetRateLimitPartitionKey(httpContext, RateLimitPolicies.AdminIngestion),
-            factory: _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 3,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0,
-                AutoReplenishment = true
-            }));
+    ConfigureFixedWindowPolicy(options, builder.Configuration, RateLimitPolicies.Auth, "RateLimits:Auth", 5, 60);
+    ConfigureFixedWindowPolicy(options, builder.Configuration, RateLimitPolicies.Chat, "RateLimits:Chat", 10, 60);
+    ConfigureFixedWindowPolicy(options, builder.Configuration, RateLimitPolicies.AdminIngestion, "RateLimits:AdminIngestion", 3, 60);
 });
 builder.Services.AddScoped<IdentityRoleSeeder>();
 builder.Services.AddSingleton(GoogleOAuthSettings.FromConfiguration(builder.Configuration));
@@ -159,4 +131,35 @@ static string GetRateLimitPartitionKey(HttpContext httpContext, string scope)
             : $"trace:{httpContext.TraceIdentifier}";
 
     return $"{scope}:{identifier}";
+}
+
+static void ConfigureFixedWindowPolicy(
+    RateLimiterOptions options,
+    IConfiguration configuration,
+    string policyName,
+    string sectionPath,
+    int defaultPermitLimit,
+    int defaultWindowSeconds)
+{
+    var section = configuration.GetSection(sectionPath);
+    var permitLimit = ReadPositiveInt(section["PermitLimit"], defaultPermitLimit);
+    var windowSeconds = ReadPositiveInt(section["WindowSeconds"], defaultWindowSeconds);
+
+    options.AddPolicy(policyName, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: GetRateLimitPartitionKey(httpContext, policyName),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = permitLimit,
+                Window = TimeSpan.FromSeconds(windowSeconds),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+}
+
+static int ReadPositiveInt(string? value, int fallback)
+{
+    return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) && parsed > 0
+        ? parsed
+        : fallback;
 }
