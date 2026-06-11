@@ -74,14 +74,17 @@ services:
     networks:
       - ringkas
 
-  # Placeholder only. The real web app will be React + Vite.
   web:
-    image: alpine:3.20
-    container_name: ringkas-web-placeholder
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+      args:
+        # Next.js compiles this rewrite target during image build. Rebuild to change it.
+        API_PROXY_TARGET: http://api:8080
+    container_name: ringkas-web
     restart: unless-stopped
-    command: ["sh", "-c", "echo 'RINGKAS web placeholder'; trap : TERM INT; sleep infinity & wait"]
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://api:8080}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
     depends_on:
       - api
     networks:
