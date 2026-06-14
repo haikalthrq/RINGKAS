@@ -1,3 +1,12 @@
+import { ChatForm } from "@/components/chat/chat-form";
+
 export default function ChatPage() {
-  return <section className="page-card"><p className="eyebrow">Chat</p><h1>Guest chat entry</h1><p>Grounded Q&amp;A and citation rendering will connect in a later task.</p></section>;
+  return (
+    <section className="page-card chat-page" aria-labelledby="chat-title">
+      <p className="eyebrow">Guest chat</p>
+      <h1 id="chat-title">Ask about BPS publications</h1>
+      <p className="page-intro">Questions will be answered from the RINGKAS document corpus when backend integration is available.</p>
+      <ChatForm />
+    </section>
+  );
 }
