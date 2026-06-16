@@ -1,0 +1,78 @@
+from pathlib import Path, PurePosixPath
+
+from pydantic import AnyHttpUrl, Field, SecretStr, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class WorkerSettings(BaseSettings):
+    """Environment-backed settings required by the polling worker."""
+
+    model_config = SettingsConfigDict(env_file=None, extra="ignore", case_sensitive=False)
+
+    database_url: SecretStr = Field(validation_alias="DATABASE_URL", repr=False)
+    qdrant_url: AnyHttpUrl = Field(default="http://qdrant:6333", validation_alias="QDRANT_URL")
+    qdrant_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="QDRANT_API_KEY", repr=False)
+    nvidia_nim_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="NVIDIA_NIM_API_KEY", repr=False)
+    pdf_storage_path: Path = Field(default=Path("/data/ringkas/pdfs"), validation_alias="PDF_STORAGE_PATH")
+    bps_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="BPS_API_KEY", repr=False)
+    bps_base_url: str = Field(default="", validation_alias="BPS_BASE_URL")
+    ingestion_poll_interval_seconds: int = Field(default=10, validation_alias="INGESTION_POLL_INTERVAL_SECONDS")
+    database_connect_timeout_seconds: int = Field(default=10, validation_alias="DATABASE_CONNECT_TIMEOUT_SECONDS")
+    database_statement_timeout_ms: int = Field(default=30_000, validation_alias="DATABASE_STATEMENT_TIMEOUT_MS")
+    chunk_size_min: int = Field(default=500, validation_alias="CHUNK_SIZE_MIN")
+    chunk_size_max: int = Field(default=800, validation_alias="CHUNK_SIZE_MAX")
+    chunk_overlap_percent: int = Field(default=20, validation_alias="CHUNK_OVERLAP_PERCENT")
+    ocr_enabled: bool = Field(default=False, validation_alias="OCR_ENABLED")
+
+    @field_validator("database_url")
+    @classmethod
+    def database_url_must_be_postgres(cls, value: SecretStr) -> SecretStr:
+        database_url = value.get_secret_value()
+        if not database_url.strip():
+            raise ValueError("DATABASE_URL is required for worker polling")
+        if not database_url.lower().startswith(("postgres://", "postgresql://")):
+            raise ValueError("DATABASE_URL must use the postgres or postgresql scheme")
+        return value
+
+    @field_validator("pdf_storage_path")
+    @classmethod
+    def pdf_path_must_be_absolute(cls, value: Path) -> Path:
+        # The worker runs in Linux containers but configuration tests may run on Windows.
+        if not value.is_absolute() and not PurePosixPath(value.as_posix()).is_absolute():
+            raise ValueError("PDF_STORAGE_PATH must be an absolute path")
+        return value
+
+    @field_validator(
+        "ingestion_poll_interval_seconds",
+        "database_connect_timeout_seconds",
+        "database_statement_timeout_ms",
+        "chunk_size_min",
+        "chunk_size_max",
+    )
+    @classmethod
+    def positive_integer(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("poll interval, database timeouts, and chunk sizes must be positive")
+        return value
+
+    @field_validator("chunk_size_max")
+    @classmethod
+    def max_chunk_must_cover_minimum(cls, value: int, info) -> int:
+        minimum = info.data.get("chunk_size_min")
+        if minimum is not None and minimum > value:
+            raise ValueError("CHUNK_SIZE_MIN must be less than or equal to CHUNK_SIZE_MAX")
+        return value
+
+    @field_validator("chunk_overlap_percent")
+    @classmethod
+    def safe_overlap(cls, value: int) -> int:
+        if not 0 <= value < 100:
+            raise ValueError("CHUNK_OVERLAP_PERCENT must be between 0 and 99")
+        return value
+
+    @field_validator("ocr_enabled")
+    @classmethod
+    def ocr_is_disabled(cls, value: bool) -> bool:
+        if value:
+            raise ValueError("OCR_ENABLED=true is not supported in the MVP worker")
+        return value

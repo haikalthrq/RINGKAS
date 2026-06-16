@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ringkas-rag-worker"
+version = "0.1.0"
+description = "Internal RINGKAS PostgreSQL job polling worker"
+requires-python = ">=3.12"
+dependencies = [
+  "psycopg[binary]==3.3.4",
+  "pydantic-settings==2.14.2",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.1.1"]
+
+[project.scripts]
+ringkas-worker = "ringkas_worker.__main__:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["ringkas_worker*"]
