@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Ringkas.Api.Data;
@@ -11,9 +12,11 @@ using Ringkas.Api.Data;
 namespace Ringkas.Api.Migrations
 {
     [DbContext(typeof(RingkasDbContext))]
-    partial class RingkasDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260711141253_AddIngestionJobs")]
+    partial class AddIngestionJobs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
