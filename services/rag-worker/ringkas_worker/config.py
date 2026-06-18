@@ -3,11 +3,18 @@ from pathlib import Path, PurePosixPath
 from pydantic import AnyHttpUrl, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from ringkas_worker.bps.urls import normalize_publications_path, validate_base_url
+
 
 class WorkerSettings(BaseSettings):
     """Environment-backed settings required by the polling worker."""
 
-    model_config = SettingsConfigDict(env_file=None, extra="ignore", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=None,
+        extra="ignore",
+        case_sensitive=False,
+        hide_input_in_errors=True,
+    )
 
     database_url: SecretStr = Field(validation_alias="DATABASE_URL", repr=False)
     qdrant_url: AnyHttpUrl = Field(default="http://qdrant:6333", validation_alias="QDRANT_URL")
@@ -16,6 +23,7 @@ class WorkerSettings(BaseSettings):
     pdf_storage_path: Path = Field(default=Path("/data/ringkas/pdfs"), validation_alias="PDF_STORAGE_PATH")
     bps_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="BPS_API_KEY", repr=False)
     bps_base_url: str = Field(default="", validation_alias="BPS_BASE_URL")
+    bps_publications_path: str = Field(default="", validation_alias="BPS_PUBLICATIONS_PATH")
     ingestion_poll_interval_seconds: int = Field(default=10, validation_alias="INGESTION_POLL_INTERVAL_SECONDS")
     database_connect_timeout_seconds: int = Field(default=10, validation_alias="DATABASE_CONNECT_TIMEOUT_SECONDS")
     database_statement_timeout_ms: int = Field(default=30_000, validation_alias="DATABASE_STATEMENT_TIMEOUT_MS")
@@ -33,6 +41,24 @@ class WorkerSettings(BaseSettings):
         if not database_url.lower().startswith(("postgres://", "postgresql://")):
             raise ValueError("DATABASE_URL must use the postgres or postgresql scheme")
         return value
+
+    @field_validator("bps_base_url")
+    @classmethod
+    def bps_base_url_must_be_http_when_configured(cls, value: str) -> str:
+        if not value.strip():
+            return value
+        try:
+            return str(validate_base_url(value)).rstrip("/")
+        except Exception:
+            raise ValueError("BPS_BASE_URL must be a safe absolute HTTP or HTTPS URL") from None
+
+    @field_validator("bps_publications_path")
+    @classmethod
+    def bps_publications_path_must_be_relative(cls, value: str) -> str:
+        try:
+            return normalize_publications_path(value)
+        except Exception:
+            raise ValueError("BPS_PUBLICATIONS_PATH must be a safe relative path") from None
 
     @field_validator("pdf_storage_path")
     @classmethod

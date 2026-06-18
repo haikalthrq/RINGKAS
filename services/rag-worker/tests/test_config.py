@@ -1,4 +1,5 @@
 import pytest
+import traceback
 from pydantic import ValidationError
 
 from ringkas_worker.config import WorkerSettings
@@ -64,5 +65,60 @@ def test_secret_values_are_masked_in_settings_repr(monkeypatch: pytest.MonkeyPat
 
     monkeypatch.setenv("QDRANT_URL", "http://qdrant:6333")
     monkeypatch.setenv("PDF_STORAGE_PATH", "relative/pdfs")
+    with pytest.raises(ValidationError):
+        WorkerSettings()
+
+
+def test_bps_base_url_is_optional_but_validated_when_configured(monkeypatch: pytest.MonkeyPatch) -> None:
+    valid_environment(monkeypatch)
+    monkeypatch.setenv("BPS_BASE_URL", "https://api.example.invalid/")
+    monkeypatch.setenv("BPS_PUBLICATIONS_PATH", "publications")
+    settings = WorkerSettings()
+    assert settings.bps_base_url == "https://api.example.invalid"
+    assert settings.bps_publications_path == "publications"
+
+    monkeypatch.setenv("BPS_BASE_URL", "ftp://api.example.invalid")
+    with pytest.raises(ValidationError):
+        WorkerSettings()
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "ftp://api.example.invalid",
+        "https://",
+        "https://user:password@example.invalid",
+        "https://example.invalid?token=secret-token",
+        "https://example.invalid/#secret-fragment",
+    ],
+)
+def test_bps_base_url_rejects_unsafe_values_without_echoing_secrets(
+    monkeypatch: pytest.MonkeyPatch, base_url: str
+) -> None:
+    valid_environment(monkeypatch)
+    monkeypatch.setenv("BPS_BASE_URL", base_url)
+    with pytest.raises(ValidationError) as error:
+        WorkerSettings()
+
+    rendered = "\n".join((str(error.value), repr(error.value), "".join(traceback.format_exception(error.value))))
+    assert "password" not in rendered
+    assert "secret-token" not in rendered
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "https://other.example.invalid/publications",
+        "//other.example.invalid/publications",
+        "publications?token=secret-token",
+        "publications#secret-fragment",
+        " ",
+        "../private",
+        "nested/../private",
+    ],
+)
+def test_bps_publications_path_rejects_unsafe_values(monkeypatch: pytest.MonkeyPatch, path: str) -> None:
+    valid_environment(monkeypatch)
+    monkeypatch.setenv("BPS_PUBLICATIONS_PATH", path)
     with pytest.raises(ValidationError):
         WorkerSettings()
