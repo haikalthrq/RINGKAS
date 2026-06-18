@@ -149,7 +149,7 @@ Backdate diperbolehkan.
 | T-0304 | 2026-06-17 | P0 | Worker | Implement PostgreSQL job polling | T-0301, T-0303 | Worker polls queued jobs | Worker claims jobs safely | Duplicate processing | done |
 | T-0305 | 2026-06-18 | P0 | Database | Add document metadata schema | T-0104 | `documents` table migration | Stores title, year, region, source URL, hash, status | Metadata incomplete | done |
 | T-0306 | 2026-06-18 | P0 | Ingestion | Implement BPS API client placeholder | T-0301 | Client module with configurable endpoint | Can fetch or mock publication metadata | API assumptions wrong | done |
-| T-0307 | 2026-06-19 | P0 | Ingestion | Implement PDF download and local storage | T-0306, T-0305 | PDFs saved to `/data/ringkas/pdfs` | File path and hash stored | Storage bloat | todo |
+| T-0307 | 2026-06-19 | P0 | Ingestion | Implement PDF download and local storage | T-0306, T-0305 | PDFs saved to `/data/ringkas/pdfs` | File path and hash stored | Storage bloat | done |
 | T-0308 | 2026-06-19 | P0 | Ingestion | Implement file hash deduplication | T-0307 | Hash/checksum stored | Duplicate PDFs are detected | Duplicate indexing | done |
 | T-0309 | 2026-06-20 | P0 | Parsing | Implement PyMuPDF parser interface | T-0301, T-0307 | Parser extracts page text and page metadata | Digital PDF text can be extracted | Parser coupled too tightly | done |
 | T-0310 | 2026-06-20 | P0 | Parsing | Handle PDF without text layer | T-0309 | Unsupported PDFs marked `unsupported_or_extraction_failed` | No OCR attempted | OCR accidentally added | done |

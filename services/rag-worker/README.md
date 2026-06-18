@@ -4,11 +4,15 @@ Internal Python process for polling ingestion jobs from PostgreSQL. It is not an
 HTTP service and does not expose a port.
 
 The default process performs non-mutating queue observation at the configured poll
-interval. It never claims jobs when no ingestion processor is configured. T-0413
-adds an injectable end-to-end orchestration foundation, but live activation remains
-fail-closed because the BPS contract, production tokenizer, provider configuration,
-and PDF transport are not locked. The downloader intentionally accepts only a
-test/mock transport.
+interval. It never claims jobs when no ingestion processor is configured. The
+existing processor remains fail-closed; the full T-0413 ingestion pipeline is not
+active in this task. `MockTransport` is available as test injection. Production
+construction uses `PdfDownloader.from_settings(settings)` without a transport,
+which selects the validated production transport and enforces destination safety.
+Its total PDF budget is checked before and after resolver, connection, redirect,
+and stream phases, plus between chunks and after EOF. DNS remains subject to the
+platform resolver, while an individual blocking read is bounded by the configured
+read timeout; neither is interrupted with abandoned timeout threads.
 
 Shutdown stops new observations/claims promptly while idle. An active database
 query or future handler is not forcibly interrupted by this scaffold.

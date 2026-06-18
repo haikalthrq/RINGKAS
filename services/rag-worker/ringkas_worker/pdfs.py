@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+import math
 import os
+import socket
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from threading import Lock
@@ -75,20 +78,36 @@ class PdfDownloader:
         max_size_bytes: int = 50 * 1024 * 1024,
         connect_timeout_seconds: float = 10.0,
         read_timeout_seconds: float = 60.0,
+        total_timeout_seconds: float = 300.0,
         max_redirects: int = 5,
         transport: httpx.MockTransport | None = None,
     ) -> None:
-        if type(transport) is not httpx.MockTransport:
-            raise PdfTransportError("PDF live transport is disabled")
         normalized_hosts = {_normalize_allowed_host(host) for host in allowed_hosts if host.strip()}
         if not normalized_hosts:
             raise PdfUrlError("PDF allowed host boundary is not configured")
-        if max_size_bytes <= 0 or max_redirects < 0:
+        if (
+            isinstance(max_size_bytes, bool)
+            or not isinstance(max_size_bytes, int)
+            or max_size_bytes <= 0
+            or isinstance(max_redirects, bool)
+            or not isinstance(max_redirects, int)
+            or max_redirects < 0
+            or not _is_positive_finite(connect_timeout_seconds)
+            or not _is_positive_finite(read_timeout_seconds)
+            or not _is_positive_finite(total_timeout_seconds)
+        ):
             raise PdfValidationError("PDF download limits are invalid")
         self._root = storage_path.absolute()
         self._allowed_hosts = normalized_hosts
         self._max_size = max_size_bytes
+        self._connect_timeout = float(connect_timeout_seconds)
+        self._read_timeout = float(read_timeout_seconds)
+        self._total_timeout = float(total_timeout_seconds)
         self._max_redirects = max_redirects
+        if transport is None:
+            transport = _ValidatedAddressTransport(normalized_hosts)
+        elif type(transport) is not httpx.MockTransport:
+            raise PdfTransportError("PDF transport is not supported")
         self._client = httpx.Client(
             follow_redirects=False,
             timeout=httpx.Timeout(read_timeout_seconds, connect=connect_timeout_seconds),
@@ -104,6 +123,7 @@ class PdfDownloader:
             max_size_bytes=settings.pdf_max_size_bytes,
             connect_timeout_seconds=settings.pdf_connect_timeout_seconds,
             read_timeout_seconds=settings.pdf_read_timeout_seconds,
+            total_timeout_seconds=settings.pdf_total_timeout_seconds,
             max_redirects=settings.pdf_max_redirects,
             transport=transport,
         )
@@ -132,6 +152,7 @@ class PdfDownloader:
         if publication.pdf_url is None:
             raise PdfUrlError("publication has no PDF URL")
         current_url = str(publication.pdf_url)
+        deadline = time.monotonic() + self._total_timeout
         temp_path: Path | None = None
         try:
             self._validate_url(current_url)
@@ -146,14 +167,31 @@ class PdfDownloader:
                 total = 0
                 prefix = bytearray()
                 for redirect_count in range(self._max_redirects + 1):
+                    remaining = _remaining_timeout(deadline)
                     request_failure: str | None = None
                     try:
-                        with self._client.stream("GET", current_url) as response:
+                        timeout = httpx.Timeout(
+                            min(self._read_timeout, remaining),
+                            connect=min(self._connect_timeout, remaining),
+                        )
+                        with self._client.stream(
+                            "GET",
+                            current_url,
+                            timeout=timeout,
+                            extensions={"ringkas_deadline": deadline},
+                        ) as response:
                             if response.is_redirect:
                                 location = response.headers.get("location")
                                 if not location or redirect_count == self._max_redirects:
                                     raise PdfResponseError("PDF redirect limit exceeded")
-                                current_url = urljoin(current_url, location)
+                                redirect_url = None
+                                try:
+                                    redirect_url = urljoin(current_url, location)
+                                except (TypeError, ValueError):
+                                    pass
+                                if redirect_url is None:
+                                    _raise_sanitized_url_error("PDF redirect URL is not allowed")
+                                current_url = redirect_url
                                 self._validate_url(current_url)
                                 continue
                             if not 200 <= response.status_code < 300:
@@ -174,6 +212,8 @@ class PdfDownloader:
                                 if declared_size < 0 or declared_size > self._max_size:
                                     raise PdfValidationError("PDF response exceeds the configured size limit")
                             for chunk in response.iter_bytes(64 * 1024):
+                                if _remaining_timeout(deadline) <= 0:
+                                    raise PdfTimeoutError("PDF download deadline exceeded")
                                 total += len(chunk)
                                 if total > self._max_size:
                                     raise PdfValidationError("PDF response exceeds the configured size limit")
@@ -182,6 +222,7 @@ class PdfDownloader:
                                 if not _safe_write(temp, chunk):
                                     raise PdfStorageError("PDF temporary storage write failed") from None
                                 digest.update(chunk)
+                            _remaining_timeout(deadline)
                             break
                     except httpx.TimeoutException:
                         request_failure = "timeout"
@@ -215,8 +256,10 @@ class PdfDownloader:
                     raise PdfStorageError("PDF canonical storage finalization failed") from None
                 temp_path = None
             return DownloadedPdf(checksum, str(canonical), False)
-        except (PdfDownloadError, ValueError):
+        except PdfDownloadError:
             raise
+        except ValueError:
+            raise PdfUrlError("PDF URL is not allowed") from None
         finally:
             if temp_path is not None:
                 _cleanup_temp_file(temp_path)
@@ -250,7 +293,7 @@ class PdfDownloader:
             if parsed.username is not None or parsed.password is not None or parsed.fragment:
                 raise ValueError
             normalized = host.lower().rstrip(".")
-            if not any(normalized == allowed or normalized.endswith("." + allowed) for allowed in self._allowed_hosts):
+            if not _is_allowed_host(normalized, self._allowed_hosts):
                 raise ValueError
             addresses: list[ipaddress.IPv4Address | ipaddress.IPv6Address] = []
             try:
@@ -267,13 +310,240 @@ class PdfDownloader:
 
 
 def _is_public(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
-    return not (address.is_private or address.is_loopback or address.is_link_local or address.is_reserved or address.is_unspecified)
+    return address.is_global and not (
+        address.is_private
+        or address.is_loopback
+        or address.is_link_local
+        or address.is_multicast
+        or address.is_reserved
+        or address.is_unspecified
+        or getattr(address, "is_site_local", False)
+    )
+
+
+def _is_positive_finite(value: object) -> bool:
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return False
+    try:
+        converted = float(value)
+    except (OverflowError, TypeError, ValueError):
+        return False
+    return math.isfinite(converted) and converted > 0
+
+
+def _remaining_timeout(deadline: float) -> float:
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise PdfTimeoutError("PDF download deadline exceeded")
+    return remaining
+
+
+class _ValidatedAddressTransport(httpx.BaseTransport):
+    """Resolve each request before connecting, without trusting DNS blindly."""
+
+    def __init__(self, allowed_hosts: set[str]) -> None:
+        self._allowed_hosts = allowed_hosts
+        self._transport: httpx.BaseTransport | None = None
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        original_url = request.url
+        original_host = original_url.host
+        deadline = request.extensions.get("ringkas_deadline")
+        addresses = _resolve_public_addresses(original_url, self._allowed_hosts, deadline)
+        last_error: httpx.RequestError | None = None
+        for address in addresses:
+            remaining = _remaining_timeout(deadline) if isinstance(deadline, (int, float)) else None
+            pinned_request = _pinned_request(request, original_url, original_host, address, remaining)
+            owned_transport = self._transport is None
+            inner = self._transport or httpx.HTTPTransport(trust_env=False, proxy=None)
+            try:
+                response = inner.handle_request(pinned_request)
+                if owned_transport:
+                    try:
+                        response = httpx.Response(
+                            response.status_code,
+                            headers=response.headers,
+                            stream=_OwnedResponseStream(response, inner),
+                            extensions=response.extensions,
+                        )
+                    except BaseException:
+                        try:
+                            response.close()
+                        except BaseException:
+                            pass
+                        try:
+                            inner.close()
+                        except BaseException:
+                            pass
+                        raise
+                return response
+            except httpx.RequestError as error:
+                last_error = error
+                if owned_transport:
+                    inner.close()
+            except OSError:
+                last_error = httpx.ConnectError("PDF connection failed", request=pinned_request)
+                if owned_transport:
+                    inner.close()
+        if last_error is not None:
+            raise last_error
+        raise httpx.ConnectError("PDF connection failed", request=request)
+
+    def close(self) -> None:
+        if self._transport is not None:
+            self._transport.close()
+
+
+def _resolve_public_addresses(
+    url: httpx.URL,
+    allowed_hosts: set[str],
+    deadline: float | None = None,
+) -> tuple[ipaddress.IPv4Address | ipaddress.IPv6Address, ...]:
+    try:
+        if deadline is not None:
+            _remaining_timeout(deadline)
+        host = url.host
+        normalized = host.lower().rstrip(".") if host else ""
+        if url.scheme.lower() not in {"http", "https"} or not host:
+            raise ValueError
+        if url.username or url.password or url.fragment:
+            raise ValueError
+        if not _is_allowed_host(normalized, allowed_hosts):
+            raise ValueError
+        try:
+            addresses = [ipaddress.ip_address(normalized)]
+        except ValueError:
+            resolved = socket.getaddrinfo(host, url.port, type=socket.SOCK_STREAM)
+            if not resolved:
+                raise ValueError
+            addresses = [ipaddress.ip_address(item[4][0]) for item in resolved]
+        if deadline is not None:
+            _remaining_timeout(deadline)
+        if not addresses or any(not _is_public(address) for address in addresses):
+            raise ValueError
+        return tuple(dict.fromkeys(addresses))
+    except (IndexError, OSError, TypeError, ValueError):
+        raise httpx.ConnectError("PDF destination is not allowed", request=None) from None
+
+
+def _host_header(url: httpx.URL) -> str:
+    host = url.host
+    if ":" in host:
+        host = f"[{host}]"
+    if url.port is not None and url.port != (443 if url.scheme.lower() == "https" else 80):
+        return f"{host}:{url.port}"
+    return host
+
+
+def _pinned_request(
+    request: httpx.Request,
+    original_url: httpx.URL,
+    original_host: str,
+    address: ipaddress.IPv4Address | ipaddress.IPv6Address,
+    remaining: float | None = None,
+) -> httpx.Request:
+    safe_headers = {"accept", "accept-encoding", "range", "user-agent"}
+    headers = httpx.Headers(
+        {
+            key: value
+            for key, value in request.headers.multi_items()
+            if key.lower() in safe_headers
+        }
+    )
+    headers["Host"] = _host_header(original_url)
+    extensions = dict(request.extensions)
+    if remaining is not None:
+        timeout = dict(extensions.get("timeout", {}))
+        for phase in ("connect", "read", "write", "pool"):
+            value = timeout.get(phase)
+            if isinstance(value, (int, float)):
+                timeout[phase] = min(value, remaining)
+        extensions["timeout"] = timeout
+    if original_url.scheme.lower() == "https":
+        extensions["sni_hostname"] = original_host
+    return httpx.Request(
+        request.method,
+        original_url.copy_with(host=address.compressed),
+        headers=headers,
+        content=request.content,
+        extensions=extensions,
+    )
+
+
+class _OwnedResponseStream(httpx.SyncByteStream):
+    def __init__(self, response: httpx.Response, transport: httpx.BaseTransport) -> None:
+        self._response = response
+        self._transport = transport
+        self._closed = False
+
+    def __iter__(self):
+        try:
+            yield from self._response.stream
+        except BaseException:
+            self.close()
+            raise
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            self._response.close()
+        finally:
+            self._transport.close()
+
+
+def _is_allowed_host(host: str, allowed_hosts: set[str]) -> bool:
+    try:
+        literal = ipaddress.ip_address(host)
+    except ValueError:
+        return any(
+            host == allowed or host.endswith("." + allowed)
+            for allowed in allowed_hosts
+            if not _is_ip_literal(allowed)
+        )
+    return literal.compressed in allowed_hosts
+
+
+def _is_ip_literal(value: str) -> bool:
+    try:
+        ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return True
+
+
+def _raise_sanitized_url_error(message: str) -> None:
+    error = PdfUrlError(message)
+    error.__cause__ = None
+    error.__context__ = None
+    raise error
 
 
 def _normalize_allowed_host(value: str) -> str:
     candidate = value.strip().lower().rstrip(".")
     if not candidate or "*" in candidate:
         raise PdfUrlError("PDF allowed host boundary is invalid")
+    if candidate.startswith("["):
+        if not candidate.endswith("]"):
+            raise PdfUrlError("PDF allowed host boundary is invalid")
+        try:
+            address = ipaddress.ip_address(candidate[1:-1])
+        except ValueError:
+            raise PdfUrlError("PDF allowed host boundary is invalid") from None
+        if not isinstance(address, ipaddress.IPv6Address) or not _is_public(address):
+            raise PdfUrlError("PDF allowed host boundary is invalid")
+        return address.compressed
+    if ":" in candidate:
+        raise PdfUrlError("PDF IPv6 literals must be bracketed")
+    try:
+        address = ipaddress.ip_address(candidate)
+    except ValueError:
+        address = None
+    if address is not None:
+        if not isinstance(address, ipaddress.IPv4Address) or not _is_public(address):
+            raise PdfUrlError("PDF allowed host boundary is invalid")
+        return address.compressed
     invalid = False
     try:
         parsed = urlsplit("//" + candidate)

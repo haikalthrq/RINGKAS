@@ -1,3 +1,5 @@
+import ipaddress
+import math
 from pathlib import Path, PurePosixPath
 
 from pydantic import AnyHttpUrl, Field, SecretStr, field_validator
@@ -14,6 +16,26 @@ def _validate_pdf_allowed_hosts(value: str) -> str:
         candidate = entry.lower().rstrip(".")
         if not candidate or "*" in candidate:
             raise ValueError("PDF_ALLOWED_HOSTS contains an invalid host")
+        if candidate.startswith("["):
+            if not candidate.endswith("]"):
+                raise ValueError("PDF_ALLOWED_HOSTS contains an invalid host")
+            try:
+                address = ipaddress.ip_address(candidate[1:-1])
+            except ValueError:
+                raise ValueError("PDF_ALLOWED_HOSTS contains an invalid host") from None
+            if not isinstance(address, ipaddress.IPv6Address) or not address.is_global:
+                raise ValueError("PDF_ALLOWED_HOSTS contains an invalid host")
+            continue
+        if ":" in candidate:
+            raise ValueError("PDF_ALLOWED_HOSTS IPv6 literals must be bracketed")
+        try:
+            address = ipaddress.ip_address(candidate)
+        except ValueError:
+            address = None
+        if address is not None:
+            if not isinstance(address, ipaddress.IPv4Address) or not address.is_global:
+                raise ValueError("PDF_ALLOWED_HOSTS contains an invalid host")
+            continue
         try:
             parsed = urlsplit("//" + candidate)
             if parsed.hostname != candidate or parsed.username is not None or parsed.password is not None:
@@ -43,6 +65,7 @@ class WorkerSettings(BaseSettings):
     pdf_max_size_bytes: int = Field(default=50 * 1024 * 1024, validation_alias="PDF_MAX_SIZE_BYTES")
     pdf_connect_timeout_seconds: float = Field(default=10.0, validation_alias="PDF_CONNECT_TIMEOUT_SECONDS")
     pdf_read_timeout_seconds: float = Field(default=60.0, validation_alias="PDF_READ_TIMEOUT_SECONDS")
+    pdf_total_timeout_seconds: float = Field(default=300.0, validation_alias="PDF_TOTAL_TIMEOUT_SECONDS")
     pdf_max_redirects: int = Field(default=5, validation_alias="PDF_MAX_REDIRECTS")
     pdf_allowed_hosts: str = Field(default="", validation_alias="PDF_ALLOWED_HOSTS")
     bps_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="BPS_API_KEY", repr=False)
@@ -118,10 +141,10 @@ class WorkerSettings(BaseSettings):
             raise ValueError("PDF_MAX_REDIRECTS must be zero or greater")
         return value
 
-    @field_validator("pdf_connect_timeout_seconds", "pdf_read_timeout_seconds")
+    @field_validator("pdf_connect_timeout_seconds", "pdf_read_timeout_seconds", "pdf_total_timeout_seconds")
     @classmethod
     def positive_pdf_timeout(cls, value: float) -> float:
-        if value <= 0:
+        if isinstance(value, bool) or not math.isfinite(value) or value <= 0:
             raise ValueError("PDF timeouts must be positive")
         return value
 

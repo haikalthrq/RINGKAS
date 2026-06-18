@@ -130,6 +130,7 @@ def test_bps_publications_path_rejects_unsafe_values(monkeypatch: pytest.MonkeyP
         ("PDF_MAX_SIZE_BYTES", "0"),
         ("PDF_CONNECT_TIMEOUT_SECONDS", "0"),
         ("PDF_READ_TIMEOUT_SECONDS", "-1"),
+        ("PDF_TOTAL_TIMEOUT_SECONDS", "nan"),
         ("PDF_MAX_REDIRECTS", "-1"),
     ],
 )
@@ -164,3 +165,14 @@ def test_pdf_allowed_hosts_normalize_exact_hosts_and_subdomain_boundary(monkeypa
     monkeypatch.setenv("PDF_ALLOWED_HOSTS", " BPS.Example.TEST., files.example.test ")
     settings = WorkerSettings()
     assert settings.pdf_allowed_hosts == "bps.example.test,files.example.test"
+
+
+def test_pdf_allowed_hosts_accepts_global_ipv4_and_rejects_non_global_literals(monkeypatch: pytest.MonkeyPatch) -> None:
+    valid_environment(monkeypatch)
+    monkeypatch.setenv("PDF_ALLOWED_HOSTS", "8.8.8.8")
+    assert WorkerSettings().pdf_allowed_hosts == "8.8.8.8"
+
+    for value in ("127.0.0.1", "100.64.0.1"):
+        monkeypatch.setenv("PDF_ALLOWED_HOSTS", value)
+        with pytest.raises(ValidationError):
+            WorkerSettings()
