@@ -6,6 +6,25 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from ringkas_worker.bps.urls import normalize_publications_path, validate_base_url
 
 
+def _validate_pdf_allowed_hosts(value: str) -> str:
+    from urllib.parse import urlsplit
+
+    entries = [entry.strip() for entry in value.split(",") if entry.strip()]
+    for entry in entries:
+        candidate = entry.lower().rstrip(".")
+        if not candidate or "*" in candidate:
+            raise ValueError("PDF_ALLOWED_HOSTS contains an invalid host")
+        try:
+            parsed = urlsplit("//" + candidate)
+            if parsed.hostname != candidate or parsed.username is not None or parsed.password is not None:
+                raise ValueError
+            if parsed.path or parsed.query or parsed.fragment or parsed.port is not None:
+                raise ValueError
+        except (ValueError, TypeError):
+            raise ValueError("PDF_ALLOWED_HOSTS contains an invalid host") from None
+    return ",".join(entry.lower().rstrip(".") for entry in entries)
+
+
 class WorkerSettings(BaseSettings):
     """Environment-backed settings required by the polling worker."""
 
@@ -21,6 +40,11 @@ class WorkerSettings(BaseSettings):
     qdrant_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="QDRANT_API_KEY", repr=False)
     nvidia_nim_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="NVIDIA_NIM_API_KEY", repr=False)
     pdf_storage_path: Path = Field(default=Path("/data/ringkas/pdfs"), validation_alias="PDF_STORAGE_PATH")
+    pdf_max_size_bytes: int = Field(default=50 * 1024 * 1024, validation_alias="PDF_MAX_SIZE_BYTES")
+    pdf_connect_timeout_seconds: float = Field(default=10.0, validation_alias="PDF_CONNECT_TIMEOUT_SECONDS")
+    pdf_read_timeout_seconds: float = Field(default=60.0, validation_alias="PDF_READ_TIMEOUT_SECONDS")
+    pdf_max_redirects: int = Field(default=5, validation_alias="PDF_MAX_REDIRECTS")
+    pdf_allowed_hosts: str = Field(default="", validation_alias="PDF_ALLOWED_HOSTS")
     bps_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="BPS_API_KEY", repr=False)
     bps_base_url: str = Field(default="", validation_alias="BPS_BASE_URL")
     bps_publications_path: str = Field(default="", validation_alias="BPS_PUBLICATIONS_PATH")
@@ -68,17 +92,37 @@ class WorkerSettings(BaseSettings):
             raise ValueError("PDF_STORAGE_PATH must be an absolute path")
         return value
 
+    @field_validator("pdf_allowed_hosts")
+    @classmethod
+    def pdf_hosts_are_safe_boundaries(cls, value: str) -> str:
+        return _validate_pdf_allowed_hosts(value)
+
     @field_validator(
         "ingestion_poll_interval_seconds",
         "database_connect_timeout_seconds",
         "database_statement_timeout_ms",
         "chunk_size_min",
         "chunk_size_max",
+        "pdf_max_size_bytes",
     )
     @classmethod
     def positive_integer(cls, value: int) -> int:
         if value <= 0:
             raise ValueError("poll interval, database timeouts, and chunk sizes must be positive")
+        return value
+
+    @field_validator("pdf_max_redirects")
+    @classmethod
+    def non_negative_redirect_limit(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("PDF_MAX_REDIRECTS must be zero or greater")
+        return value
+
+    @field_validator("pdf_connect_timeout_seconds", "pdf_read_timeout_seconds")
+    @classmethod
+    def positive_pdf_timeout(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("PDF timeouts must be positive")
         return value
 
     @field_validator("chunk_size_max")

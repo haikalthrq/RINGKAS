@@ -122,3 +122,45 @@ def test_bps_publications_path_rejects_unsafe_values(monkeypatch: pytest.MonkeyP
     monkeypatch.setenv("BPS_PUBLICATIONS_PATH", path)
     with pytest.raises(ValidationError):
         WorkerSettings()
+
+
+@pytest.mark.parametrize(
+    "name,value",
+    [
+        ("PDF_MAX_SIZE_BYTES", "0"),
+        ("PDF_CONNECT_TIMEOUT_SECONDS", "0"),
+        ("PDF_READ_TIMEOUT_SECONDS", "-1"),
+        ("PDF_MAX_REDIRECTS", "-1"),
+    ],
+)
+def test_pdf_limits_are_validated(monkeypatch: pytest.MonkeyPatch, name: str, value: str) -> None:
+    valid_environment(monkeypatch)
+    monkeypatch.setenv(name, value)
+    with pytest.raises(ValidationError):
+        WorkerSettings()
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "https://example.test/files",
+        "example.test/path",
+        "example.test?token=secret",
+        "example.test#fragment",
+        "*.example.test",
+        "user:password@example.test",
+        "https://example.test",
+    ],
+)
+def test_pdf_allowed_hosts_reject_url_like_or_wildcard_entries(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
+    valid_environment(monkeypatch)
+    monkeypatch.setenv("PDF_ALLOWED_HOSTS", value)
+    with pytest.raises(ValidationError):
+        WorkerSettings()
+
+
+def test_pdf_allowed_hosts_normalize_exact_hosts_and_subdomain_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
+    valid_environment(monkeypatch)
+    monkeypatch.setenv("PDF_ALLOWED_HOSTS", " BPS.Example.TEST., files.example.test ")
+    settings = WorkerSettings()
+    assert settings.pdf_allowed_hosts == "bps.example.test,files.example.test"
