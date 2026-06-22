@@ -6,6 +6,7 @@ namespace Ringkas.Api.Data;
 public sealed class RingkasDbContext(DbContextOptions<RingkasDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<Chunk> Chunks => Set<Chunk>();
     public DbSet<IngestionJob> IngestionJobs => Set<IngestionJob>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -50,6 +51,52 @@ public sealed class RingkasDbContext(DbContextOptions<RingkasDbContext> options)
             entity.HasIndex(document => document.Region).HasDatabaseName("IX_documents_region");
             entity.HasIndex(document => document.IngestionStatus).HasDatabaseName("IX_documents_ingestion_status");
             entity.HasIndex(document => document.Checksum).HasDatabaseName("IX_documents_checksum");
+        });
+
+        modelBuilder.Entity<Chunk>(entity =>
+        {
+            entity.ToTable("chunks", table =>
+            {
+                table.HasCheckConstraint("CK_chunks_chunk_index_non_negative", "chunk_index >= 0");
+                table.HasCheckConstraint("CK_chunks_page_start_positive", "page_start IS NULL OR page_start > 0");
+                table.HasCheckConstraint("CK_chunks_page_end_positive", "page_end IS NULL OR page_end > 0");
+                table.HasCheckConstraint(
+                    "CK_chunks_page_range_complete",
+                    "(page_start IS NULL AND page_end IS NULL) OR (page_start IS NOT NULL AND page_end IS NOT NULL)");
+                table.HasCheckConstraint("CK_chunks_page_range_order", "page_start IS NULL OR page_end >= page_start");
+                table.HasCheckConstraint("CK_chunks_extraction_method", "extraction_method = 'text_layer'");
+                table.HasCheckConstraint("CK_chunks_text_not_blank", "text ~ '[^[:space:]]'");
+                table.HasCheckConstraint("CK_chunks_source_url_not_blank", "source_url ~ '[^[:space:]]'");
+                table.HasCheckConstraint("CK_chunks_qdrant_point_id_not_blank", "qdrant_point_id ~ '[^[:space:]]'");
+            });
+
+            entity.HasKey(chunk => chunk.Id);
+            entity.Property(chunk => chunk.Id).HasColumnName("id").HasColumnType("uuid").ValueGeneratedNever();
+            entity.Property(chunk => chunk.DocumentId).HasColumnName("document_id").HasColumnType("uuid").IsRequired();
+            entity.Property(chunk => chunk.ChunkIndex).HasColumnName("chunk_index").IsRequired();
+            entity.Property(chunk => chunk.Text).HasColumnName("text").HasColumnType("text").IsRequired();
+            entity.Property(chunk => chunk.PageStart).HasColumnName("page_start");
+            entity.Property(chunk => chunk.PageEnd).HasColumnName("page_end");
+            entity.Property(chunk => chunk.SectionHeading).HasColumnName("section_heading").HasColumnType("text");
+            entity.Property(chunk => chunk.ExtractionMethod).HasColumnName("extraction_method").HasColumnType("text").IsRequired();
+            entity.Property(chunk => chunk.LowStructureConfidence).HasColumnName("low_structure_confidence").IsRequired();
+            entity.Property(chunk => chunk.SourceUrl).HasColumnName("source_url").HasColumnType("text").IsRequired();
+            entity.Property(chunk => chunk.QdrantPointId).HasColumnName("qdrant_point_id").HasColumnType("text").IsRequired();
+            entity.Property(chunk => chunk.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP").IsRequired();
+
+            entity.HasOne<Document>()
+                .WithMany()
+                .HasForeignKey(chunk => chunk.DocumentId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            entity.HasIndex(chunk => new { chunk.DocumentId, chunk.ChunkIndex })
+                .IsUnique()
+                .HasDatabaseName("IX_chunks_document_id_chunk_index");
+            entity.HasIndex(chunk => chunk.QdrantPointId)
+                .IsUnique()
+                .HasDatabaseName("IX_chunks_qdrant_point_id");
         });
 
         modelBuilder.Entity<IngestionJob>(entity =>
