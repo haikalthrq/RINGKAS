@@ -8,6 +8,7 @@ public sealed class RingkasDbContext(DbContextOptions<RingkasDbContext> options)
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<Chunk> Chunks => Set<Chunk>();
     public DbSet<IngestionJob> IngestionJobs => Set<IngestionJob>();
+    public DbSet<IngestionLog> IngestionLogs => Set<IngestionLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -131,6 +132,61 @@ public sealed class RingkasDbContext(DbContextOptions<RingkasDbContext> options)
 
             entity.HasIndex(job => job.Status).HasDatabaseName("IX_ingestion_jobs_status");
             entity.HasIndex(job => new { job.Status, job.CreatedAt }).HasDatabaseName("IX_ingestion_jobs_status_created_at");
+        });
+
+        modelBuilder.Entity<IngestionLog>(entity =>
+        {
+            entity.ToTable("ingestion_logs", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_ingestion_logs_level",
+                    "level IN ('info', 'warn', 'error')");
+                table.HasCheckConstraint(
+                    "CK_ingestion_logs_message_not_blank",
+                    "message ~ '[^[:space:]]'");
+                table.HasCheckConstraint(
+                    "CK_ingestion_logs_message_length",
+                    "char_length(message) <= 2000");
+                table.HasCheckConstraint(
+                    "CK_ingestion_logs_metadata_object",
+                    "metadata_json IS NULL OR jsonb_typeof(metadata_json) = 'object'");
+                table.HasCheckConstraint(
+                    "CK_ingestion_logs_metadata_keys",
+                    "metadata_json IS NULL OR jsonb_typeof(metadata_json) <> 'object' OR metadata_json - 'step_name' - 'retry_count' = '{}'::jsonb");
+                table.HasCheckConstraint(
+                    "CK_ingestion_logs_step_name",
+                    "metadata_json IS NULL OR NOT (metadata_json ? 'step_name') OR (jsonb_typeof(metadata_json->'step_name') = 'string' AND btrim(metadata_json->>'step_name') <> '' AND char_length(metadata_json->>'step_name') <= 128)");
+                table.HasCheckConstraint(
+                    "CK_ingestion_logs_retry_count",
+                    "metadata_json IS NULL OR NOT (metadata_json ? 'retry_count') OR (jsonb_typeof(metadata_json->'retry_count') = 'number' AND (metadata_json->>'retry_count') ~ '^[0-9]+$')");
+            });
+
+            entity.HasKey(log => log.Id);
+            entity.Property(log => log.Id).HasColumnName("id").HasColumnType("uuid").ValueGeneratedNever();
+            entity.Property(log => log.JobId).HasColumnName("job_id").HasColumnType("uuid").IsRequired();
+            entity.Property(log => log.DocumentId).HasColumnName("document_id").HasColumnType("uuid");
+            entity.Property(log => log.Level).HasColumnName("level").HasColumnType("text").IsRequired();
+            entity.Property(log => log.Message).HasColumnName("message").HasColumnType("text").IsRequired();
+            entity.Property(log => log.MetadataJson).HasColumnName("metadata_json").HasColumnType("jsonb");
+            entity.Property(log => log.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP").IsRequired();
+
+            entity.HasOne<IngestionJob>()
+                .WithMany()
+                .HasForeignKey(log => log.JobId)
+                .HasConstraintName("FK_ingestion_logs_ingestion_jobs_job_id")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            entity.HasOne<Document>()
+                .WithMany()
+                .HasForeignKey(log => log.DocumentId)
+                .HasConstraintName("FK_ingestion_logs_documents_document_id")
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(log => new { log.JobId, log.CreatedAt })
+                .HasDatabaseName("IX_ingestion_logs_job_id_created_at");
+            entity.HasIndex(log => log.DocumentId).HasDatabaseName("IX_ingestion_logs_document_id");
         });
     }
 }

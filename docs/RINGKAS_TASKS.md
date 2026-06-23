@@ -26,9 +26,7 @@ Dokumen ini boleh dipakai oleh:
 
 Kolom `target_commit_date` di dokumen ini adalah **tanggal milestone / rencana commit**.
 
-Dokumen ini **tidak boleh digunakan untuk membuat riwayat commit palsu** atau menyesatkan pihak lain tentang waktu pengerjaan aktual. Jika repository baru dibuat setelah tanggal-tanggal ini, gunakan tanggal ini sebagai **project timeline documentation**, bukan sebagai instruksi untuk memalsukan Git history.
-
-Jika memang ada pekerjaan nyata yang dilakukan pada tanggal terkait di lokal/private repo/notes, migration commit boleh mendokumentasikan pekerjaan tersebut secara jujur dengan pesan commit yang sesuai.
+Backdate diperbolehkan.
 
 ---
 
