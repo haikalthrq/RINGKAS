@@ -13,6 +13,7 @@ dependencies = [
   "PyMuPDF==1.26.3",
   "psycopg[binary]==3.3.4",
   "pydantic-settings==2.14.2",
+  "qdrant-client==1.14.3",
 ]
 
 [project.optional-dependencies]
@@ -20,6 +21,7 @@ test = ["pytest==9.1.1"]
 
 [project.scripts]
 ringkas-worker = "ringkas_worker.__main__:main"
+ringkas-qdrant-setup = "ringkas_worker.qdrant_setup:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
