@@ -173,7 +173,7 @@ Backdate diperbolehkan.
 | T-0406 | 2026-06-26 | P0 | Retrieval | Implement RRF fusion | T-0404, T-0405 | Dense + sparse candidates fused | Config supports dense top-20 + sparse top-20 | Fusion bugs | done |
 | T-0407 | 2026-06-27 | P0 | Retrieval | Implement top-K final selection | T-0406 | Final top-10 chunks selected for generation | Top-K configurable | Too much noise/token cost | done |
 | T-0408 | 2026-06-27 | P0 | Citation | Implement citation payload builder | T-0314, T-0407 | Citation includes title, year, region, page, URL, excerpt | Every source chunk can generate citation | Invalid citation | done |
-| T-0409 | 2026-06-28 | P0 | Retrieval | Implement retrieval sufficiency rule | T-0407, T-0408 | System detects insufficient evidence | Allows partial answer/refusal | Hallucination risk | todo |
+| T-0409 | 2026-06-28 | P0 | Retrieval | Implement retrieval sufficiency rule | T-0407, T-0408 | System detects insufficient evidence | Allows partial answer/refusal | Hallucination risk | done |
 | T-0410 | 2026-06-28 | P1 | Logging | Add retrieval debug log for developer | T-0407 | Logs query, filters, candidates, selected chunks | Sensitive content handled carefully | Privacy/log bloat | done |
 | T-0411 | 2026-06-29 | P1 | API | Add document search backend endpoint | T-0305 | `/api/documents/search` | Supports keyword/metadata basics | Search too broad | done |
 | T-0412 | 2026-06-30 | P1 | API | Add citation/source endpoint | T-0408 | `/api/sources/{id}` or equivalent | Returns source excerpt and metadata | Exposes wrong source | done |
