@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Callable
@@ -90,8 +91,36 @@ class IngestionJobRepository:
                 claimed = cursor.fetchone()
                 return _to_job(claimed) if claimed is not None else None
 
+    def mark_completed(self, job_id: UUID) -> bool:
+        return self._mark_terminal(job_id, "completed", None)
+
+    def mark_failed(self, job_id: UUID, safe_error_summary: str) -> bool:
+        if not isinstance(safe_error_summary, str) or not safe_error_summary.strip():
+            raise ValueError("safe_error_summary must be nonblank")
+        summary = _safe_summary(safe_error_summary)
+        return self._mark_terminal(job_id, "failed", summary)
+
+    def _mark_terminal(self, job_id: UUID, status: str, summary: str | None) -> bool:
+        completed_at = datetime.now(timezone.utc)
+        with self._connection_factory() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """UPDATE ingestion_jobs
+                       SET status = %s, completed_at = %s, error_summary = %s
+                       WHERE id = %s AND status = %s""",
+                    (status, completed_at, summary, job_id, "running"),
+                )
+                return cursor.rowcount == 1
+
 
 def _to_job(row: tuple | None) -> IngestionJob | None:
     if row is None:
         return None
     return IngestionJob(*row)
+
+
+def _safe_summary(value: str) -> str:
+    normalized = " ".join(value.split())[:2000]
+    if re.search(r"(?i)(traceback|authorization|bearer|api[_-]?key|database[_-]?url|password|secret|postgres(?:ql)?://)", normalized):
+        return "systemic ingestion failure"
+    return normalized
