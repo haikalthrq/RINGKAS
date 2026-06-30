@@ -42,7 +42,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthorizationPolicies.RegisteredUser, policy =>
+        policy.RequireRole(AppRoles.User, AppRoles.Admin, AppRoles.SystemMaintainer));
+});
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -69,6 +73,8 @@ using (var scope = app.Services.CreateScope())
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 app.MapAuthEndpoints();
+app.MapDocumentEndpoints();
+app.MapSourceEndpoints();
 
 app.Run();
 
