@@ -183,7 +183,8 @@ Python RAG Worker adalah service internal, bukan public API.
 
 Tanggung jawab:
 
-- Polling ingestion job dari PostgreSQL.
+- Polling dan melakukan atomic claim atas ingestion job queued dari PostgreSQL.
+- Mengorkestrasi processor ingestion end-to-end untuk setiap job yang berhasil diklaim.
 - Mengambil metadata publikasi dari API BPS.
 - Filter publikasi DKI Jakarta 5 tahun terakhir.
 - Download PDF ke local storage.
@@ -710,17 +711,18 @@ Admin job creation request:
 Admin UI
   -> ASP.NET Admin API
     -> create ingestion_jobs row: queued
-      -> Python worker polls job
-        -> job status: running
-        -> API BPS metadata retrieval
-        -> filter corpus scope
-        -> download PDFs
-        -> parse PDFs
-        -> clean/chunk
-        -> embed
-        -> index Qdrant
-        -> update PostgreSQL document/chunk metadata
-        -> job status: completed or failed
+      -> Python worker polls and atomically claims job
+        -> ingestion processor handles claimed job
+          -> job status: running
+          -> API BPS metadata retrieval
+          -> filter corpus scope
+          -> download PDFs
+          -> parse PDFs
+          -> clean/chunk
+          -> embed
+          -> index Qdrant
+          -> update PostgreSQL document/chunk metadata
+          -> job status: completed or failed
 ```
 
 ### 13.2 Job Status

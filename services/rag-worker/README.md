@@ -5,8 +5,8 @@ HTTP service and does not expose a port.
 
 The default process performs non-mutating queue observation at the configured poll
 interval. It never claims jobs when no ingestion processor is configured. Atomic
-claim is available to an injected future processor, but processing activation is
-reserved for the ingestion processor task.
+claim is available to an injected processor; activation of the end-to-end
+processor is tracked by T-0413.
 
 Shutdown stops new observations/claims promptly while idle. An active database
 query or future handler is not forcibly interrupted by this scaffold.

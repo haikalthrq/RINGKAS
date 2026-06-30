@@ -779,7 +779,7 @@ Urutan implementasi awal:
 2. API BPS ingestion.
 3. Download dan parsing PDF.
 4. Cleaning dan chunking.
-5. Embedding dan vector indexing.
+5. Embedding, vector indexing, dan wiring processor ingestion end-to-end.
 6. Retrieval hybrid.
 7. Citation mechanism.
 8. Generation pipeline.

@@ -81,7 +81,7 @@ Backdate diperbolehkan.
 | Phase 1 | 2026-06-05 to 2026-06-10 | ASP.NET API foundation, PostgreSQL, Identity |
 | Phase 2 | 2026-06-11 to 2026-06-15 | Next.js + TypeScript frontend foundation |
 | Phase 3 | 2026-06-16 to 2026-06-23 | Python RAG Worker, ingestion, parsing, chunking |
-| Phase 4 | 2026-06-24 to 2026-06-30 | Embedding, Qdrant indexing, retrieval, citation |
+| Phase 4 | 2026-06-24 to 2026-06-30 | Embedding, Qdrant indexing, retrieval, citation, ingestion orchestration |
 | Phase 5 | 2026-07-01 to 2026-07-04 | Generation, chat, document search, admin ingestion |
 | Phase 6 | 2026-07-05 to 2026-07-07 | Evaluation harness, logging, rate limit, hardening |
 | Phase 7 | 2026-07-08 | MVP integration review and documentation lock |
@@ -161,7 +161,7 @@ Backdate diperbolehkan.
 
 ---
 
-## Phase 4 — Embedding, Qdrant Indexing, Retrieval, and Citation
+## Phase 4 — Embedding, Qdrant Indexing, Retrieval, Citation, and Ingestion Orchestration
 
 | Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
 |---|---:|---|---|---|---|---|---|---|---|
@@ -177,6 +177,7 @@ Backdate diperbolehkan.
 | T-0410 | 2026-06-28 | P1 | Logging | Add retrieval debug log for developer | T-0407 | Logs query, filters, candidates, selected chunks | Sensitive content handled carefully | Privacy/log bloat | todo |
 | T-0411 | 2026-06-29 | P1 | API | Add document search backend endpoint | T-0305 | `/api/documents/search` | Supports keyword/metadata basics | Search too broad | todo |
 | T-0412 | 2026-06-30 | P1 | API | Add citation/source endpoint | T-0408 | `/api/sources/{id}` or equivalent | Returns source excerpt and metadata | Exposes wrong source | todo |
+| T-0413 | 2026-06-30 | P0 | Worker | Wire end-to-end ingestion processor | T-0304, T-0308, T-0310, T-0312, T-0315, T-0403 | Claimed jobs run metadata retrieval, download, deduplication, parsing, cleaning, chunking, embedding, indexing, status, and logging flow | A queued job reaches completed or failed deterministically; indexed chunks retain source mapping; unsupported and per-document failures are recorded without stopping the batch | Pipeline components remain disconnected or jobs become stuck | todo |
 
 ---
 
@@ -190,7 +191,7 @@ Backdate diperbolehkan.
 | T-0504 | 2026-07-02 | P0 | API | Implement Chat/Q&A endpoint | T-0503, T-0407 | `/api/chat` or `/api/qa` | Returns answer, citations, limitations | No citation in answer | todo |
 | T-0505 | 2026-07-03 | P0 | Database | Add chat session/history schema | T-0104, T-0504 | Tables for chat sessions/messages | User can retrieve own history | Privacy leak | todo |
 | T-0506 | 2026-07-03 | P0 | API | Implement chat history endpoints | T-0505 | `/api/chats`, `/api/chats/{id}` | User sees own chat only | Cross-user exposure | todo |
-| T-0507 | 2026-07-03 | P0 | Admin | Implement admin ingestion trigger endpoint | T-0303, T-0304 | `/api/admin/ingestion/jobs` | Admin can create job | Unprotected endpoint | todo |
+| T-0507 | 2026-07-03 | P0 | Admin | Implement admin ingestion trigger endpoint | T-0303, T-0413 | `/api/admin/ingestion/jobs` | Admin can create a job that the worker can process | Unprotected endpoint or unprocessable job | todo |
 | T-0508 | 2026-07-04 | P0 | Admin | Implement admin ingestion status endpoint | T-0303, T-0315 | `/api/admin/ingestion/jobs/{id}` | Admin sees status/log summary | Log leakage | todo |
 | T-0509 | 2026-07-04 | P1 | Frontend | Connect chat UI to backend | T-0207, T-0504 | User can ask question from UI | Answer displays citations | UX hides limitations | todo |
 | T-0510 | 2026-07-04 | P1 | Frontend | Connect document search UI to backend | T-0208, T-0411 | Search results displayed | Metadata visible | Search not useful | todo |
@@ -208,7 +209,7 @@ Backdate diperbolehkan.
 | T-0604 | 2026-07-06 | P0 | Quota | Enforce guest 1-prompt quota | T-0111, T-0504 | Guest limited to one prompt | Guest cannot spam chat | Abuse risk | todo |
 | T-0605 | 2026-07-06 | P1 | Quota | Add registered user daily quota placeholder | T-0111 | Configurable daily quota | Quota value env/config-based | Cost overrun | todo |
 | T-0606 | 2026-07-06 | P1 | Security | Add admin endpoint abuse protection | T-0507, T-0508 | Admin endpoints still rate-limited/protected | Repeated ingestion abuse prevented | Resource exhaustion | todo |
-| T-0607 | 2026-07-07 | P0 | Integration | End-to-end ingestion smoke test | T-0307, T-0313, T-0403 | One sample document ingested to Qdrant | Document chunks searchable | Pipeline broken late | todo |
+| T-0607 | 2026-07-07 | P0 | Integration | End-to-end ingestion smoke test | T-0413, T-0507 | One sample document ingested to Qdrant through the admin-triggered job flow | Document chunks searchable | Pipeline broken late | todo |
 | T-0608 | 2026-07-07 | P0 | Integration | End-to-end chat smoke test | T-0504, T-0607 | User asks question and receives cited answer | No citation means failure | Hallucination | todo |
 | T-0609 | 2026-07-07 | P1 | Docs | Update implementation docs | T-0607, T-0608 | README/docs include setup and known limitations | New dev/agent can run project | Docs stale | todo |
 
