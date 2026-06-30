@@ -34,6 +34,16 @@ class Repository:
         return self.claimed
 
 
+class TerminalRepository(Repository):
+    def __init__(self, claimed=None):
+        super().__init__(claimed=claimed)
+        self.failed = 0
+
+    def mark_failed(self, _job_id, _summary):
+        self.failed += 1
+        return True
+
+
 def test_default_worker_observes_without_claiming() -> None:
     repository = Repository(queued=True)
     assert PollingWorker(settings(), repository).run_once() is False
@@ -51,6 +61,32 @@ def test_handler_worker_claims_and_passes_typed_job() -> None:
     assert received == [claimed]
     assert repository.claims == 1
     assert repository.observations == 0
+
+
+def test_unexpected_handler_failure_is_terminalized_once() -> None:
+    repository = TerminalRepository(job())
+    worker = PollingWorker(settings(), repository, lambda _job: (_ for _ in ()).throw(RuntimeError("provider secret")))
+
+    assert worker.run_once() is True
+    assert repository.failed == 1
+
+
+def test_terminalized_systemic_failure_does_not_stop_polling() -> None:
+    repository = TerminalRepository(job())
+    calls = 0
+
+    def handler(claimed):
+        nonlocal calls
+        calls += 1
+        repository.mark_failed(claimed.id, "systemic ingestion failure")
+        from ringkas_worker.processor import ProcessorSystemicError
+        raise ProcessorSystemicError("systemic ingestion failure")
+
+    worker = PollingWorker(settings(), repository, handler)
+    assert worker.run_once() is True
+    assert worker.run_once() is True
+    assert calls == 2
+    assert repository.failed == 2
 
 
 def test_stop_event_prevents_new_query_or_claim() -> None:

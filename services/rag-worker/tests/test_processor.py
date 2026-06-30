@@ -123,10 +123,12 @@ def test_terminal_duplicate_is_skipped():
 
 def test_processor_is_usable_as_polling_worker_handler():
     claimed = job()
-    processor_instance = processor([], jobs=Jobs())
+    jobs = Jobs()
+    processor_instance = processor([], jobs=jobs)
     repository = SimpleNamespace(claim_next_job=lambda: claimed)
     polling = PollingWorker(SimpleNamespace(ingestion_poll_interval_seconds=1), repository, processor_instance)
     assert polling.run_once() is True
+    assert jobs.completed == 1
 
 
 def test_systemic_bps_failure_terminalizes_without_raw_exception_chain():

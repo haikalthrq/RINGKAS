@@ -243,10 +243,17 @@ class QdrantChunkIndexer:
 
     def close(self) -> None:
         owned_clients, self._owned_clients = self._owned_clients, ()
+        first_error: Exception | None = None
         for client in owned_clients:
             close = getattr(client, "close", None)
             if callable(close):
-                close()
+                try:
+                    close()
+                except Exception as error:
+                    if first_error is None:
+                        first_error = error
+        if first_error is not None:
+            raise first_error
 
     def __enter__(self) -> QdrantChunkIndexer:
         return self

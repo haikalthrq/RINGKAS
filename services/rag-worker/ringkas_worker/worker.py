@@ -6,6 +6,7 @@ import psycopg
 
 from ringkas_worker.config import WorkerSettings
 from ringkas_worker.db.jobs import IngestionJob, IngestionJobRepository
+from ringkas_worker.processor import ProcessorSystemicError
 
 logger = logging.getLogger(__name__)
 JobHandler = Callable[[IngestionJob], None]
@@ -35,7 +36,17 @@ class PollingWorker:
         job = self._repository.claim_next_job()
         if job is None:
             return False
-        self._handler(job)
+        try:
+            self._handler(job)
+        except ProcessorSystemicError:
+            # IngestionProcessor terminalizes systemic failures before raising.
+            logger.error("Ingestion job failed after terminalization")
+        except Exception:
+            logger.error("Ingestion job handler failed; attempting safe failure transition")
+            try:
+                self._repository.mark_failed(job.id, "worker handler failed")
+            except Exception:
+                logger.error("Ingestion job failure transition failed")
         return True
 
     def run(self, stop_event: threading.Event) -> None:
