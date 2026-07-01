@@ -7,6 +7,7 @@ using Ringkas.Api.Auth;
 using Ringkas.Api.Data;
 using Ringkas.Api.Endpoints;
 using Ringkas.Api.Middleware;
+using Ringkas.Api.Generation;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 
@@ -57,6 +58,7 @@ builder.Services.AddRateLimiter(options =>
 });
 builder.Services.AddScoped<IdentityRoleSeeder>();
 builder.Services.AddSingleton(GoogleOAuthSettings.FromConfiguration(builder.Configuration));
+builder.Services.AddGenerationClients();
 
 var app = builder.Build();
 
