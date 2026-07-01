@@ -98,6 +98,14 @@ public interface IGenerationClient
     Task<GenerationResult> GenerateAsync(GenerationRequest request, CancellationToken cancellationToken = default);
 }
 
+public interface IModelOverrideGenerationClient
+{
+    Task<GenerationResult> GenerateWithModelAsync(
+        GenerationRequest request,
+        string model,
+        CancellationToken cancellationToken = default);
+}
+
 public interface INvidiaNimGenerationClient : IGenerationClient;
 
 public interface ICloudflareWorkersAiGenerationClient : IGenerationClient;

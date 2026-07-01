@@ -5,13 +5,24 @@ using System.Text.Json;
 
 namespace Ringkas.Api.Generation;
 
-public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, IConfiguration configuration) : ICloudflareWorkersAiGenerationClient
+public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, IConfiguration configuration) : ICloudflareWorkersAiGenerationClient, IModelOverrideGenerationClient
 {
-    public async Task<GenerationResult> GenerateAsync(GenerationRequest request, CancellationToken cancellationToken = default)
+    public Task<GenerationResult> GenerateAsync(GenerationRequest request, CancellationToken cancellationToken = default) =>
+        GenerateWithModelAsync(request, ReadSettings().Model, cancellationToken);
+
+    public async Task<GenerationResult> GenerateWithModelAsync(
+        GenerationRequest request,
+        string model,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
         var settings = ReadSettings();
+        if (!IsSafeModel(model))
+        {
+            throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");
+        }
+
         using var timeoutSource = new CancellationTokenSource(TimeSpan.FromSeconds(settings.TimeoutSeconds));
         using var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
 
@@ -19,7 +30,7 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
         message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.ApiToken);
         message.Content = new StringContent(JsonSerializer.Serialize(new
         {
-            model = settings.Model,
+            model,
             messages = request.Messages.Select(item => new { role = NvidiaNimGenerationClient.ToWireRole(item.Role), content = item.Content }),
             stream = false
         }), Encoding.UTF8, "application/json");
@@ -51,14 +62,14 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
         {
             ThrowForStatus(response);
             var responseContent = await ReadContentAsync(response, linkedSource.Token, cancellationToken);
-            return GenerationResponseParser.Parse(responseContent, GenerationProvider.CloudflareWorkersAi, settings.Model);
+            return GenerationResponseParser.Parse(responseContent, GenerationProvider.CloudflareWorkersAi, model);
         }
     }
 
     private CloudflareSettings ReadSettings()
     {
         var accountId = configuration["CLOUDFLARE_ACCOUNT_ID"];
-        var apiToken = configuration["CLOUDFLARE_API_TOKEN"];
+        var apiToken = configuration["CLOUDFLARE_API_TOKEN"] ?? configuration["CLOUDFLARE_WORKERS_AI_TOKEN"];
         var model = configuration["CLOUDFLARE_WORKERS_AI_GENERATION_MODEL"];
         var timeout = configuration["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"];
         if (!IsSafeAccountId(accountId) || !IsSafeCredential(apiToken) || string.IsNullOrWhiteSpace(model) || !TryReadTimeout(timeout, out var timeoutSeconds))
@@ -81,6 +92,9 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
         !string.IsNullOrWhiteSpace(value) && value.Length <= 128 && value.All(character => char.IsAsciiLetterOrDigit(character) || character is '-' or '_');
 
     private static bool IsSafeCredential(string? value) =>
+        !string.IsNullOrWhiteSpace(value) && !value.Any(char.IsWhiteSpace);
+
+    private static bool IsSafeModel(string? value) =>
         !string.IsNullOrWhiteSpace(value) && !value.Any(char.IsWhiteSpace);
 
     private static bool TryReadTimeout(string? value, out double timeoutSeconds) =>

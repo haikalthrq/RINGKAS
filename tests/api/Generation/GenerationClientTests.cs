@@ -415,6 +415,43 @@ public sealed class GenerationClientTests
     }
 
     [Fact]
+    public async Task FailoverUsesTheLockedFiveModelOrder()
+    {
+        var nvidiaModels = new List<string>();
+        var cloudflareModels = new List<string>();
+        var nvidiaResponses = new Queue<HttpResponseMessage>([
+            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-primary-failure"),
+            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-secondary-failure"),
+            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-lightweight-failure")
+        ]);
+        var cloudflareResponses = new Queue<HttpResponseMessage>([
+            ResponseMessage(HttpStatusCode.InternalServerError, "cloudflare-fallback-failure"),
+            ResponseMessage(HttpStatusCode.OK, """{"choices":[{"message":{"content":"experimental answer"}}]}""")
+        ]);
+        var configuration = Configuration(
+            secondaryModel: "mistral-model",
+            lightweightModel: "mini-model",
+            experimentalModel: "llama4-model");
+        var primary = new NvidiaNimGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
+        {
+            nvidiaModels.Add(JsonDocument.Parse(request.Content!.ReadAsStringAsync().GetAwaiter().GetResult()).RootElement.GetProperty("model").GetString()!);
+            return Task.FromResult(nvidiaResponses.Dequeue());
+        })), configuration);
+        var fallback = new CloudflareWorkersAiGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
+        {
+            cloudflareModels.Add(JsonDocument.Parse(request.Content!.ReadAsStringAsync().GetAwaiter().GetResult()).RootElement.GetProperty("model").GetString()!);
+            return Task.FromResult(cloudflareResponses.Dequeue());
+        })), configuration);
+
+        var result = await new FailoverGenerationClient(primary, fallback, new ListLogger(), configuration).GenerateAsync(Request());
+
+        Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
+        Assert.Equal("llama4-model", result.Model);
+        Assert.Equal(["nvidia-model", "mistral-model", "mini-model"], nvidiaModels);
+        Assert.Equal(["cloudflare-model", "llama4-model"], cloudflareModels);
+    }
+
+    [Fact]
     public void DependencyInjectionResolvesWithoutFallbackConfigurationOrNetwork()
     {
         var services = new ServiceCollection();
@@ -436,7 +473,10 @@ public sealed class GenerationClientTests
         string? allowedHosts = null,
         string? cloudflareToken = null,
         string? cloudflareModel = null,
-        string? cloudflareTimeout = null) =>
+        string? cloudflareTimeout = null,
+        string? secondaryModel = null,
+        string? lightweightModel = null,
+        string? experimentalModel = null) =>
         new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["NVIDIA_NIM_API_KEY"] = "nvidia-secret",
@@ -447,11 +487,17 @@ public sealed class GenerationClientTests
             ["CLOUDFLARE_ACCOUNT_ID"] = includeCloudflare ? accountId ?? "account_123" : null,
             ["CLOUDFLARE_API_TOKEN"] = includeCloudflare ? cloudflareToken ?? "cloudflare-secret" : null,
             ["CLOUDFLARE_WORKERS_AI_GENERATION_MODEL"] = includeCloudflare ? cloudflareModel ?? "cloudflare-model" : null,
-            ["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"] = includeCloudflare ? cloudflareTimeout ?? "10" : null
+            ["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"] = includeCloudflare ? cloudflareTimeout ?? "10" : null,
+            ["NVIDIA_NIM_GENERATION_SECONDARY_MODEL"] = secondaryModel,
+            ["NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL"] = lightweightModel,
+            ["CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL"] = experimentalModel
         }).Build();
 
     private static Task<HttpResponseMessage> Response(HttpStatusCode statusCode, string body) =>
-        Task.FromResult(new HttpResponseMessage(statusCode) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
+        Task.FromResult(ResponseMessage(statusCode, body));
+
+    private static HttpResponseMessage ResponseMessage(HttpStatusCode statusCode, string body) =>
+        new(statusCode) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
 
     private sealed class DelegateHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
     {

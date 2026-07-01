@@ -5,13 +5,24 @@ using System.Text.Json;
 
 namespace Ringkas.Api.Generation;
 
-public sealed class NvidiaNimGenerationClient(HttpClient httpClient, IConfiguration configuration) : INvidiaNimGenerationClient
+public sealed class NvidiaNimGenerationClient(HttpClient httpClient, IConfiguration configuration) : INvidiaNimGenerationClient, IModelOverrideGenerationClient
 {
-    public async Task<GenerationResult> GenerateAsync(GenerationRequest request, CancellationToken cancellationToken = default)
+    public Task<GenerationResult> GenerateAsync(GenerationRequest request, CancellationToken cancellationToken = default) =>
+        GenerateWithModelAsync(request, ReadSettings().Model, cancellationToken);
+
+    public async Task<GenerationResult> GenerateWithModelAsync(
+        GenerationRequest request,
+        string model,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
         var settings = ReadSettings();
+        if (!IsSafeModel(model))
+        {
+            throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "NVIDIA NIM generation configuration is invalid.");
+        }
+
         using var timeoutSource = new CancellationTokenSource(TimeSpan.FromSeconds(settings.TimeoutSeconds));
         using var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
 
@@ -19,7 +30,7 @@ public sealed class NvidiaNimGenerationClient(HttpClient httpClient, IConfigurat
         message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.ApiKey);
         message.Content = new StringContent(JsonSerializer.Serialize(new
         {
-            model = settings.Model,
+            model,
             messages = request.Messages.Select(item => new { role = ToWireRole(item.Role), content = item.Content }),
             stream = false
         }), Encoding.UTF8, "application/json");
@@ -51,7 +62,7 @@ public sealed class NvidiaNimGenerationClient(HttpClient httpClient, IConfigurat
         {
             ThrowForStatus(response);
             var responseContent = await ReadContentAsync(response, linkedSource.Token, cancellationToken);
-            return GenerationResponseParser.Parse(responseContent, GenerationProvider.NvidiaNim, settings.Model);
+            return GenerationResponseParser.Parse(responseContent, GenerationProvider.NvidiaNim, model);
         }
     }
 
@@ -132,6 +143,9 @@ public sealed class NvidiaNimGenerationClient(HttpClient httpClient, IConfigurat
     }
 
     private static bool IsSafeCredential(string? value) =>
+        !string.IsNullOrWhiteSpace(value) && !value.Any(char.IsWhiteSpace);
+
+    private static bool IsSafeModel(string? value) =>
         !string.IsNullOrWhiteSpace(value) && !value.Any(char.IsWhiteSpace);
 
     private static bool TryReadAllowedAuthorities(string? value, out string[] authorities)
