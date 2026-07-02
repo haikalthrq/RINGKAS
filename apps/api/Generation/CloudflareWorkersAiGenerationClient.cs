@@ -59,8 +59,8 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
     {
         var accountId = configuration["CLOUDFLARE_ACCOUNT_ID"];
         var apiToken = configuration["CLOUDFLARE_API_TOKEN"];
-        var model = configuration["CLOUDFLARE_WORKERS_AI_MODEL"];
-        var timeout = configuration["CLOUDFLARE_WORKERS_AI_TIMEOUT_SECONDS"];
+        var model = configuration["CLOUDFLARE_WORKERS_AI_GENERATION_MODEL"];
+        var timeout = configuration["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"];
         if (!IsSafeAccountId(accountId) || !IsSafeCredential(apiToken) || string.IsNullOrWhiteSpace(model) || !TryReadTimeout(timeout, out var timeoutSeconds))
         {
             throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");

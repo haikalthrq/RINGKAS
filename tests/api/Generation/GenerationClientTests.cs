@@ -446,8 +446,8 @@ public sealed class GenerationClientTests
             ["NVIDIA_NIM_GENERATION_ALLOWED_HOSTS"] = allowedHosts ?? "nim.example",
             ["CLOUDFLARE_ACCOUNT_ID"] = includeCloudflare ? accountId ?? "account_123" : null,
             ["CLOUDFLARE_API_TOKEN"] = includeCloudflare ? cloudflareToken ?? "cloudflare-secret" : null,
-            ["CLOUDFLARE_WORKERS_AI_MODEL"] = includeCloudflare ? cloudflareModel ?? "cloudflare-model" : null,
-            ["CLOUDFLARE_WORKERS_AI_TIMEOUT_SECONDS"] = includeCloudflare ? cloudflareTimeout ?? "10" : null
+            ["CLOUDFLARE_WORKERS_AI_GENERATION_MODEL"] = includeCloudflare ? cloudflareModel ?? "cloudflare-model" : null,
+            ["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"] = includeCloudflare ? cloudflareTimeout ?? "10" : null
         }).Build();
 
     private static Task<HttpResponseMessage> Response(HttpStatusCode statusCode, string body) =>

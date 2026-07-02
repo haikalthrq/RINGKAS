@@ -8,6 +8,7 @@ using Ringkas.Api.Data;
 using Ringkas.Api.Endpoints;
 using Ringkas.Api.Middleware;
 using Ringkas.Api.Generation;
+using Ringkas.Api.Retrieval;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 
@@ -59,6 +60,8 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<IdentityRoleSeeder>();
 builder.Services.AddSingleton(GoogleOAuthSettings.FromConfiguration(builder.Configuration));
 builder.Services.AddGenerationClients();
+builder.Services.AddInternalRetrieval();
+builder.Services.AddTransient<ChatService>();
 
 var app = builder.Build();
 
@@ -77,6 +80,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 app.MapAuthEndpoints();
 app.MapDocumentEndpoints();
 app.MapSourceEndpoints();
+app.MapChatEndpoints();
 
 app.Run();
 

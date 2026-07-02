@@ -200,6 +200,8 @@ Tanggung jawab:
 
 Python worker tidak boleh terekspos ke public internet.
 
+Untuk query Chat/Q&A, ASP.NET Core memanggil adapter HTTP `rag-query` yang menjalankan retrieval Python pada private Docker network. Adapter ini tidak memiliki public host port dan tidak boleh diekspos sebagai public API; ASP.NET Core tetap menjadi satu-satunya public-facing backend.
+
 ---
 
 ## 6. Repository Structure
