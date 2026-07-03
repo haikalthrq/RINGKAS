@@ -80,6 +80,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 app.MapAuthEndpoints();
 app.MapDocumentEndpoints();
 app.MapSourceEndpoints();
+app.MapAdminIngestionEndpoints();
 app.MapChatEndpoints();
 
 app.Run();
