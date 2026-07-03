@@ -9,6 +9,8 @@ public sealed class RingkasDbContext(DbContextOptions<RingkasDbContext> options)
     public DbSet<Chunk> Chunks => Set<Chunk>();
     public DbSet<IngestionJob> IngestionJobs => Set<IngestionJob>();
     public DbSet<IngestionLog> IngestionLogs => Set<IngestionLog>();
+    public DbSet<ChatSession> ChatSessions => Set<ChatSession>();
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -187,6 +189,70 @@ public sealed class RingkasDbContext(DbContextOptions<RingkasDbContext> options)
             entity.HasIndex(log => new { log.JobId, log.CreatedAt })
                 .HasDatabaseName("IX_ingestion_logs_job_id_created_at");
             entity.HasIndex(log => log.DocumentId).HasDatabaseName("IX_ingestion_logs_document_id");
+        });
+
+        modelBuilder.Entity<ChatSession>(entity =>
+        {
+            entity.ToTable("chat_sessions", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_chat_sessions_title",
+                    "title IS NULL OR (title ~ '[^[:space:]]' AND char_length(title) <= 500)");
+            });
+
+            entity.HasKey(session => session.Id);
+            entity.Property(session => session.Id).HasColumnName("id").HasColumnType("uuid").ValueGeneratedNever();
+            entity.Property(session => session.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(session => session.Title).HasColumnName("title").HasColumnType("text");
+            entity.Property(session => session.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP").IsRequired();
+            entity.Property(session => session.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP").IsRequired();
+
+            entity.HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(session => session.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            entity.HasIndex(session => new { session.UserId, session.UpdatedAt, session.Id })
+                .HasDatabaseName("IX_chat_sessions_user_id_updated_at_id");
+        });
+
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.ToTable("chat_messages", table =>
+            {
+                table.HasCheckConstraint("CK_chat_messages_role", "role IN ('user', 'assistant', 'system')");
+                table.HasCheckConstraint(
+                    "CK_chat_messages_content",
+                    "content ~ '[^[:space:]]' AND char_length(content) <= 20000");
+                table.HasCheckConstraint(
+                    "CK_chat_messages_citations_array",
+                    "citations_json IS NULL OR jsonb_typeof(citations_json) = 'array'");
+                table.HasCheckConstraint(
+                    "CK_chat_messages_provider",
+                    "provider IS NULL OR provider IN ('nvidia_nim', 'cloudflare_workers_ai')");
+            });
+
+            entity.HasKey(message => message.Id);
+            entity.Property(message => message.Id).HasColumnName("id").HasColumnType("uuid").ValueGeneratedNever();
+            entity.Property(message => message.SessionId).HasColumnName("session_id").HasColumnType("uuid").IsRequired();
+            entity.Property(message => message.Role).HasColumnName("role").HasColumnType("text").IsRequired();
+            entity.Property(message => message.Content).HasColumnName("content").HasColumnType("text").IsRequired();
+            entity.Property(message => message.CitationsJson).HasColumnName("citations_json").HasColumnType("jsonb");
+            entity.Property(message => message.Provider).HasColumnName("provider").HasColumnType("text");
+            entity.Property(message => message.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP").IsRequired();
+
+            entity.HasOne<ChatSession>()
+                .WithMany()
+                .HasForeignKey(message => message.SessionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            entity.HasIndex(message => new { message.SessionId, message.CreatedAt, message.Id })
+                .HasDatabaseName("IX_chat_messages_session_id_created_at_id");
         });
     }
 }

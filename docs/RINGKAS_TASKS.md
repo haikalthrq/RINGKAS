@@ -202,7 +202,7 @@ mean that the migration is complete.
 | T-0502 | 2026-07-01 | P0 | Generation | Add Cloudflare Workers AI fallback client | T-0501 | Fallback client configured | Used only if primary fails | Fallback behavior hidden | done |
 | T-0503 | 2026-07-02 | P0 | Generation | Implement grounded prompt template | T-0501, T-0408, T-0409 | Prompt enforces answer only from chunks | Refuses/limits unsupported claims | Prompt too permissive | done |
 | T-0504 | 2026-07-02 | P0 | API | Implement Chat/Q&A endpoint | T-0503, T-0407 | `/api/chat` or `/api/qa` | Returns answer, citations, limitations | No citation in answer | done |
-| T-0505 | 2026-07-03 | P0 | Database | Add chat session/history schema | T-0104, T-0504 | Tables for chat sessions/messages | User can retrieve own history | Privacy leak | todo |
+| T-0505 | 2026-07-03 | P0 | Database | Add chat session/history schema | T-0104, T-0504 | Tables for chat sessions/messages | User can retrieve own history | Privacy leak | done |
 | T-0506 | 2026-07-03 | P0 | API | Implement chat history endpoints | T-0505 | `/api/chats`, `/api/chats/{id}` | User sees own chat only | Cross-user exposure | todo |
 | T-0507 | 2026-07-03 | P0 | Admin | Implement admin ingestion trigger endpoint | T-0303, T-0413 | `/api/admin/ingestion/jobs` | Admin can create a job that the worker can process | Unprotected endpoint or unprocessable job | todo |
 | T-0508 | 2026-07-04 | P0 | Admin | Implement admin ingestion status endpoint | T-0303, T-0315 | `/api/admin/ingestion/jobs/{id}` | Admin sees status/log summary | Log leakage | todo |
