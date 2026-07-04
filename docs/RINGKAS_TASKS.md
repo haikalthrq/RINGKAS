@@ -205,7 +205,7 @@ mean that the migration is complete.
 | T-0505 | 2026-07-03 | P0 | Database | Add chat session/history schema | T-0104, T-0504 | Tables for chat sessions/messages | User can retrieve own history | Privacy leak | done |
 | T-0506 | 2026-07-03 | P0 | API | Implement chat history endpoints | T-0505 | `/api/chats`, `/api/chats/{id}` | User sees own chat only | Cross-user exposure | done |
 | T-0507 | 2026-07-03 | P0 | Admin | Implement admin ingestion trigger endpoint | T-0303, T-0413 | `/api/admin/ingestion/jobs` | Admin can create a job that the worker can process | Unprotected endpoint or unprocessable job | done |
-| T-0508 | 2026-07-04 | P0 | Admin | Implement admin ingestion status endpoint | T-0303, T-0315 | `/api/admin/ingestion/jobs/{id}` | Admin sees status/log summary | Log leakage | todo |
+| T-0508 | 2026-07-04 | P0 | Admin | Implement admin ingestion status endpoint | T-0303, T-0315 | `/api/admin/ingestion/jobs/{id}` | Admin sees status/log summary | Log leakage | done |
 | T-0509 | 2026-07-04 | P1 | Frontend | Connect chat UI to backend | T-0207, T-0504 | User can ask question from UI | Answer displays citations | UX hides limitations | todo |
 | T-0510 | 2026-07-04 | P1 | Frontend | Connect document search UI to backend | T-0208, T-0411 | Search results displayed | Metadata visible | Search not useful | todo |
 | T-0511 | 2026-07-04 | P1 | Frontend | Connect admin ingestion UI to backend | T-0209, T-0507, T-0508 | Admin can trigger and view job status | Role guard enforced | Admin UI scope creep | todo |

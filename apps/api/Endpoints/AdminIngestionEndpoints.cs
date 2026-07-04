@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Ringkas.Api.Auth;
 using Ringkas.Api.Data;
 
@@ -15,6 +16,7 @@ public static class AdminIngestionEndpoints
             .RequireRateLimiting(RateLimitPolicies.AdminIngestion);
 
         group.MapPost("/jobs", CreateJobAsync);
+        group.MapGet("/jobs/{id:guid}", GetJobAsync);
 
         return endpoints;
     }
@@ -61,6 +63,80 @@ public static class AdminIngestionEndpoints
             job.MaxDocuments,
             job.CreatedAt);
         return Results.Created($"/api/admin/ingestion/jobs/{job.Id}", response);
+    }
+
+    private static async Task<IResult> GetJobAsync(
+        Guid id,
+        RingkasDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var job = await dbContext.IngestionJobs
+            .AsNoTracking()
+            .Where(job => job.Id == id)
+            .Select(job => new
+            {
+                job.Id,
+                job.Status,
+                job.ScopeRegion,
+                job.ScopeYearStart,
+                job.ScopeYearEnd,
+                job.MaxDocuments,
+                job.CreatedAt,
+                job.StartedAt,
+                job.CompletedAt,
+                job.ErrorSummary
+            })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (job is null)
+        {
+            return Results.NotFound();
+        }
+
+        var recentLogs = await dbContext.IngestionLogs
+            .AsNoTracking()
+            .Where(log => log.JobId == id)
+            .OrderByDescending(log => log.CreatedAt)
+            .ThenByDescending(log => log.Id)
+            .Take(20)
+            .Select(log => new { log.Level, log.Message, log.CreatedAt })
+            .ToListAsync(cancellationToken);
+
+        return Results.Ok(new GetIngestionJobResponse(
+            job.Id,
+            job.Status,
+            job.ScopeRegion,
+            job.ScopeYearStart,
+            job.ScopeYearEnd,
+            job.MaxDocuments,
+            job.CreatedAt,
+            job.StartedAt,
+            job.CompletedAt,
+            SanitizeForAdmin(job.ErrorSummary, "Ingestion failed. Details withheld.", 500),
+            recentLogs.Select(log => new IngestionLogSummary(
+                log.Level,
+                SanitizeForAdmin(log.Message, "Sensitive log details withheld.", 300)!,
+                log.CreatedAt)).ToList()));
+    }
+
+    public static string? SanitizeForAdmin(string? value, string fallback, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var normalized = string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        string[] sensitiveMarkers =
+        [
+            "traceback", "exception", "authorization", "bearer ", "api_key", "api-key",
+            "database_url", "database-url", "password", "secret", "cookie", "postgres://", "postgresql://"
+        ];
+        if (sensitiveMarkers.Any(marker => normalized.Contains(marker, StringComparison.OrdinalIgnoreCase)))
+        {
+            return fallback;
+        }
+
+        return normalized[..Math.Min(normalized.Length, maxLength)];
     }
 }
 
@@ -125,3 +201,18 @@ public sealed record CreateIngestionJobResponse(
     int YearEnd,
     int MaxDocuments,
     DateTime CreatedAt);
+
+public sealed record GetIngestionJobResponse(
+    Guid JobId,
+    string Status,
+    string Region,
+    int YearStart,
+    int YearEnd,
+    int MaxDocuments,
+    DateTime CreatedAt,
+    DateTime? StartedAt,
+    DateTime? CompletedAt,
+    string? ErrorSummary,
+    IReadOnlyList<IngestionLogSummary> RecentLogs);
+
+public sealed record IngestionLogSummary(string Level, string Message, DateTime CreatedAt);
