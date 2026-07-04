@@ -27,20 +27,21 @@ a { color: inherit; text-decoration: none; }
 .field input { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 12px; font: inherit; background: #fff; color: #111827; }
 .field textarea { width: 100%; resize: vertical; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 12px; font: inherit; background: #fff; color: #111827; }
 .field input:focus, .field textarea:focus { outline: 3px solid #bfdbfe; border-color: #2563eb; }
-.field input:disabled, .primary-button:disabled { cursor: not-allowed; opacity: .72; }
+.field input:disabled, .field textarea:disabled, .primary-button:disabled { cursor: not-allowed; opacity: .72; }
 .field-error, .form-error { color: #b91c1c; font-size: .92rem; font-weight: 500; }.form-error { margin: 0; }
 .primary-button { justify-self: start; padding: 12px 18px; border: 0; border-radius: 999px; background: #111827; color: #fff; font: inherit; font-weight: 700; }
 .primary-button:hover:not(:disabled) { background: #2563eb; cursor: pointer; }
 .feature-stack, .question-form, .search-form, .admin-grid { display: grid; gap: 20px; }
 .feature-stack { margin-top: 28px; }.question-form { gap: 14px; }.search-form { gap: 16px; }
-.filter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.filter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .panel, .answer-panel, .citation-panel, .results-region { padding: 20px; border: 1px solid #e5e7eb; border-radius: 16px; background: #fafafa; }
 .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .panel-heading h2 { margin: 0; font-size: 1.05rem; }.panel p, .state-message, .panel-note, .form-note, .limitation-note { color: #6b7280; font-size: .92rem; }
 .state-preview { display: flex; flex-wrap: wrap; gap: 8px; }.state-preview span { padding: 5px 9px; border: 1px solid #dbeafe; border-radius: 999px; color: #4b5563; background: #eff6ff; font-size: .78rem; }
 .state-badge, .preview-label { color: #4b5563; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .panel-note, .form-note { margin-top: 14px !important; }.limitation-note { padding: 14px 16px; border-left: 4px solid #f59e0b; background: #fffbeb; }.limitation-note strong { color: #92400e; }
-.document-card { display: grid; gap: 14px; padding: 16px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #fff; }.document-card h3 { margin: 3px 0 0; font-size: 1rem; }.preview-label { margin: 0 !important; color: #2563eb !important; }.metadata-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0; }.metadata-list div { display: grid; gap: 2px; }.metadata-list dt { color: #6b7280; font-size: .78rem; }.metadata-list dd { margin: 0; font-size: .9rem; }.source-placeholder { margin: 0 !important; color: #6b7280 !important; font-size: .86rem; }.state-message { margin-top: 14px !important; }.admin-grid { margin-top: 28px; }
+.document-results { display: grid; gap: 12px; }.document-card { display: grid; gap: 14px; padding: 16px; border: 1px solid #dbe2ea; border-radius: 12px; background: #fff; }.document-card h3 { margin: 0; font-size: 1rem; }.preview-label { margin: 0 !important; color: #2563eb !important; }.metadata-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin: 0; }.metadata-list div { display: grid; gap: 2px; }.metadata-list dt { color: #6b7280; font-size: .78rem; }.metadata-list dd { margin: 0; font-size: .9rem; }.source-link { justify-self: start; color: #2563eb; font-size: .9rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }.source-placeholder { margin: 0 !important; color: #6b7280 !important; font-size: .86rem; }.state-message { margin-top: 14px !important; }.admin-grid { margin-top: 28px; }
 .page-footnote { color: #6b7280 !important; }.status-card { text-align: left; }
+.limitation-insufficient { border-left-color: #dc2626; background: #fef2f2; }.limitation-insufficient strong { color: #991b1b; }
 @media (max-width:640px) { .app-shell { padding:16px; }.site-header { flex-direction:column; align-items:flex-start; }.nav { justify-content:flex-start; }.page-card { padding:24px; } }
 @media (max-width:640px) { .filter-grid, .metadata-list { grid-template-columns: 1fr; } }
