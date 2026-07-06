@@ -52,9 +52,8 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
     ConfigureFixedWindowPolicy(options, builder.Configuration, RateLimitPolicies.Auth, "RateLimits:Auth", 5, 60);
-    ConfigureFixedWindowPolicy(options, builder.Configuration, RateLimitPolicies.Chat, "RateLimits:Chat", 10, 60);
+    ConfigureChatPolicy(options, builder.Configuration);
     ConfigureFixedWindowPolicy(options, builder.Configuration, RateLimitPolicies.AdminIngestion, "RateLimits:AdminIngestion", 3, 60);
 });
 builder.Services.AddScoped<IdentityRoleSeeder>();
@@ -170,9 +169,74 @@ static void ConfigureFixedWindowPolicy(
             }));
 }
 
+static void ConfigureChatPolicy(RateLimiterOptions options, IConfiguration configuration)
+{
+    var section = configuration.GetSection("RateLimits:Chat");
+    var chatPermitLimit = ReadPositiveInt(section["PermitLimit"], 10);
+    var chatWindowSeconds = ReadPositiveInt(section["WindowSeconds"], 60);
+    var guestPermitLimit = QuotaConfiguration.ReadGuestPromptQuota(configuration);
+
+    options.AddPolicy(RateLimitPolicies.Chat, httpContext => ChatRateLimit.CreatePartition(
+        httpContext,
+        chatPermitLimit,
+        TimeSpan.FromSeconds(chatWindowSeconds),
+        guestPermitLimit));
+}
+
 static int ReadPositiveInt(string? value, int fallback)
 {
     return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) && parsed > 0
         ? parsed
         : fallback;
+}
+
+internal static class ChatRateLimit
+{
+    internal static RateLimitPartition<string> CreatePartition(
+        HttpContext httpContext,
+        int shortWindowPermitLimit,
+        TimeSpan shortWindow,
+        int guestPermitLimit,
+        Action? onLimiterCreated = null)
+    {
+        var isAuthenticated = httpContext.User.Identity?.IsAuthenticated == true;
+        var userId = QuotaConfiguration.UserId(httpContext.User);
+        var clientAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var partitionKey = isAuthenticated
+            ? $"chat:user:{userId ?? "unknown"}"
+            : $"chat:guest:{clientAddress}";
+
+        return RateLimitPartition.Get(partitionKey, _ =>
+        {
+            onLimiterCreated?.Invoke();
+            var shortWindowLimiter = FixedWindow(shortWindowPermitLimit, shortWindow, true);
+            if (!isAuthenticated)
+            {
+                return RateLimiter.CreateChained(
+                    shortWindowLimiter,
+                    OneShot(guestPermitLimit));
+            }
+
+            return shortWindowLimiter;
+        });
+    }
+
+    private static FixedWindowRateLimiter FixedWindow(int permitLimit, TimeSpan window, bool autoReplenishment) =>
+        new(new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = permitLimit,
+            Window = window,
+            QueueLimit = 0,
+            AutoReplenishment = autoReplenishment
+        });
+
+    private static TokenBucketRateLimiter OneShot(int permitLimit) =>
+        new(new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = permitLimit,
+            TokensPerPeriod = permitLimit,
+            ReplenishmentPeriod = TimeSpan.FromDays(1),
+            QueueLimit = 0,
+            AutoReplenishment = false
+        });
 }

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Ringkas.Api.Auth;
@@ -35,6 +36,7 @@ public sealed class ChatEndpointsTests
 
         var chat = Assert.Single(routes, route => route.RoutePattern.RawText == "/api/chat");
         Assert.NotNull(chat.Metadata.GetMetadata<IAllowAnonymous>());
+        Assert.Equal(RateLimitPolicies.Chat, chat.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName);
         foreach (var history in routes.Where(route => route.RoutePattern.RawText?.StartsWith("/api/chat/sessions", StringComparison.Ordinal) == true))
         {
             Assert.Equal(AuthorizationPolicies.RegisteredUser, history.Metadata.GetMetadata<IAuthorizeData>()?.Policy);
