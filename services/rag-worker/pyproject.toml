@@ -18,6 +18,9 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest==9.1.1"]
+evaluation = [
+    "ragas==0.4.3",
+]
 
 [project.scripts]
 ringkas-worker = "ringkas_worker.__main__:main"

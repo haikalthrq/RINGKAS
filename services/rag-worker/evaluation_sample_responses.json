@@ -1,0 +1,12 @@
+{
+  "fixture_status": "synthetic_pending_fixture",
+  "records": [
+    {
+      "question_id": "q-001",
+      "user_input": "SAMPLE ONLY: What evidence is available for this evaluation slot?",
+      "response": "SAMPLE ONLY: No verified BPS answer is available for this pending slot.",
+      "reference": "SAMPLE ONLY: No verified BPS answer is available for this pending slot.",
+      "retrieved_contexts": ["SAMPLE ONLY: This fixture contains no verified BPS evidence."]
+    }
+  ]
+}
