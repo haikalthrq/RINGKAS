@@ -31,7 +31,7 @@ public sealed class QuotaConfigurationTests
     {
         var constructions = 0;
         using var limiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
-            ChatRateLimit.CreatePartition(context, 10, TimeSpan.FromMinutes(1), 1, () => constructions++));
+            ChatRateLimit.CreatePartition(context, 10, TimeSpan.FromMinutes(1), 1, null, () => constructions++));
         var firstIp = Guest("192.0.2.1");
         var secondIp = Guest("192.0.2.2");
 
