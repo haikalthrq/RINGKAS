@@ -175,12 +175,14 @@ static void ConfigureChatPolicy(RateLimiterOptions options, IConfiguration confi
     var chatPermitLimit = ReadPositiveInt(section["PermitLimit"], 10);
     var chatWindowSeconds = ReadPositiveInt(section["WindowSeconds"], 60);
     var guestPermitLimit = QuotaConfiguration.ReadGuestPromptQuota(configuration);
+    var registeredPermitLimit = QuotaConfiguration.ReadRegisteredDailyQuota(configuration);
 
     options.AddPolicy(RateLimitPolicies.Chat, httpContext => ChatRateLimit.CreatePartition(
         httpContext,
         chatPermitLimit,
         TimeSpan.FromSeconds(chatWindowSeconds),
-        guestPermitLimit));
+        guestPermitLimit,
+        registeredPermitLimit));
 }
 
 static int ReadPositiveInt(string? value, int fallback)
@@ -197,9 +199,11 @@ internal static class ChatRateLimit
         int shortWindowPermitLimit,
         TimeSpan shortWindow,
         int guestPermitLimit,
+        int? registeredDailyPermitLimit,
         Action? onLimiterCreated = null)
     {
         var isAuthenticated = httpContext.User.Identity?.IsAuthenticated == true;
+        var bypassDailyQuota = QuotaConfiguration.IsQuotaBypassUser(httpContext.User);
         var userId = QuotaConfiguration.UserId(httpContext.User);
         var clientAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         var partitionKey = isAuthenticated
@@ -217,7 +221,11 @@ internal static class ChatRateLimit
                     OneShot(guestPermitLimit));
             }
 
-            return shortWindowLimiter;
+            return !bypassDailyQuota && registeredDailyPermitLimit is not null
+                ? RateLimiter.CreateChained(
+                    shortWindowLimiter,
+                    FixedWindow(registeredDailyPermitLimit.Value, TimeSpan.FromDays(1), true))
+                : shortWindowLimiter;
         });
     }
 
