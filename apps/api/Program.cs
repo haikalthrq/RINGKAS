@@ -52,6 +52,13 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new { error = "rate_limit_exceeded", message = "Request quota or rate limit exceeded." },
+            cancellationToken);
+    };
     ConfigureFixedWindowPolicy(options, builder.Configuration, RateLimitPolicies.Auth, "RateLimits:Auth", 5, 60);
     ConfigureChatPolicy(options, builder.Configuration);
     ConfigureFixedWindowPolicy(options, builder.Configuration, RateLimitPolicies.AdminIngestion, "RateLimits:AdminIngestion", 3, 60);
