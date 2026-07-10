@@ -22,11 +22,18 @@ class PublicationMetadata(BaseModel):
     pdf_url: AnyHttpUrl | None = None
     language: str | None = None
 
-    @field_validator("source_page_url", "pdf_url")
+    @field_validator("source_page_url")
     @classmethod
-    def urls_must_not_contain_credentials_or_query(cls, value: AnyHttpUrl | None) -> AnyHttpUrl | None:
-        if value is not None and (value.username is not None or value.password is not None or value.query or value.fragment):
-            raise ValueError("metadata URL must not contain credentials, query, or fragment")
+    def source_url_must_not_contain_credentials_or_query(cls, value: AnyHttpUrl) -> AnyHttpUrl:
+        if value.username is not None or value.password is not None or value.query or value.fragment:
+            raise ValueError("source URL must not contain credentials, query, or fragment")
+        return value
+
+    @field_validator("pdf_url")
+    @classmethod
+    def pdf_url_must_not_contain_credentials_or_fragment(cls, value: AnyHttpUrl | None) -> AnyHttpUrl | None:
+        if value is not None and (value.username is not None or value.password is not None or value.fragment):
+            raise ValueError("PDF URL must not contain credentials or fragment")
         return value
 
     @field_validator("title", "region", "region_level")

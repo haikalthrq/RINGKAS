@@ -133,7 +133,7 @@ class CloudflareWorkersAiEmbeddingSettings:
     def from_environment(cls) -> CloudflareWorkersAiEmbeddingSettings:
         conversion_failed = False
         try:
-            api_token = SecretStr(os.getenv("CLOUDFLARE_API_TOKEN", ""))
+            api_token = SecretStr(os.getenv("CLOUDFLARE_API_TOKEN") or os.getenv("CLOUDFLARE_WORKERS_AI_TOKEN", ""))
             account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
             model = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL", "")
             connect = float(os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_CONNECT_TIMEOUT_SECONDS", "10"))

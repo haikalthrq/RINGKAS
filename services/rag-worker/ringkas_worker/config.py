@@ -68,8 +68,9 @@ class WorkerSettings(BaseSettings):
     pdf_max_redirects: int = Field(default=5, validation_alias="PDF_MAX_REDIRECTS")
     pdf_allowed_hosts: str = Field(default="", validation_alias="PDF_ALLOWED_HOSTS")
     bps_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="BPS_API_KEY", repr=False)
-    bps_base_url: str = Field(default="", validation_alias="BPS_BASE_URL")
+    bps_base_url: str = Field(default="https://webapi.bps.go.id/v1/api/list", validation_alias="BPS_BASE_URL")
     bps_publications_path: str = Field(default="", validation_alias="BPS_PUBLICATIONS_PATH")
+    bps_publication_keyword: str = Field(default="", validation_alias="BPS_PUBLICATION_KEYWORD")
     ingestion_poll_interval_seconds: int = Field(default=10, validation_alias="INGESTION_POLL_INTERVAL_SECONDS")
     database_connect_timeout_seconds: int = Field(default=10, validation_alias="DATABASE_CONNECT_TIMEOUT_SECONDS")
     database_statement_timeout_ms: int = Field(default=30_000, validation_alias="DATABASE_STATEMENT_TIMEOUT_MS")
@@ -105,6 +106,13 @@ class WorkerSettings(BaseSettings):
             return normalize_publications_path(value)
         except Exception:
             raise ValueError("BPS_PUBLICATIONS_PATH must be a safe relative path") from None
+
+    @field_validator("bps_publication_keyword")
+    @classmethod
+    def bps_publication_keyword_must_be_bounded(cls, value: str) -> str:
+        if len(value) > 200:
+            raise ValueError("BPS_PUBLICATION_KEYWORD must not exceed 200 characters")
+        return value.strip()
 
     @field_validator("pdf_storage_path")
     @classmethod

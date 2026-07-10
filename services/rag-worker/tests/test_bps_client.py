@@ -1,4 +1,3 @@
-from datetime import date
 import traceback
 
 import httpx
@@ -15,70 +14,76 @@ from ringkas_worker.bps.errors import (
     BpsTimeoutError,
     BpsUpstreamError,
 )
-from ringkas_worker.bps.mapper import map_placeholder_publications
+from ringkas_worker.bps.mapper import map_publications
+from ringkas_worker.config import WorkerSettings
 
 
-PLACEHOLDER_PAYLOAD = {
-    "items": [
-        {
-            "external_id": "placeholder-1",
-            "title": "Placeholder publication",
-            "publication_year": 2025,
-            "release_date": "2025-06-01",
-            "region": "DKI Jakarta",
-            "region_level": "province",
-            "topic": "Population",
-            "source_page_url": "https://example.invalid/publication/1",
-            "pdf_url": "https://example.invalid/publication/1.pdf",
-        }
+OFFICIAL_PAYLOAD = {
+    "status": "OK",
+    "data": [
+        {"page": 1, "pages": 1, "per_page": 10, "count": 1, "total": 1},
+        [{
+                "pub_id": "3100-2025-001",
+                "title": "Profil Kemiskinan Provinsi DKI Jakarta 2025",
+                "issn": "1234-5678",
+                "sch_date": "2025-06-01",
+                "rl_date": "2025-06-18",
+                "updt_date": None,
+                "cover": "https://webapi.bps.go.id/cover/3100-2025-001",
+                "pdf": "https://webapi.bps.go.id/publication/3100-2025-001.pdf?download=1",
+                "size": "1 MB",
+            }],
     ]
 }
 
 
-def test_placeholder_fixture_maps_required_and_optional_metadata() -> None:
-    publication = map_placeholder_publications(PLACEHOLDER_PAYLOAD)[0]
+def test_official_data_one_fixture_maps_publication_metadata() -> None:
+    publication = map_publications(OFFICIAL_PAYLOAD)[0]
 
-    assert publication.title == "Placeholder publication"
+    assert publication.external_id == "3100-2025-001"
+    assert publication.title == "Profil Kemiskinan Provinsi DKI Jakarta 2025"
     assert publication.publication_year == 2025
-    assert publication.release_date == date(2025, 6, 1)
+    assert str(publication.release_date) == "2025-06-18"
     assert publication.region == "DKI Jakarta"
+    assert publication.region_level == "province"
+    assert publication.language == "ind"
+    assert publication.publication_number == "1234-5678"
     assert publication.pdf_url is not None
+    assert str(publication.pdf_url).startswith("https://webapi.bps.go.id/")
+    assert str(publication.source_page_url) == "https://webapi.bps.go.id/publication/3100-2025-001.pdf"
 
 
 @pytest.mark.parametrize(
     "item",
     [
-        {"publication_year": 2025, "region": "DKI Jakarta", "region_level": "province", "source_page_url": "https://example.invalid"},
-        {"title": "Title", "region": "DKI Jakarta", "region_level": "province", "source_page_url": "https://example.invalid"},
-        {"title": "Title", "publication_year": 0, "region": "DKI Jakarta", "region_level": "province", "source_page_url": "https://example.invalid"},
-        {"title": "Title", "publication_year": 2025, "region": "DKI Jakarta", "region_level": "province"},
+        {"title": "Title", "rl_date": "2025-01-01", "pdf": "https://example.invalid/source.pdf"},
+        {"pub_id": "1", "rl_date": "2025-01-01", "pdf": "https://example.invalid/source.pdf"},
+        {"pub_id": "1", "title": "Title", "rl_date": "invalid", "pdf": "https://example.invalid/source.pdf"},
     ],
 )
 def test_invalid_metadata_is_rejected(item: dict[str, object]) -> None:
     with pytest.raises(BpsInvalidMetadataError):
-        map_placeholder_publications({"items": [item]})
+        map_publications({"data": [{}, [item]]})
 
 
 @pytest.mark.parametrize(
     "source_page_url",
     [
         "https://user:password@example.invalid/publication",
-        "https://example.invalid/publication?token=secret-token",
     ],
 )
 def test_invalid_metadata_error_does_not_retain_upstream_url(source_page_url: str) -> None:
     with pytest.raises(BpsInvalidMetadataError) as error:
-        map_placeholder_publications(
+        map_publications(
             {
-                "items": [
-                    {
-                        "title": "Title",
-                        "publication_year": 2025,
-                        "region": "DKI Jakarta",
-                        "region_level": "province",
-                        "source_page_url": source_page_url,
-                    }
-                ]
+                "data": [{}, [
+                        {
+                            "pub_id": "1",
+                            "title": "Title",
+                            "rl_date": "2025-01-01",
+                            "pdf": source_page_url,
+                        }
+                ]]
             }
         )
 
@@ -88,16 +93,17 @@ def test_invalid_metadata_error_does_not_retain_upstream_url(source_page_url: st
 
 
 def test_optional_metadata_can_be_absent() -> None:
-    publication = map_placeholder_publications(
-        {"items": [{"title": "Title", "publication_year": 2025, "region": "DKI Jakarta", "region_level": "province", "source_page_url": "https://example.invalid"}]}
+    publication = map_publications(
+        {"data": [{}, [{"pub_id": 1, "title": "Title", "rl_date": "2025-01-01", "pdf": None}]]}
     )[0]
-    assert publication.external_id is None
+    assert publication.external_id == "1"
     assert publication.pdf_url is None
+    assert str(publication.source_page_url) == "https://webapi.bps.go.id/v1/api/list"
 
 
 def test_invalid_response_shape_is_rejected() -> None:
     with pytest.raises(BpsResponseShapeError):
-        map_placeholder_publications({"data": []})
+        map_publications({"items": []})
 
 
 def test_client_builds_configured_path_and_uses_mock_transport() -> None:
@@ -105,7 +111,7 @@ def test_client_builds_configured_path_and_uses_mock_transport() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request)
-        return httpx.Response(200, json=PLACEHOLDER_PAYLOAD, request=request)
+        return httpx.Response(200, json=OFFICIAL_PAYLOAD, request=request)
 
     with BpsClient(
         "https://placeholder.invalid/api/",
@@ -114,7 +120,7 @@ def test_client_builds_configured_path_and_uses_mock_transport() -> None:
     ) as client:
         client.fetch_publications()
 
-    assert str(seen[0].url) == "https://placeholder.invalid/api/publications"
+    assert str(seen[0].url) == "https://placeholder.invalid/api/publications?model=publication&domain=3100&lang=ind"
 
 
 @pytest.mark.parametrize(
@@ -164,7 +170,7 @@ def test_publications_path_is_normalized_and_joined_structurally() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(request)
-        return httpx.Response(200, json=PLACEHOLDER_PAYLOAD, request=request)
+        return httpx.Response(200, json=OFFICIAL_PAYLOAD, request=request)
 
     with BpsClient(
         "https://placeholder.invalid/api/",
@@ -173,7 +179,51 @@ def test_publications_path_is_normalized_and_joined_structurally() -> None:
     ) as client:
         client.fetch_publications()
 
-    assert str(seen[0].url) == "https://placeholder.invalid/api/nested/publications"
+    assert str(seen[0].url) == "https://placeholder.invalid/api/nested/publications?model=publication&domain=3100&lang=ind"
+
+
+def test_from_settings_places_bps_key_in_query_parameter_only() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=OFFICIAL_PAYLOAD, request=request)
+
+    settings = WorkerSettings(
+        DATABASE_URL="postgresql://worker:test@localhost/ringkas",
+        BPS_API_KEY="test-bps-key",
+        BPS_BASE_URL="https://webapi.bps.go.id/v1/api/list",
+    )
+    with BpsClient.from_settings(settings, transport=httpx.MockTransport(handler)) as client:
+        client.fetch_publications()
+
+    request = seen[0]
+    assert request.url.params["key"] == "test-bps-key"
+    assert request.url.params["model"] == "publication"
+    assert request.url.params["domain"] == "3100"
+    assert request.url.params["lang"] == "ind"
+    assert "Authorization" not in request.headers
+
+
+def test_configured_publication_keyword_is_forwarded_without_replacing_contract() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=OFFICIAL_PAYLOAD, request=request)
+
+    settings = WorkerSettings(
+        DATABASE_URL="postgresql://worker:test@localhost/ringkas",
+        BPS_API_KEY="test-bps-key",
+        BPS_BASE_URL="https://webapi.bps.go.id/v1/api/list",
+        BPS_PUBLICATION_KEYWORD="Profil Kemiskinan Provinsi DKI Jakarta 2025",
+    )
+    with BpsClient.from_settings(settings, transport=httpx.MockTransport(handler)) as client:
+        client.fetch_publications()
+
+    assert seen[0].url.params["keyword"] == "Profil Kemiskinan Provinsi DKI Jakarta 2025"
+    assert seen[0].url.params["model"] == "publication"
+    assert seen[0].url.params["domain"] == "3100"
 
 
 @pytest.mark.parametrize(

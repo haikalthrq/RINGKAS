@@ -9,7 +9,9 @@ COPY pyproject.toml .
 COPY ringkas_worker ./ringkas_worker
 
 RUN pip install --no-cache-dir . \
-    && useradd --create-home --uid 10001 worker
+    && useradd --create-home --uid 10001 worker \
+    && mkdir -p /data/ringkas/pdfs \
+    && chown -R worker:worker /data/ringkas
 
 USER worker
 

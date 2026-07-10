@@ -97,6 +97,7 @@ def test_protocol_query_contract_and_ordered_immutable_candidates():
     assert embedding.calls == [(("  unchanged query  ",), "custom", "END")]
     call = qdrant.calls[0]
     assert call["collection_name"] == COLLECTION_NAME
+    assert isinstance(call["query"], list)
     assert call["using"] == "dense" and call["limit"] == 20
     assert call["with_payload"] is True and call["with_vectors"] is False
     assert call["score_threshold"] is None and "query_filter" not in call

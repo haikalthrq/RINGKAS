@@ -3,12 +3,13 @@
 Internal Python process for polling ingestion jobs from PostgreSQL. It is not an
 HTTP service and does not expose a port.
 
-The default process performs non-mutating queue observation at the configured poll
-interval. It never claims jobs when no ingestion processor is configured. The
-existing processor remains fail-closed; the full T-0413 ingestion pipeline is not
-active in this task. `MockTransport` is available as test injection. Production
-construction uses `PdfDownloader.from_settings(settings)` without a transport,
-which selects the validated production transport and enforces destination safety.
+The default process polls PostgreSQL, atomically claims queued jobs, and runs the
+fail-closed `IngestionProcessor` when all BPS, Cloudflare, Qdrant, and database
+configuration is valid. It is not an HTTP service and does not expose a port.
+`MockTransport` is available only for unit tests; it is not live BPS verification.
+Production construction uses `PdfDownloader.from_settings(settings)` without a
+transport, which selects the validated production transport and enforces
+destination safety.
 Its total PDF budget is checked before and after resolver, connection, redirect,
 and stream phases, plus between chunks and after EOF. DNS remains subject to the
 platform resolver, while an individual blocking read is bounded by the configured

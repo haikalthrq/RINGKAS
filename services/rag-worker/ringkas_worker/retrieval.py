@@ -260,7 +260,7 @@ class QdrantDenseRetriever:
         try:
             response = self._qdrant_client.query_points(
                 collection_name=self._settings.collection_name,
-                query=vector,
+                query=list(vector),
                 using=DENSE_VECTOR_NAME,
                 limit=self._settings.dense_top_k,
                 with_payload=True,

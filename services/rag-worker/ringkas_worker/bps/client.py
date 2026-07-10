@@ -3,6 +3,7 @@ from types import TracebackType
 from typing import Self
 
 import httpx
+from pydantic import SecretStr
 
 from ringkas_worker.bps.errors import (
     BpsAuthenticationError,
@@ -13,20 +14,30 @@ from ringkas_worker.bps.errors import (
     BpsTimeoutError,
     BpsUpstreamError,
 )
-from ringkas_worker.bps.mapper import map_placeholder_publications
+from ringkas_worker.bps.mapper import map_publications
 from ringkas_worker.bps.models import PublicationMetadata
 from ringkas_worker.bps.urls import normalize_publications_path, validate_base_url
 from ringkas_worker.config import WorkerSettings
 
 RequestAuthenticator = Callable[[httpx.Request], httpx.Request]
+PUBLICATION_QUERY = {"model": "publication", "domain": "3100", "lang": "ind"}
+
+
+def query_key_authenticator(api_key: SecretStr) -> RequestAuthenticator:
+    """Add BPS authentication only as the documented ``key`` query parameter."""
+    if not isinstance(api_key, SecretStr) or not api_key.get_secret_value().strip():
+        raise BpsConfigurationError("BPS_API_KEY is required for the official BPS client")
+    key = api_key.get_secret_value()
+
+    def authenticate(request: httpx.Request) -> httpx.Request:
+        request.url = request.url.copy_merge_params({"key": key})
+        return request
+
+    return authenticate
 
 
 class BpsClient:
-    """HTTP boundary for the unverified BPS publication API contract.
-
-    Authentication is deliberately an injected boundary. The official BPS auth
-    placement and response contract must be verified before wiring it in.
-    """
+    """HTTP boundary for the official BPS publication API contract."""
 
     def __init__(
         self,
@@ -36,6 +47,7 @@ class BpsClient:
         timeout: float = 10.0,
         transport: httpx.BaseTransport | None = None,
         authenticator: RequestAuthenticator | None = None,
+        keyword: str = "",
     ) -> None:
         if timeout <= 0:
             raise BpsConfigurationError("BPS client timeout must be positive")
@@ -50,6 +62,9 @@ class BpsClient:
         )
         self._publications_path = normalized_path
         self._authenticator = authenticator
+        if not isinstance(keyword, str) or len(keyword) > 200:
+            raise BpsConfigurationError("BPS_PUBLICATION_KEYWORD is invalid")
+        self._keyword = keyword.strip()
 
     @classmethod
     def from_settings(
@@ -65,7 +80,8 @@ class BpsClient:
             settings.bps_publications_path,
             timeout=timeout,
             transport=transport,
-            authenticator=authenticator,
+            authenticator=authenticator or query_key_authenticator(settings.bps_api_key),
+            keyword=settings.bps_publication_keyword,
         )
 
     def __enter__(self) -> Self:
@@ -83,7 +99,14 @@ class BpsClient:
         self._client.close()
 
     def fetch_publications(self) -> list[PublicationMetadata]:
-        request = self._client.build_request("GET", self._publications_path or ".")
+        params = dict(PUBLICATION_QUERY)
+        if self._keyword:
+            params["keyword"] = self._keyword
+        request = self._client.build_request(
+            "GET",
+            self._publications_path or ".",
+            params=params,
+        )
         if self._authenticator is not None:
             authentication_failed = False
             try:
@@ -122,6 +145,6 @@ class BpsClient:
             raise BpsInvalidJsonError("BPS response was not valid JSON") from None
 
         try:
-            return map_placeholder_publications(payload)
+            return map_publications(payload)
         except BpsClientError:
             raise
