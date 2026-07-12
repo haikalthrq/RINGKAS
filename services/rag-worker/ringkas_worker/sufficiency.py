@@ -95,6 +95,7 @@ class LexicalEvidenceRelevanceAssessor:
     """Deterministic excerpt relevance only; never proves answer entailment."""
 
     _TOKEN = re.compile(r"[a-z0-9]+")
+    _YEAR = re.compile(r"(?<!\d)(?:19|20)\d{2}(?!\d)")
     _STOP_WORDS = frozenset(
         {
             "a", "adalah", "apa", "apakah", "bagaimana", "bahwa", "dan", "dari", "di",
@@ -126,6 +127,47 @@ class LexicalEvidenceRelevanceAssessor:
                 relevance = EvidenceRelevance.WEAK
             records.append(CitationRelevanceAssessment(citation.chunk_id, citation.order, relevance))
         return EvidenceAssessmentResult(tuple(records))
+
+    @classmethod
+    def missing_requested_years(cls, query: str, citations: CitationBuildResult) -> frozenset[str | int]:
+        requested_periods = cls._periods(query)
+        available_periods = {
+            period
+            for citation in citations.citations
+            for period in cls._periods(citation.excerpt)
+        }
+        if requested_periods:
+            return frozenset(requested_periods - available_periods)
+
+        requested = {int(value) for value in cls._YEAR.findall(query)}
+        title_years = {
+            int(value)
+            for citation in citations.citations
+            for value in cls._YEAR.findall(citation.title)
+        }
+        requested -= title_years
+        available = {
+            int(value)
+            for citation in citations.citations
+            for value in cls._YEAR.findall(citation.excerpt)
+        }
+        return frozenset(requested - available)
+
+    @classmethod
+    def _periods(cls, text: str) -> frozenset[tuple[str, int]]:
+        normalized = text.casefold()
+        periods: set[tuple[str, int]] = set()
+        for match in re.finditer(
+            r"\b(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\b\s+(?:tahun\s+)?((?:19|20)\d{2})\b",
+            normalized,
+        ):
+            periods.add((match.group(1), int(match.group(2))))
+        for match in re.finditer(
+            r"\b((?:19|20)\d{2})\b\s+(?:tahun\s+)?(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\b",
+            normalized,
+        ):
+            periods.add((match.group(2), int(match.group(1))))
+        return frozenset(periods)
 
 
 @dataclass(frozen=True, slots=True)
@@ -230,6 +272,8 @@ class QualitativeRetrievalSufficiencyEvaluator:
         low_count = sum(citation.low_structure_confidence for citation in citations.citations)
         if not ids:
             return self._result(SufficiencyDecision.INSUFFICIENT, "no_citable_evidence", ids, (), (), (), low_count)
+        if LexicalEvidenceRelevanceAssessor.missing_requested_years(query, citations):
+            return self._result(SufficiencyDecision.INSUFFICIENT, "no_relevant_evidence", ids, (), (), ids, low_count)
         try:
             assessment = self._assessor.assess(query, citations)
             self._validate_assessment(assessment, ids)

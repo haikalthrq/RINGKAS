@@ -61,9 +61,19 @@ def test_strong_excerpt_overlap_is_partial_not_sufficient():
     assert_partial(evaluate("Berapa jumlah penduduk Jakarta tahun 2024?", item), (item.chunk_id,))
 
 
+def test_explicit_requested_year_absent_from_evidence_is_insufficient():
+    item = citation("Jumlah penduduk Jakarta tahun 2024 adalah 11 juta jiwa.")
+    assert_insufficient(evaluate("Berapa jumlah penduduk Jakarta pada tahun 2099?", item), "no_relevant_evidence", (item.chunk_id,))
+
+
+def test_explicit_requested_month_year_absent_from_evidence_is_insufficient():
+    item = citation("Kemiskinan Jakarta pada Maret 2025 tercatat.")
+    assert_insufficient(evaluate("Berapa kemiskinan Jakarta pada September 2025?", item), "no_relevant_evidence", (item.chunk_id,))
+
+
 def test_weak_meaningful_overlap_is_partial():
     item = citation("Penduduk Jakarta dibahas dalam laporan.")
-    assert_partial(evaluate("Berapa jumlah penduduk Jakarta tahun 2024?", item), (item.chunk_id,))
+    assert_partial(evaluate("Berapa jumlah penduduk Jakarta?", item), (item.chunk_id,))
 
 
 def test_irrelevant_excerpt_is_insufficient():
