@@ -75,6 +75,8 @@ Backdate diperbolehkan.
 
 ## 6. Target Timeline Summary
 
+**Planned MVP completion:** 2026-07-15
+
 | Phase | Date Range | Focus |
 |---|---:|---|
 | Phase 0 | 2026-06-01 to 2026-06-04 | Project docs, repo scaffold, baseline architecture |
@@ -83,8 +85,8 @@ Backdate diperbolehkan.
 | Phase 3 | 2026-06-16 to 2026-06-23 | Python RAG Worker, ingestion, parsing, chunking |
 | Phase 4 | 2026-06-24 to 2026-06-30 | Embedding, Qdrant indexing, retrieval, citation, ingestion orchestration |
 | Phase 5 | 2026-07-01 to 2026-07-04 | Generation, chat, document search, admin ingestion |
-| Phase 6 | 2026-07-05 to 2026-07-07 | Evaluation harness, logging, rate limit, hardening |
-| Phase 7 | 2026-07-08 | MVP integration review and documentation lock |
+| Phase 6 | 2026-07-05 to 2026-07-13 | Evaluation harness, logging, rate limit, hardening |
+| Phase 7 | 2026-07-14 to 2026-07-15 | MVP integration review and documentation lock |
 
 ---
 
@@ -216,15 +218,15 @@ mean that the migration is complete.
 
 | Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
 |---|---:|---|---|---|---|---|---|---|---|
-| T-0601 | 2026-07-05 | P0 | Evaluation | Add evaluation dataset schema/template | T-0408 | Template for 100 questions, reference answer, evidence chunk | Supports manual verification | Weak ground truth | todo |
-| T-0602 | 2026-07-05 | P1 | Evaluation | Add RAGAS evaluation harness placeholder | T-0504, T-0601 | Script/notebook for automated evaluation | Can run on sample dataset | Misleading score | todo |
-| T-0603 | 2026-07-05 | P1 | Evaluation | Add manual audit template | T-0601 | 20% audit sheet/template | Checks citation, angka, periode, wilayah, satuan, definisi | Manual audit skipped | todo |
-| T-0604 | 2026-07-06 | P0 | Quota | Enforce guest 1-prompt quota | T-0111, T-0504 | Guest limited to one prompt | Guest cannot spam chat | Abuse risk | todo |
-| T-0605 | 2026-07-06 | P1 | Quota | Add registered user daily quota placeholder | T-0111 | Configurable daily quota | Quota value env/config-based | Cost overrun | todo |
-| T-0606 | 2026-07-06 | P1 | Security | Add admin endpoint abuse protection | T-0507, T-0508 | Admin endpoints still rate-limited/protected | Repeated ingestion abuse prevented | Resource exhaustion | todo |
-| T-0607 | 2026-07-07 | P0 | Integration | End-to-end ingestion smoke test | T-0413, T-0507 | One sample document ingested to Qdrant through the admin-triggered job flow | Document chunks searchable after the working T-0413 Cloudflare embedding pipeline is available | Pipeline broken late | todo |
-| T-0608 | 2026-07-07 | P0 | Integration | End-to-end chat smoke test | T-0504, T-0607 | User asks question and receives cited answer | No citation means failure | Hallucination | todo |
-| T-0609 | 2026-07-07 | P1 | Docs | Update implementation docs | T-0607, T-0608 | README/docs include setup and known limitations | New dev/agent can run project | Docs stale | todo |
+| T-0601 | 2026-07-05 | P0 | Evaluation | Add evaluation dataset schema/template | T-0408 | Template for 100 questions, reference answer, evidence chunk | Supports manual verification | Weak ground truth | done |
+| T-0602 | 2026-07-07 | P1 | Evaluation | Add RAGAS evaluation harness placeholder | T-0504, T-0601 | Script/notebook for automated evaluation | Can run on sample dataset | Misleading score | done |
+| T-0603 | 2026-07-08 | P1 | Evaluation | Add manual audit template | T-0601 | 20% audit sheet/template | Checks citation, angka, periode, wilayah, satuan, definisi | Manual audit skipped | done |
+| T-0604 | 2026-07-06 | P0 | Quota | Enforce guest 1-prompt quota | T-0111, T-0504 | Guest limited to one prompt | Guest cannot spam chat | Abuse risk | done |
+| T-0605 | 2026-07-07 | P1 | Quota | Add registered user daily quota placeholder | T-0111 | Configurable daily quota | Quota value env/config-based | Cost overrun | done |
+| T-0606 | 2026-07-08 | P1 | Security | Add admin endpoint abuse protection | T-0507, T-0508 | Admin endpoints still rate-limited/protected | Repeated ingestion abuse prevented | Resource exhaustion | done |
+| T-0607 | 2026-07-10 | P0 | Integration | End-to-end ingestion smoke test | T-0413, T-0507 | One sample document ingested to Qdrant through the admin-triggered job flow | Document chunks searchable after the working T-0413 Cloudflare embedding pipeline is available | Pipeline broken late | done |
+| T-0608 | 2026-07-12 | P0 | Integration | End-to-end chat smoke test | T-0504, T-0607 | User asks question and receives cited answer | No citation means failure | Hallucination | done |
+| T-0609 | 2026-07-13 | P1 | Docs | Update implementation docs | T-0607, T-0608 | README/docs include setup and known limitations | New dev/agent can run project | Docs stale | done |
 
 ---
 
@@ -232,10 +234,10 @@ mean that the migration is complete.
 
 | Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
 |---|---:|---|---|---|---|---|---|---|---|
-| T-0701 | 2026-07-08 | P0 | Review | Run MVP scope review against Project Brief/PRD/SRD | T-0609 | Scope review checklist | No out-of-scope feature slipped in | Scope creep | todo |
-| T-0702 | 2026-07-08 | P0 | Review | Run Technical Spec compliance review | T-0609 | Compliance notes | ASP.NET main backend + Python worker architecture intact | Architecture drift | todo |
-| T-0703 | 2026-07-08 | P1 | Review | Identify remaining TBDs | T-0701 | List of unresolved decisions | Provider models/quota/session strategy listed | Hidden blockers | todo |
-| T-0704 | 2026-07-08 | P1 | Docs | Lock task plan and prepare AGENTS.md input | T-0701, T-0702 | Clean task backlog ready for agents | AGENTS.md can reference tasks | Agent ambiguity | todo |
+| T-0701 | 2026-07-14 | P0 | Review | Run MVP scope review against Project Brief/PRD/SRD | T-0609 | Scope review checklist | No out-of-scope feature slipped in | Scope creep | todo |
+| T-0702 | 2026-07-14 | P0 | Review | Run Technical Spec compliance review | T-0609 | Compliance notes | ASP.NET main backend + Python worker architecture intact | Architecture drift | todo |
+| T-0703 | 2026-07-15 | P1 | Review | Identify remaining TBDs | T-0701 | List of unresolved decisions | Provider models/quota/session strategy listed | Hidden blockers | todo |
+| T-0704 | 2026-07-15 | P1 | Docs | Lock task plan and prepare AGENTS.md input | T-0701, T-0702 | Clean task backlog ready for agents | AGENTS.md can reference tasks | Agent ambiguity | todo |
 
 ---
 
