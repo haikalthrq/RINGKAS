@@ -184,8 +184,9 @@ Backdate diperbolehkan.
 ### Batch 1 — Cloudflare Embedding Architecture Alignment
 
 T-0402 and T-0403 above remain as historical completed implementation records.
-They are superseded by the approved Cloudflare-only embedding target and do not
-mean that the migration is complete.
+They are superseded by the approved Cloudflare-only embedding target. T-0415
+through T-0417 completed the migration, live dimension verification, versioned
+collection integration, and compatible indexing/query embedding paths.
 
 | Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
 |---|---:|---|---|---|---|---|---|---|---|
@@ -224,7 +225,7 @@ mean that the migration is complete.
 | T-0604 | 2026-07-06 | P0 | Quota | Enforce guest 1-prompt quota | T-0111, T-0504 | Guest limited to one prompt | Guest cannot spam chat | Abuse risk | done |
 | T-0605 | 2026-07-07 | P1 | Quota | Add registered user daily quota placeholder | T-0111 | Configurable daily quota | Quota value env/config-based | Cost overrun | done |
 | T-0606 | 2026-07-08 | P1 | Security | Add admin endpoint abuse protection | T-0507, T-0508 | Admin endpoints still rate-limited/protected | Repeated ingestion abuse prevented | Resource exhaustion | done |
-| T-0607 | 2026-07-10 | P0 | Integration | End-to-end ingestion smoke test | T-0413, T-0507 | One sample document ingested to Qdrant through the admin-triggered job flow | Document chunks searchable after the working T-0413 Cloudflare embedding pipeline is available | Pipeline broken late | done |
+| T-0607 | 2026-07-10 | P0 | Integration | End-to-end ingestion smoke test | T-0413, T-0507 | One sample document ingested to Qdrant through the admin-triggered job flow | Document chunks are searchable through the completed T-0413 Cloudflare embedding pipeline | Pipeline broken late | done |
 | T-0608 | 2026-07-12 | P0 | Integration | End-to-end chat smoke test | T-0504, T-0607 | User asks question and receives cited answer | No citation means failure | Hallucination | done |
 | T-0609 | 2026-07-13 | P1 | Docs | Update implementation docs | T-0607, T-0608 | README/docs include setup and known limitations | New dev/agent can run project | Docs stale | done |
 
@@ -236,7 +237,7 @@ mean that the migration is complete.
 |---|---:|---|---|---|---|---|---|---|---|
 | T-0701 | 2026-07-14 | P0 | Review | Run MVP scope review against Project Brief/PRD/SRD | T-0609 | Scope review checklist | No out-of-scope feature slipped in | Scope creep | todo |
 | T-0702 | 2026-07-14 | P0 | Review | Run Technical Spec compliance review | T-0609 | Compliance notes | ASP.NET main backend + Python worker architecture intact | Architecture drift | todo |
-| T-0703 | 2026-07-15 | P1 | Review | Identify remaining TBDs | T-0701 | List of unresolved decisions | Provider models/quota/session strategy listed | Hidden blockers | todo |
+| T-0703 | 2026-07-15 | P1 | Review | Identify remaining TBDs | T-0701 | List of unresolved decisions | Operational limits, sparse/retrieval, quota/session, deployment, and evaluation decisions listed | Hidden blockers | todo |
 | T-0704 | 2026-07-15 | P1 | Docs | Lock task plan and prepare AGENTS.md input | T-0701, T-0702 | Clean task backlog ready for agents | AGENTS.md can reference tasks | Agent ambiguity | todo |
 
 ---

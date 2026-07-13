@@ -70,7 +70,8 @@ Minimal planned chat response shape from Technical Spec:
 }
 ```
 
-Exact generation routing, refusal wording, and citation formatting: TBD.
+Generation routing follows the locked five-model order in the Technical Spec and
+Phase 6 runbook. Refusal wording and exact citation formatting remain TBD.
 
 ### Document Search
 

@@ -48,6 +48,9 @@ environment-variable names, not credentials or secret values.
 ```text
 ASPNETCORE_ENVIRONMENT
 WEB_PORT
+POSTGRES_DB
+POSTGRES_USER
+POSTGRES_PASSWORD
 DATABASE_URL
 QDRANT_URL
 QDRANT_API_KEY
@@ -124,7 +127,7 @@ API startup seeds `guest`, `user`, `admin`, and `system_maintainer`. Registratio
 creates a normal `user` account. Use a disposable account for a smoke run:
 
 ```powershell
-curl.exe -s -c admin.cookies -H "Content-Type: application/json" -d '{"email":"<temporary-admin-email>","password":"<temporary-password>"}' http://localhost:3000/api/auth/register
+curl.exe -s -c admin.cookies -H "Content-Type: application/json" -d '{"email":"<temporary-admin-email>","password":"<temporary-password>"}' http://localhost:3000/api/auth/register | Out-Null
 ```
 
 After registration, a trusted database operator assigns the seeded `admin`
@@ -144,7 +147,7 @@ COMMIT;
 Log in again to issue a cookie with the new role claim:
 
 ```powershell
-curl.exe -s -c admin.cookies -b admin.cookies -H "Content-Type: application/json" -d '{"email":"<temporary-admin-email>","password":"<temporary-password>"}' http://localhost:3000/api/auth/login
+curl.exe -s -c admin.cookies -b admin.cookies -H "Content-Type: application/json" -d '{"email":"<temporary-admin-email>","password":"<temporary-password>"}' http://localhost:3000/api/auth/login | Out-Null
 ```
 
 ## T-0607 Ingestion And Retrieval
@@ -161,13 +164,15 @@ Configure the official public BPS list contract locally:
 Trigger one admin job:
 
 ```powershell
-curl.exe -i -b admin.cookies -H "Content-Type: application/json" -d '{"region":"DKI Jakarta","year_start":2022,"year_end":2026,"max_documents":1,"force_reprocess":false}' http://localhost:3000/api/admin/ingestion/jobs
+$job = curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"region":"DKI Jakarta","year_start":2022,"year_end":2026,"max_documents":1,"force_reprocess":false}' http://localhost:3000/api/admin/ingestion/jobs | ConvertFrom-Json
+[pscustomobject]@{ JobIdPresent = -not [string]::IsNullOrWhiteSpace($job.id); JobStatus = $job.status }
 ```
 
 Poll the returned job ID until it is terminal:
 
 ```powershell
-curl.exe -i -b admin.cookies http://localhost:3000/api/admin/ingestion/jobs/<job-id>
+$jobStatus = curl.exe -s -b admin.cookies http://localhost:3000/api/admin/ingestion/jobs/<job-id> | ConvertFrom-Json
+[pscustomobject]@{ JobStatus = $jobStatus.status; ErrorPresent = -not [string]::IsNullOrWhiteSpace($jobStatus.error_summary) }
 ```
 
 Verify PostgreSQL metadata and chunk count:
@@ -175,12 +180,8 @@ Verify PostgreSQL metadata and chunk count:
 ```powershell
 docker compose --env-file .env -f infra/docker-compose.yml exec -T postgres psql -U <postgres-user> -d <postgres-database> -c "SELECT title, publication_year, region, page_count, ingestion_status FROM documents WHERE title = 'Profil Kemiskinan Provinsi DKI Jakarta 2025';"
 docker compose --env-file .env -f infra/docker-compose.yml exec -T postgres psql -U <postgres-user> -d <postgres-database> -c "SELECT count(*) FROM chunks WHERE document_id IN (SELECT id FROM documents WHERE title = 'Profil Kemiskinan Provinsi DKI Jakarta 2025');"
-```
-
-Verify Qdrant collection state:
-
-```powershell
-curl.exe -s http://localhost:6333/collections/ringkas_chunks_cf_qwen3_embedding_v1
+$qdrant = Invoke-RestMethod http://localhost:6333/collections/ringkas_chunks_cf_qwen3_embedding_v1
+[pscustomobject]@{ Status = 200; CollectionStatus = $qdrant.result.status; Points = $qdrant.result.points_count; Distance = $qdrant.result.config.params.vectors.distance }
 ```
 
 For private retrieval, send the sanitized known-answer request to
@@ -213,17 +214,20 @@ Accepted T-0607 evidence:
 ## T-0608 Chat, Source, And Refusal Verification
 
 Use the public web path only after T-0607 has produced the retained indexed
-corpus:
+corpus. Capture the response and print only sanitized metadata:
 
 ```powershell
-curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"message":"<known-answer-question>"}' http://localhost:3000/api/chat
+$chat = curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"message":"<known-answer-question>"}' http://localhost:3000/api/chat | ConvertFrom-Json
+[pscustomobject]@{ Status = 200; Substantive = -not [string]::IsNullOrWhiteSpace($chat.answer); Provider = $chat.provider; CitationCount = @($chat.citations).Count }
 ```
 
-For each returned citation, call the registered-user source endpoint with its
-`chunk_id`:
+For the first returned citation, call the registered-user source endpoint with
+its `chunk_id` and compare only metadata:
 
 ```powershell
-curl.exe -s -b admin.cookies http://localhost:3000/api/sources/chunks/<citation-chunk-id>
+$citation = $chat.citations[0]
+$source = curl.exe -s -b admin.cookies "http://localhost:3000/api/sources/chunks/$($citation.chunk_id)" | ConvertFrom-Json
+[pscustomobject]@{ Status = 200; TitleMatches = $source.documentTitle -eq $citation.title; YearMatches = $source.publicationYear -eq $citation.year; RegionMatches = $source.region -eq $citation.region; PagesMatch = $source.pageStart -eq $citation.page_start -and $source.pageEnd -eq $citation.page_end; HttpsSource = $source.sourceUrl.StartsWith('https://'); ExcerptPresent = -not [string]::IsNullOrWhiteSpace($source.excerpt) }
 ```
 
 Compare metadata without recording raw source text. The accepted source check
@@ -243,7 +247,8 @@ secret value is recorded here.
 Verify the unsupported-query guard with a separate request:
 
 ```powershell
-curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"message":"<unsupported-query-about-September-2099>"}' http://localhost:3000/api/chat
+$unsupported = curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"message":"<unsupported-query-about-September-2099>"}' http://localhost:3000/api/chat | ConvertFrom-Json
+[pscustomobject]@{ Status = 200; SourceSufficiency = $unsupported.source_sufficiency; Provider = $unsupported.provider; MentionsSeptember2099 = [bool]($unsupported.answer -match 'September 2099') }
 ```
 
 Accepted unsupported-query result: HTTP 200, insufficiency/refusal, provider
@@ -280,7 +285,7 @@ docker compose --env-file .env -f infra/docker-compose.yml down
 - No production Docling parser.
 - Sparse retrieval is still a placeholder; do not claim BM25.
 - Complex table extraction is best-effort.
-- BPS/provider availability, limits, terms, and deployment endpoint behavior remain prerequisites.
+- BPS/provider availability, limits, and terms remain prerequisites; the accepted BPS endpoint, model, domain, language, and query-key contract are fixed above.
 - The evaluation dataset and 20% manual audit are not complete; no live RAGAS baseline is claimed.
 - Quotas are in memory; process restarts reset counters and the registered daily quota value remains TBD when blank.
 - Failover was not live-exercised in the accepted supported chat run.

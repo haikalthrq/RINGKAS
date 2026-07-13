@@ -46,6 +46,9 @@ Runtime and storage:
 ```text
 ASPNETCORE_ENVIRONMENT
 WEB_PORT
+POSTGRES_DB
+POSTGRES_USER
+POSTGRES_PASSWORD
 DATABASE_URL
 QDRANT_URL
 QDRANT_API_KEY
@@ -150,7 +153,7 @@ account, then have a trusted database operator promote it to `admin` without
 printing the password or account identifiers in logs:
 
 ```powershell
-curl.exe -s -c admin.cookies -H "Content-Type: application/json" -d '{"email":"<temporary-admin-email>","password":"<temporary-password>"}' http://localhost:3000/api/auth/register
+curl.exe -s -c admin.cookies -H "Content-Type: application/json" -d '{"email":"<temporary-admin-email>","password":"<temporary-password>"}' http://localhost:3000/api/auth/register | Out-Null
 ```
 
 Run the role assignment inside PostgreSQL. Select the role by name; do not copy
@@ -170,7 +173,7 @@ COMMIT;
 Log in again after promotion so the cookie contains the role claim:
 
 ```powershell
-curl.exe -s -c admin.cookies -b admin.cookies -H "Content-Type: application/json" -d '{"email":"<temporary-admin-email>","password":"<temporary-password>"}' http://localhost:3000/api/auth/login
+curl.exe -s -c admin.cookies -b admin.cookies -H "Content-Type: application/json" -d '{"email":"<temporary-admin-email>","password":"<temporary-password>"}' http://localhost:3000/api/auth/login | Out-Null
 ```
 
 ## Ingestion Smoke Flow
@@ -178,13 +181,15 @@ curl.exe -s -c admin.cookies -b admin.cookies -H "Content-Type: application/json
 Trigger one admin-authorized job through the public HTTP path:
 
 ```powershell
-curl.exe -i -b admin.cookies -H "Content-Type: application/json" -d '{"region":"DKI Jakarta","year_start":2022,"year_end":2026,"max_documents":1,"force_reprocess":false}' http://localhost:3000/api/admin/ingestion/jobs
+$job = curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"region":"DKI Jakarta","year_start":2022,"year_end":2026,"max_documents":1,"force_reprocess":false}' http://localhost:3000/api/admin/ingestion/jobs | ConvertFrom-Json
+[pscustomobject]@{ JobIdPresent = -not [string]::IsNullOrWhiteSpace($job.id); JobStatus = $job.status }
 ```
 
 Poll the returned job until `completed` or `failed`:
 
 ```powershell
-curl.exe -i -b admin.cookies http://localhost:3000/api/admin/ingestion/jobs/<job-id>
+$jobStatus = curl.exe -s -b admin.cookies http://localhost:3000/api/admin/ingestion/jobs/<job-id> | ConvertFrom-Json
+[pscustomobject]@{ JobStatus = $jobStatus.status; ErrorPresent = -not [string]::IsNullOrWhiteSpace($jobStatus.error_summary) }
 ```
 
 For a live run, configure the official BPS list endpoint
@@ -198,7 +203,8 @@ Verify the completed job through all storage boundaries:
 ```powershell
 docker compose --env-file .env -f infra/docker-compose.yml exec -T postgres psql -U <postgres-user> -d <postgres-database> -c "SELECT title, publication_year, region, page_count, ingestion_status FROM documents WHERE title = 'Profil Kemiskinan Provinsi DKI Jakarta 2025';"
 docker compose --env-file .env -f infra/docker-compose.yml exec -T postgres psql -U <postgres-user> -d <postgres-database> -c "SELECT count(*) FROM chunks WHERE document_id IN (SELECT id FROM documents WHERE title = 'Profil Kemiskinan Provinsi DKI Jakarta 2025');"
-curl.exe -s http://localhost:6333/collections/ringkas_chunks_cf_qwen3_embedding_v1
+$qdrant = Invoke-RestMethod http://localhost:6333/collections/ringkas_chunks_cf_qwen3_embedding_v1
+[pscustomobject]@{ Status = 200; CollectionStatus = $qdrant.result.status; Points = $qdrant.result.points_count; Distance = $qdrant.result.config.params.vectors.distance }
 ```
 
 The private retrieval check must return HTTP 200, the preferred publication
@@ -232,7 +238,8 @@ Ask a supported question only after the indexed corpus and private retrieval
 path are ready:
 
 ```powershell
-curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"message":"<known-answer-question>"}' http://localhost:3000/api/chat
+$chat = curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"message":"<known-answer-question>"}' http://localhost:3000/api/chat | ConvertFrom-Json
+[pscustomobject]@{ Status = 200; Substantive = -not [string]::IsNullOrWhiteSpace($chat.answer); Provider = $chat.provider; CitationCount = @($chat.citations).Count }
 ```
 
 Use a citation `chunk_id` from the response to verify the source endpoint. Keep
@@ -260,7 +267,8 @@ documentation.
 Verify refusal behavior with a separate disposable request:
 
 ```powershell
-curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"message":"<unsupported-query-about-September-2099>"}' http://localhost:3000/api/chat
+$unsupported = curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"message":"<unsupported-query-about-September-2099>"}' http://localhost:3000/api/chat | ConvertFrom-Json
+[pscustomobject]@{ Status = 200; SourceSufficiency = $unsupported.source_sufficiency; Provider = $unsupported.provider; MentionsSeptember2099 = [bool]($unsupported.answer -match 'September 2099') }
 ```
 
 Expected and accepted result: HTTP 200, insufficiency/refusal, no provider,
@@ -301,7 +309,7 @@ temporary users, sessions, and messages while retaining that corpus.
 - OCR is not implemented; PDFs without a usable text layer are unsupported.
 - Docling is not a production parser.
 - Sparse retrieval remains a placeholder; do not claim BM25.
-- BPS and provider availability, limits, terms, and deployment-specific endpoint behavior remain operational prerequisites.
+- BPS/provider availability, limits, and terms remain operational prerequisites; the accepted BPS endpoint, model, domain, language, and query-key contract are documented above.
 - Guest quota and registered-user daily quota state are in memory; process restart resets counters and the registered quota value remains TBD when blank.
 - Generation failover was not exercised in the accepted live chat run.
 - Complex table extraction is best-effort.

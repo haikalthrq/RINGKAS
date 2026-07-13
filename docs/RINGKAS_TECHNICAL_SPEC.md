@@ -370,8 +370,8 @@ CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
 QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v1
 QDRANT_DENSE_VECTOR_SIZE=1024
 PDF_STORAGE_PATH=/data/ringkas/pdfs
-BPS_API_KEY=TBD_IF_REQUIRED
-BPS_BASE_URL=TBD
+BPS_API_KEY=
+BPS_BASE_URL=https://webapi.bps.go.id/v1/api/list
 INGESTION_POLL_INTERVAL_SECONDS=10
 CHUNK_SIZE_MIN=500
 CHUNK_SIZE_MAX=800
@@ -1002,7 +1002,18 @@ However, the system must still have a sufficiency rule:
 | Fallback generation | Cloudflare Workers AI |
 | Experimental only | OpenCode Zen / DeepSeek V4 Flash Free |
 
-Model names: TBD after availability check.
+The MVP locks generation attempts in this order:
+
+1. `nvidia/nemotron-3-nano-30b-a3b`
+2. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
+3. `mistralai/mistral-small-4-119b-2603`
+4. `nvidia/nemotron-mini-4b-instruct`
+5. `@cf/meta/llama-4-scout-17b-16e-instruct`
+
+The first model is the NVIDIA NIM primary, the second is the Cloudflare
+cross-provider fallback, the next two are NVIDIA reserve models, and the last is
+an experimental Cloudflare reserve. All attempts remain subject to the grounding
+and citation guard.
 
 ### 20.2 Prompt Rules
 
@@ -1342,7 +1353,7 @@ Note:
 | NVIDIA NIM generation model | Locked | `nvidia/nemotron-3-nano-30b-a3b`; hosted preview availability verified |
 | NVIDIA NIM secondary generation model | Locked reserve | `mistralai/mistral-small-4-119b-2603`; ordered after the Cloudflare fallback |
 | NVIDIA NIM lightweight generation model | Locked reserve | `nvidia/nemotron-mini-4b-instruct`; ordered after the NIM secondary model |
-| Cloudflare Workers AI embedding model | Approved | `@cf/qwen/qwen3-embedding-0.6b`; exact vector dimension requires live verification |
+| Cloudflare Workers AI embedding model | Approved and dimension-locked | `@cf/qwen/qwen3-embedding-0.6b`; live-verified vector dimension `1024` |
 | Cloudflare Workers AI generation fallback model | Locked | `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; account endpoint availability verified |
 | Cloudflare Workers AI experimental generation model | Experimental reserve | `@cf/meta/llama-4-scout-17b-16e-instruct`; requires evaluation before promotion |
 | Registered user daily quota | TBD | after provider limit estimation |

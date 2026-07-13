@@ -735,14 +735,16 @@ Sistem harus mempertimbangkan kapasitas local storage VPS dan kemungkinan migras
 
 ### EI-001 API BPS
 
-Sistem mengambil metadata dan/atau PDF dari API BPS. Endpoint publikasi terverifikasi menggunakan `https://webapi.bps.go.id/v1/api/list`, model `publication`, domain DKI Jakarta `3100`, dan autentikasi query parameter `key`. Response menggunakan `data` yang berisi metadata pagination dan daftar publikasi; limits dan terms provider tetap harus dihormati.
+Sistem mengambil metadata dan/atau PDF dari API BPS. Endpoint publikasi yang
+terverifikasi adalah `https://webapi.bps.go.id/v1/api/list`, dengan model
+`publication`, domain DKI Jakarta `3100`, bahasa `ind`, dan autentikasi query
+parameter `key`. Response menggunakan `data` yang berisi metadata pagination dan
+daftar publikasi. Limits dan terms provider tetap harus dihormati.
 
 ### EI-002 NVIDIA NIM
 
-Digunakan untuk:
-
-- generation primary;
-- embedding provider.
+Digunakan untuk generation primary dengan model MVP yang dikunci
+`nvidia/nemotron-3-nano-30b-a3b`. NVIDIA NIM bukan embedding provider MVP.
 
 Model MVP yang dikunci adalah `nvidia/nemotron-3-nano-30b-a3b`. Rate limit dan availability hosted preview tetap bergantung pada account/provider.
 
@@ -848,23 +850,21 @@ MVP secara sistem dianggap memenuhi SRD jika:
 
 ## 13. Open Questions / TBD
 
-1. Endpoint API BPS spesifik.
-2. API response schema BPS.
-3. Model generation NVIDIA NIM spesifik.
-4. Verifikasi live dimensi output model embedding Cloudflare.
-5. Model Cloudflare Workers AI fallback spesifik.
-6. Sparse vector method di Qdrant.
-7. Qdrant collection schema final.
-8. PostgreSQL schema final.
-9. Prompt template final.
-10. Reranker provider/model jika feature flag diaktifkan.
-11. Exact rate limit guest.
-12. Exact quota registered user.
-13. Email verification implementation.
-14. Latency/performance target.
-15. Backup strategy.
-16. Deployment detail VPS.
-17. UI/UX detail chat, search, citation panel, dan admin.
+1. Terms, limits, dan availability API BPS/provider untuk deployment.
+2. Sparse vector method di Qdrant.
+3. Qdrant collection schema final.
+4. PostgreSQL schema final.
+5. Prompt template final.
+6. Reranker provider/model jika feature flag diaktifkan.
+7. Exact rate limit guest.
+8. Exact quota registered user.
+9. Email verification implementation.
+10. Session vs JWT strategy.
+11. Domain dan HTTPS.
+12. Latency/performance target.
+13. Backup strategy.
+14. Deployment detail VPS.
+15. UI/UX detail chat, search, citation panel, dan admin.
 
 ---
 

@@ -31,8 +31,10 @@ Copy `.env.example` to a local environment file only outside version control.
 
 The processor preserves the existing schema and statuses. It has no automatic
 retry, crash recovery, lease/heartbeat, force reprocess, sparse indexing, or
-distributed PostgreSQL-Qdrant transaction. Concurrent checksum deduplication and
-provider/model choices remain MVP limitations/TBD.
+distributed PostgreSQL-Qdrant transaction. Concurrent checksum deduplication,
+provider availability/limits, and the sparse method remain MVP limitations/TBD;
+the approved embedding model and locked generation order are implementation
+decisions, not unresolved model choices.
 
 ## Retrieval debug logging
 

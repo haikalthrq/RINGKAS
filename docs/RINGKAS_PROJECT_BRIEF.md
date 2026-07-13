@@ -525,8 +525,9 @@ Embedding target yang disetujui:
 - model: `@cf/qwen/qwen3-embedding-0.6b`;
 - tidak ada fallback embedding otomatis.
 
-Implementasi saat ini masih merefleksikan catatan historis NVIDIA pada task
-embedding yang telah selesai; migrasi ke target ini belum dianggap selesai.
+Task T-0415 sampai T-0417 telah menyelesaikan migrasi dari catatan historis
+NVIDIA ke target Cloudflare-only, termasuk verifikasi dimensi, collection
+berversi, dan penggunaan model yang kompatibel untuk indexing/query.
 Provider/model embedding yang berbeda tidak boleh dicampur dengan vector lama.
 Perubahan provider/model wajib menggunakan collection Qdrant berversi baru dan
 full corpus reindex.
@@ -540,7 +541,7 @@ Catatan:
 
 - Model generation MVP dikunci berurutan: NVIDIA `nvidia/nemotron-3-nano-30b-a3b` primary, Cloudflare `@cf/meta/llama-3.3-70b-instruct-fp8-fast` cross-provider fallback, NVIDIA `mistralai/mistral-small-4-119b-2603` dan `nvidia/nemotron-mini-4b-instruct` sebagai reserve fallback, serta Cloudflare `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai eksperimental.
 - Dimensi output `1024` untuk model embedding Cloudflare yang disetujui telah diverifikasi live.
-- Rate limit dan availability provider harus diverifikasi sebelum implementasi.
+- Rate limit, terms, dan availability provider tetap harus diverifikasi untuk deployment.
 
 ---
 
@@ -827,12 +828,10 @@ Project Brief ini adalah baseline awal yang disusun dari requirement gathering. 
 
 Setiap keputusan teknis yang masih TBD harus diverifikasi sebelum implementasi penuh, terutama:
 
-- API BPS;
-- model provider;
-- embedding dimension;
-- vector schema;
-- retrieval quality;
-- citation accuracy;
-- rate limit dan biaya;
-- storage capacity;
+- terms, limits, dan availability API/provider;
+- vector schema dan sparse retrieval method;
+- retrieval quality dan citation accuracy;
+- reranker jika diaktifkan;
+- rate limit, quota, dan biaya;
+- domain/HTTPS, session strategy, dan storage capacity;
 - evaluasi baseline.
