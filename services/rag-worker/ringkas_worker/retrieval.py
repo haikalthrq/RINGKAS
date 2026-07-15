@@ -12,7 +12,9 @@ from pydantic import SecretStr
 from qdrant_client import QdrantClient
 
 from ringkas_worker.embedding import EmbeddingBatchResult, EmbeddingClient
-from ringkas_worker.qdrant_setup import COLLECTION_NAME, DENSE_VECTOR_NAME
+from ringkas_worker.qdrant_setup import DENSE_VECTOR_NAME, LEGACY_COLLECTION_NAME
+
+COLLECTION_NAME = LEGACY_COLLECTION_NAME
 
 
 class DenseRetrievalError(Exception):

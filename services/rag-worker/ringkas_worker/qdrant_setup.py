@@ -11,7 +11,8 @@ from pydantic import AnyHttpUrl, SecretStr, TypeAdapter, ValidationError
 from qdrant_client import QdrantClient, models
 
 
-COLLECTION_NAME = "ringkas_chunks_v1"
+LEGACY_COLLECTION_NAME = "ringkas_chunks_v1"
+COLLECTION_NAME = "ringkas_chunks_cf_qwen3_embedding_v1"
 DENSE_VECTOR_NAME = "dense"
 SPARSE_VECTOR_NAME = "sparse"
 SUPPORTED_DISTANCES = ("cosine", "dot", "euclid", "manhattan")
