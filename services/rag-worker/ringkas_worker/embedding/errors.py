@@ -18,12 +18,16 @@ class EmbeddingProviderError(EmbeddingClientError):
     """The provider returned a non-success response."""
 
     def __init__(self, status_code: int) -> None:
-        super().__init__(f"NVIDIA NIM embedding provider returned HTTP status {status_code}")
+        super().__init__(f"embedding provider returned HTTP status {status_code}")
         self.status_code = status_code
 
 
 class EmbeddingTimeoutError(EmbeddingClientError):
     """The provider request exceeded its configured timeout."""
+
+
+class EmbeddingCancellationError(EmbeddingClientError):
+    """The provider request was cancelled."""
 
 
 class EmbeddingTransportError(EmbeddingClientError):

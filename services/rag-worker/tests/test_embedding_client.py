@@ -1,3 +1,4 @@
+import asyncio
 import traceback
 
 import httpx
@@ -5,7 +6,10 @@ import pytest
 from pydantic import SecretStr
 
 from ringkas_worker.embedding import (
+    CloudflareWorkersAiEmbeddingClient,
+    CloudflareWorkersAiEmbeddingSettings,
     EmbeddingAuthenticationError,
+    EmbeddingCancellationError,
     EmbeddingClient,
     EmbeddingConfigurationError,
     EmbeddingProviderError,
@@ -328,3 +332,104 @@ def test_client_cleanup_is_deterministic() -> None:
     client.close()
     with pytest.raises(EmbeddingTransportError):
         client.embed(["text"])
+
+
+def cloudflare_settings() -> CloudflareWorkersAiEmbeddingSettings:
+    return CloudflareWorkersAiEmbeddingSettings("account-id", SecretStr("cloudflare-token"), "@cf/qwen/qwen3-embedding-0.6b")
+
+
+def test_cloudflare_single_and_batched_requests_use_documented_contract() -> None:
+    seen: list[httpx.Request] = []
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        data = [[1, 2.5]] if request.content == b'{"text":"single"}' else [[1, 2.5], [3, 4.5]]
+        return httpx.Response(200, json={"result": {"data": data}, "success": True}, request=request)
+
+    with CloudflareWorkersAiEmbeddingClient(cloudflare_settings(), transport=httpx.MockTransport(handler)) as client:
+        first = client.embed(["single"])
+        second = client.embed(["first", "second"])
+
+    assert str(seen[0].url) == "https://api.cloudflare.com/client/v4/accounts/account-id/ai/run/@cf/qwen/qwen3-embedding-0.6b"
+    assert seen[0].headers["authorization"] == "Bearer cloudflare-token"
+    assert seen[0].read().decode() == '{"text":"single"}'
+    assert seen[1].read().decode() == '{"text":["first","second"]}'
+    assert first.vectors[0].values == (1.0, 2.5)
+    assert [vector.values for vector in second.vectors] == [(1.0, 2.5), (3.0, 4.5)]
+    assert first.model == "@cf/qwen/qwen3-embedding-0.6b"
+
+
+@pytest.mark.parametrize("name", ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL"])
+def test_cloudflare_required_environment_values_fail_closed(monkeypatch: pytest.MonkeyPatch, name: str) -> None:
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "account")
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "token")
+    monkeypatch.setenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL", "@cf/qwen/qwen3-embedding-0.6b")
+    monkeypatch.delenv(name, raising=False)
+    with pytest.raises(EmbeddingConfigurationError):
+        CloudflareWorkersAiEmbeddingSettings.from_environment()
+
+
+@pytest.mark.parametrize(
+    ("payload", "input_count"),
+    [
+        ({"result": {"data": []}}, 1),
+        ({"result": {"data": [[1], [2, 3]]}}, 2),
+        ({"result": {"data": [[True]]}}, 1),
+        ({"result": {"data": [[float("nan")]]}}, 1),
+        ({"result": {"data": [[float("inf")]]}}, 1),
+        ({"data": [[1]]}, 1),
+    ],
+)
+def test_cloudflare_malformed_or_inconsistent_vectors_are_rejected(payload: object, input_count: int) -> None:
+    data = payload.get("result", {}).get("data", []) if isinstance(payload, dict) else []
+    value = data[0][0] if isinstance(data, list) and data and isinstance(data[0], list) and data[0] else None
+    if isinstance(value, float) and (value != value or value in {float("inf"), float("-inf")}):
+        raw = b'{"result":{"data":[[NaN]]}}' if value != float("inf") else b'{"result":{"data":[[Infinity]]}}'
+        transport = httpx.MockTransport(lambda request: httpx.Response(200, content=raw, request=request))
+    else:
+        transport = httpx.MockTransport(response_handler(payload, []))
+    with CloudflareWorkersAiEmbeddingClient(
+        cloudflare_settings(),
+        transport=transport,
+    ) as client:
+        with pytest.raises(EmbeddingResponseError):
+            client.embed(["text"] * input_count)
+
+
+def test_cloudflare_identical_vectors_are_accepted_in_positional_order() -> None:
+    payload = {"result": {"data": [[1, 2], [1, 2]]}}
+    with CloudflareWorkersAiEmbeddingClient(
+        cloudflare_settings(), transport=httpx.MockTransport(response_handler(payload, []))
+    ) as client:
+        result = client.embed(["first", "second"])
+
+    assert [vector.index for vector in result.vectors] == [0, 1]
+    assert [vector.values for vector in result.vectors] == [(1.0, 2.0), (1.0, 2.0)]
+
+
+@pytest.mark.parametrize("value", ["", " ", "wrong-model"])
+def test_cloudflare_model_is_approved_identifier(value: str) -> None:
+    with pytest.raises(EmbeddingConfigurationError):
+        CloudflareWorkersAiEmbeddingSettings("account", SecretStr("token"), value)
+
+
+def test_cloudflare_status_timeout_and_cancellation_are_typed() -> None:
+    for status, expected in ((401, EmbeddingAuthenticationError), (429, EmbeddingRateLimitError), (500, EmbeddingProviderError)):
+        with CloudflareWorkersAiEmbeddingClient(
+            cloudflare_settings(), transport=httpx.MockTransport(lambda request, status=status: httpx.Response(status, request=request))
+        ) as client:
+            with pytest.raises(expected):
+                client.embed(["text"])
+
+    def timeout(request: httpx.Request) -> httpx.Response:
+        raise httpx.ReadTimeout("secret timeout", request=request)
+
+    with CloudflareWorkersAiEmbeddingClient(cloudflare_settings(), transport=httpx.MockTransport(timeout)) as client:
+        with pytest.raises(EmbeddingTimeoutError):
+            client.embed(["private text"])
+
+    def cancelled(request: httpx.Request) -> httpx.Response:
+        raise asyncio.CancelledError("private cancellation")
+
+    with CloudflareWorkersAiEmbeddingClient(cloudflare_settings(), transport=httpx.MockTransport(cancelled)) as client:
+        with pytest.raises(EmbeddingCancellationError):
+            client.embed(["private text"])

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -8,9 +9,10 @@ from typing import Any, Protocol, Self, runtime_checkable
 
 import httpx
 
-from ringkas_worker.embedding.config import NvidiaNimEmbeddingSettings
+from ringkas_worker.embedding.config import CloudflareWorkersAiEmbeddingSettings, NvidiaNimEmbeddingSettings
 from ringkas_worker.embedding.errors import (
     EmbeddingAuthenticationError,
+    EmbeddingCancellationError,
     EmbeddingConfigurationError,
     EmbeddingProviderError,
     EmbeddingRateLimitError,
@@ -189,3 +191,97 @@ def _parse_usage(value: Any) -> EmbeddingUsage | None:
     if any(item is not None and (isinstance(item, bool) or not isinstance(item, int) or item < 0) for item in (prompt, total)):
         return None
     return EmbeddingUsage(prompt, total)
+
+
+class CloudflareWorkersAiEmbeddingClient:
+    _API_ROOT = "https://api.cloudflare.com/client/v4/accounts"
+
+    def __init__(self, settings: CloudflareWorkersAiEmbeddingSettings, *, transport: httpx.BaseTransport | None = None) -> None:
+        if not isinstance(settings, CloudflareWorkersAiEmbeddingSettings):
+            raise_sanitized(EmbeddingConfigurationError("embedding settings have an invalid type"))
+        self._settings = settings
+        self._endpoint = f"{self._API_ROOT}/{settings.account_id}/ai/run/{settings.model}"
+        timeout = httpx.Timeout(settings.read_timeout_seconds, connect=settings.connect_timeout_seconds)
+        self._client = httpx.Client(timeout=timeout, transport=transport)
+
+    @classmethod
+    def from_environment(cls, *, transport: httpx.BaseTransport | None = None) -> Self:
+        return cls(CloudflareWorkersAiEmbeddingSettings.from_environment(), transport=transport)
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: TracebackType | None) -> None:
+        self.close()
+
+    def close(self) -> None:
+        self._client.close()
+
+    def embed(self, texts: Sequence[str], *, input_type: str | None = None, truncate: str | None = None) -> EmbeddingBatchResult:
+        if isinstance(texts, (str, bytes, bytearray)) or not isinstance(texts, Sequence):
+            raise_sanitized(EmbeddingResponseError("embedding inputs must be a sequence of strings"))
+        values = tuple(texts)
+        if not values or any(not isinstance(text, str) or not text.strip() for text in values):
+            raise_sanitized(EmbeddingResponseError("embedding inputs must be nonblank strings"))
+        if input_type is not None or truncate is not None:
+            raise_sanitized(EmbeddingResponseError("Cloudflare embedding does not support undocumented request fields"))
+
+        try:
+            request = self._client.build_request(
+                "POST",
+                self._endpoint,
+                headers={
+                    "Authorization": f"Bearer {self._settings.api_token.get_secret_value()}",
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+                json={"text": values[0] if len(values) == 1 else list(values)},
+            )
+        except Exception:
+            raise_sanitized(EmbeddingTransportError("Cloudflare embedding request construction failed"))
+
+        try:
+            response = self._client.send(request)
+        except asyncio.CancelledError:
+            raise_sanitized(EmbeddingCancellationError("Cloudflare embedding request was cancelled"))
+        except httpx.TimeoutException:
+            raise_sanitized(EmbeddingTimeoutError("Cloudflare embedding request timed out"))
+        except httpx.RequestError:
+            raise_sanitized(EmbeddingTransportError("Cloudflare embedding request failed"))
+        except Exception:
+            raise_sanitized(EmbeddingTransportError("Cloudflare embedding request failed"))
+
+        if response.status_code in {401, 403}:
+            raise_sanitized(EmbeddingAuthenticationError("Cloudflare embedding authentication failed"))
+        if response.status_code == 429:
+            raise_sanitized(EmbeddingRateLimitError("Cloudflare embedding provider rate limit reached"))
+        if not response.is_success:
+            raise_sanitized(EmbeddingProviderError(response.status_code))
+        try:
+            payload = response.json()
+        except ValueError:
+            raise_sanitized(EmbeddingResponseError("Cloudflare embedding response was not valid JSON"))
+        return _parse_cloudflare_response(payload, len(values), self._settings.model)
+
+
+def _parse_cloudflare_response(payload: Any, input_count: int, model: str) -> EmbeddingBatchResult:
+    try:
+        if not isinstance(payload, dict) or not isinstance(payload.get("result"), dict):
+            raise ValueError
+        vectors_raw = payload["result"].get("data")
+        if not isinstance(vectors_raw, list) or len(vectors_raw) != input_count:
+            raise ValueError
+        vectors = tuple(
+            EmbeddingVector(index, tuple(_finite_number(value) for value in raw))
+            for index, raw in enumerate(vectors_raw)
+            if isinstance(raw, list) and raw
+        )
+        if len(vectors) != input_count:
+            raise ValueError
+        dimension = len(vectors[0].values)
+        if not dimension or any(len(vector.values) != dimension for vector in vectors):
+            raise ValueError
+        return EmbeddingBatchResult(vectors, dimension, model)
+    except (KeyError, TypeError, ValueError):
+        raise_sanitized(EmbeddingResponseError("Cloudflare embedding response schema is invalid"))
+    raise AssertionError("unreachable")

@@ -105,3 +105,40 @@ class NvidiaNimEmbeddingSettings:
         return cls(SecretStr(api_key), model, base_url, connect_value, read_value)
 
     from_env = from_environment
+
+
+@dataclass(frozen=True, slots=True)
+class CloudflareWorkersAiEmbeddingSettings:
+    """Configuration for the approved Cloudflare embedding model."""
+
+    account_id: str
+    api_token: SecretStr = field(repr=False)
+    model: str
+    connect_timeout_seconds: float = 10.0
+    read_timeout_seconds: float = 60.0
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.account_id, str) or not self.account_id.strip():
+            raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_ACCOUNT_ID is required"))
+        if any(character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" for character in self.account_id):
+            raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_ACCOUNT_ID is invalid"))
+        if not isinstance(self.api_token, SecretStr) or not self.api_token.get_secret_value().strip():
+            raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_API_TOKEN is required"))
+        if self.model != "@cf/qwen/qwen3-embedding-0.6b":
+            raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL is invalid"))
+        object.__setattr__(self, "connect_timeout_seconds", _validated_timeout(self.connect_timeout_seconds, "connect timeout"))
+        object.__setattr__(self, "read_timeout_seconds", _validated_timeout(self.read_timeout_seconds, "read timeout"))
+
+    @classmethod
+    def from_environment(cls) -> CloudflareWorkersAiEmbeddingSettings:
+        try:
+            account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
+            token = os.getenv("CLOUDFLARE_API_TOKEN", "")
+            model = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL", "")
+            connect = float(os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_CONNECT_TIMEOUT_SECONDS", "10"))
+            read = float(os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_READ_TIMEOUT_SECONDS", "60"))
+        except (OverflowError, TypeError, ValueError):
+            raise_sanitized(EmbeddingConfigurationError("Cloudflare embedding timeout configuration is invalid"))
+        return cls(account_id, SecretStr(token), model, connect, read)
+
+    from_env = from_environment
