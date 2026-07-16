@@ -470,9 +470,9 @@ Jika generation primary gagal, sistem boleh mencoba Cloudflare Workers AI sebaga
 
 OpenCode Zen / DeepSeek V4 Flash Free hanya experimental only.
 
-#### FR-GEN-004 Model Specific TBD
+#### FR-GEN-004 Locked MVP Models
 
-Model generation spesifik masih TBD.
+MVP mengunci urutan generation berikut: `nvidia/nemotron-3-nano-30b-a3b` sebagai primary, `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai cross-provider fallback, `mistralai/mistral-small-4-119b-2603` sebagai same-provider fallback, `nvidia/nemotron-mini-4b-instruct` sebagai fallback ringan, dan `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai kandidat eksperimental terakhir. Semua model tetap harus melewati citation/grounding guard.
 
 #### FR-GEN-005 Context Bound
 
@@ -735,7 +735,7 @@ Sistem harus mempertimbangkan kapasitas local storage VPS dan kemungkinan migras
 
 ### EI-001 API BPS
 
-Sistem mengambil metadata dan/atau PDF dari API BPS. Detail endpoint, parameter, response schema, limit, dan terms masih TBD dan harus diverifikasi sebelum implementasi penuh.
+Sistem mengambil metadata dan/atau PDF dari API BPS. Endpoint publikasi terverifikasi menggunakan `https://webapi.bps.go.id/v1/api/list`, model `publication`, domain DKI Jakarta `3100`, dan autentikasi query parameter `key`. Response menggunakan `data` yang berisi metadata pagination dan daftar publikasi; limits dan terms provider tetap harus dihormati.
 
 ### EI-002 NVIDIA NIM
 
@@ -744,11 +744,11 @@ Digunakan untuk:
 - generation primary;
 - embedding provider.
 
-Model spesifik, rate limit, dan availability masih TBD.
+Model MVP yang dikunci adalah `nvidia/nemotron-3-nano-30b-a3b`. Rate limit dan availability hosted preview tetap bergantung pada account/provider.
 
 ### EI-003 Cloudflare Workers AI
 
-Digunakan sebagai generation fallback. Model spesifik, rate limit, dan availability masih TBD.
+Digunakan sebagai generation fallback dengan model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. Rate limit dan availability tetap bergantung pada account/provider.
 
 ### EI-004 Google OAuth
 

@@ -45,7 +45,7 @@ Keputusan arsitektur inti:
 | Retrieval | Qdrant dense + sparse vector retrieval |
 | Fusion | Reciprocal Rank Fusion / RRF |
 | Generation primary | NVIDIA NIM |
-| Generation fallback | Cloudflare Workers AI fallback untuk generation |
+| Generation fallback | Ordered generation failover: Cloudflare Workers AI, secondary NVIDIA NIM, lightweight NVIDIA NIM, then experimental Cloudflare model |
 | Embedding provider | Cloudflare Workers AI only: `@cf/qwen/qwen3-embedding-0.6b` |
 | Auth | ASP.NET Core Identity + Google OAuth via backend |
 | Admin UI | Sederhana: trigger ingestion, status job, log ringkas |
@@ -340,14 +340,17 @@ AUTH_COOKIE_DOMAIN=TBD
 GOOGLE_CLIENT_ID=TBD
 GOOGLE_CLIENT_SECRET=TBD
 NVIDIA_NIM_API_KEY=TBD
-NVIDIA_NIM_GENERATION_MODEL=TBD
-NVIDIA_NIM_GENERATION_BASE_URL=TBD
-NVIDIA_NIM_GENERATION_ALLOWED_HOSTS=TBD
-NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS=TBD
+NVIDIA_NIM_GENERATION_MODEL=nvidia/nemotron-3-nano-30b-a3b
+NVIDIA_NIM_GENERATION_BASE_URL=https://integrate.api.nvidia.com/v1
+NVIDIA_NIM_GENERATION_ALLOWED_HOSTS=integrate.api.nvidia.com
+NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS=60
+NVIDIA_NIM_GENERATION_SECONDARY_MODEL=mistralai/mistral-small-4-119b-2603
+NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL=nvidia/nemotron-mini-4b-instruct
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
-CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=TBD
-CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS=TBD
+CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=@cf/meta/llama-3.3-70b-instruct-fp8-fast
+CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL=@cf/meta/llama-4-scout-17b-16e-instruct
+CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS=60
 QDRANT_URL=http://qdrant:6333
 QDRANT_API_KEY=TBD_OPTIONAL
 PDF_STORAGE_PATH=/data/ringkas/pdfs
@@ -365,7 +368,7 @@ CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
 QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v1
-QDRANT_DENSE_VECTOR_SIZE=TBD_AFTER_LIVE_VERIFICATION
+QDRANT_DENSE_VECTOR_SIZE=1024
 PDF_STORAGE_PATH=/data/ringkas/pdfs
 BPS_API_KEY=TBD_IF_REQUIRED
 BPS_BASE_URL=TBD
@@ -895,7 +898,7 @@ Cloudflare Workers AI embedding contract:
 - Authentication: `Authorization: Bearer <token>`.
 - Request body uses `text`, accepting one string or an array of strings for batching.
 - Documented context window: 8,192 tokens.
-- Exact output vector dimension is not inferred or hardcoded; current provider documentation does not establish it or a configurable `dimensions` parameter.
+- Live verification established a consistent output dimension of `1024` for the approved model.
 
 Reason:
 
@@ -918,15 +921,16 @@ If embedding provider or model changes:
 - Re-embed all chunks.
 - Do not mix embeddings from different models in the same vector space unless explicitly designed.
 
-The exact output dimension is not inferred or hardcoded from upstream Qwen
-documentation. Before creating the new collection, live verification must call
-the configured model, validate a consistent non-zero dimension for every
-returned vector, and lock that value in configuration. Collection creation must
-fail safely when the verified dimension does not match configuration.
+The approved configuration locks dimension `1024` for
+`@cf/qwen/qwen3-embedding-0.6b`. Before changing the model, live verification
+must call the configured model, validate a consistent non-zero dimension for
+every returned vector, and create a new versioned collection. Collection
+creation must fail safely when the verified dimension does not match
+configuration.
 
 The current implementation/task records for T-0402 and T-0403 are historical
-NVIDIA-based records. The approved Cloudflare target is not implemented until
-T-0415 through T-0417 are complete.
+NVIDIA-based records. The approved Cloudflare target is implemented by
+T-0415 through T-0417 and uses the versioned collection above.
 
 ---
 
@@ -1335,9 +1339,12 @@ Note:
 | Item | Status | Notes |
 |---|---|---|
 | Domain and HTTPS | TBD | Caddy recommended if no preference |
-| NVIDIA NIM generation model | TBD | choose after account availability check |
+| NVIDIA NIM generation model | Locked | `nvidia/nemotron-3-nano-30b-a3b`; hosted preview availability verified |
+| NVIDIA NIM secondary generation model | Locked reserve | `mistralai/mistral-small-4-119b-2603`; ordered after the Cloudflare fallback |
+| NVIDIA NIM lightweight generation model | Locked reserve | `nvidia/nemotron-mini-4b-instruct`; ordered after the NIM secondary model |
 | Cloudflare Workers AI embedding model | Approved | `@cf/qwen/qwen3-embedding-0.6b`; exact vector dimension requires live verification |
-| Cloudflare Workers AI generation fallback model | TBD | generation fallback only |
+| Cloudflare Workers AI generation fallback model | Locked | `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; account endpoint availability verified |
+| Cloudflare Workers AI experimental generation model | Experimental reserve | `@cf/meta/llama-4-scout-17b-16e-instruct`; requires evaluation before promotion |
 | Registered user daily quota | TBD | after provider limit estimation |
 | Session vs JWT | TBD | depends on deployment/domain setup |
 | Sparse vector method in Qdrant | TBD | do not claim BM25 unless implemented |
