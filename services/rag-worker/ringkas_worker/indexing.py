@@ -17,7 +17,8 @@ from ringkas_worker.embedding import (
     EmbeddingBatchResult,
     EmbeddingClient,
 )
-from ringkas_worker.qdrant_setup import COLLECTION_NAME, DENSE_VECTOR_NAME
+from ringkas_worker.qdrant_setup import COLLECTION_NAME, DENSE_VECTOR_NAME, SPARSE_VECTOR_NAME
+from ringkas_worker.sparse_retrieval import FastEmbedSparseEncoder, SparseEncoder, SparseQuery
 
 
 class ChunkIndexingError(Exception):
@@ -42,6 +43,10 @@ class EmbeddingValidationError(EmbeddingIndexingError):
 
 class EmbeddingIndexingFailure(EmbeddingIndexingError):
     code = "embedding_failure"
+
+
+class SparseIndexingFailure(ChunkIndexingError):
+    code = "sparse_encoding_failure"
 
 
 class QdrantIndexingTransportError(ChunkIndexingError):
@@ -217,16 +222,18 @@ class QdrantChunkIndexer:
         embedding_client: EmbeddingClient,
         qdrant_client: QdrantUpsertClient,
         settings: QdrantIndexingSettings,
+        sparse_encoder: SparseEncoder,
         *,
         _owned_clients: tuple[object, ...] = (),
     ) -> None:
-        if not isinstance(embedding_client, EmbeddingClient) or not isinstance(qdrant_client, QdrantUpsertClient):
+        if not isinstance(embedding_client, EmbeddingClient) or not isinstance(qdrant_client, QdrantUpsertClient) or not isinstance(sparse_encoder, SparseEncoder):
             _raise_safe(IndexingConfigurationError("indexing clients have invalid types"))
         if not isinstance(settings, QdrantIndexingSettings):
             _raise_safe(IndexingConfigurationError("indexing settings have invalid type"))
         self._embedding_client = embedding_client
         self._qdrant_client = qdrant_client
         self._settings = settings
+        self._sparse_encoder = sparse_encoder
         self._owned_clients = _owned_clients
 
     @classmethod
@@ -235,11 +242,12 @@ class QdrantChunkIndexer:
         embedding_settings = CloudflareWorkersAiEmbeddingSettings.from_environment()
         embedding_client = CloudflareWorkersAiEmbeddingClient(embedding_settings)
         try:
+            sparse_encoder = FastEmbedSparseEncoder.from_environment()
             qdrant_client = qdrant_client_from_settings(settings)
         except Exception:
             embedding_client.close()
             raise
-        return cls(embedding_client, qdrant_client, settings, _owned_clients=(embedding_client, qdrant_client))
+        return cls(embedding_client, qdrant_client, settings, sparse_encoder, _owned_clients=(embedding_client, qdrant_client))
 
     def close(self) -> None:
         owned_clients, self._owned_clients = self._owned_clients, ()
@@ -273,7 +281,16 @@ class QdrantChunkIndexer:
         if error is not None:
             _raise_safe(error)
         vectors = self._validate_embeddings(embedded, len(validated))
-        points = tuple(self._point(chunk, vector) for chunk, vector in zip(validated, vectors, strict=True))
+        try:
+            sparse_vectors = self._sparse_encoder.encode_documents(texts)
+        except Exception:
+            _raise_safe(SparseIndexingFailure("sparse encoding failed"))
+        if len(sparse_vectors) != len(validated) or any(not isinstance(vector, SparseQuery) for vector in sparse_vectors):
+            _raise_safe(SparseIndexingFailure("sparse encoding count is invalid"))
+        points = tuple(
+            self._point(chunk, vector, sparse_vector)
+            for chunk, vector, sparse_vector in zip(validated, vectors, sparse_vectors, strict=True)
+        )
         try:
             response = self._qdrant_client.upsert(self._settings.collection_name, list(points), wait=True)
         except Exception:
@@ -333,7 +350,7 @@ class QdrantChunkIndexer:
         return tuple(converted_vectors)
 
     @staticmethod
-    def _point(chunk: IndexableChunk, vector: tuple[float, ...]) -> models.PointStruct:
+    def _point(chunk: IndexableChunk, vector: tuple[float, ...], sparse_vector: SparseQuery) -> models.PointStruct:
         payload = {
             "document_id": str(chunk.document_id), "chunk_id": str(chunk.chunk_id), "title": chunk.title,
             "publication_year": chunk.publication_year, "region": chunk.region, "region_level": chunk.region_level,
@@ -342,7 +359,16 @@ class QdrantChunkIndexer:
             "extraction_method": chunk.extraction_method, "low_structure_confidence": chunk.low_structure_confidence,
             "source_url": chunk.source_url, "pdf_url": chunk.pdf_url,
         }
-        return models.PointStruct(id=chunk.qdrant_point_id, vector={DENSE_VECTOR_NAME: list(vector)}, payload=payload)
+        return models.PointStruct(
+            id=chunk.qdrant_point_id,
+            vector={
+                DENSE_VECTOR_NAME: list(vector),
+                SPARSE_VECTOR_NAME: models.SparseVector(
+                    indices=list(sparse_vector.indices), values=list(sparse_vector.values)
+                ),
+            },
+            payload=payload,
+        )
 
 
 def qdrant_client_from_settings(settings: QdrantIndexingSettings) -> QdrantClient:

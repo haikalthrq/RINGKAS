@@ -17,10 +17,12 @@ from ringkas_worker.reindex import (
     COLLECTION_NAME,
     MODEL,
     PROVIDER,
+    SCHEMA_VERSION,
     FileReindexCheckpoint,
     InMemoryReindexCheckpoint,
     MigrationIdentity,
     ReindexBatchError,
+    ReindexCheckpointError,
     ReindexProgress,
     ReindexRunner,
 )
@@ -108,7 +110,7 @@ class FakeIndexer:
 
     def index(self, chunks):
         self.calls.append(tuple(chunks))
-        return ChunkIndexingResult("ringkas_chunks_cf_qwen3_embedding_v1", len(chunks), tuple(c.qdrant_point_id for c in chunks), tuple(str(c.chunk_id) for c in chunks))
+        return ChunkIndexingResult(COLLECTION_NAME, len(chunks), tuple(c.qdrant_point_id for c in chunks), tuple(str(c.chunk_id) for c in chunks))
 
 
 def test_reindex_isolated_resumable_and_reports_progress():
@@ -141,6 +143,18 @@ def test_checkpoint_contains_identity_and_rejects_foreign_or_corrupt_data(tmp_pa
         FileReindexCheckpoint(path, identity(dimension=4))
     Path(path).write_text("not json")
     with pytest.raises(Exception):
+        FileReindexCheckpoint(path, identity())
+
+
+def test_checkpoint_schema_change_restarts_sparse_migration(tmp_path):
+    path = str(tmp_path / "reindex.json")
+    checkpoint = FileReindexCheckpoint(path, identity())
+    checkpoint.mark_complete(["point-1"])
+    payload = json.loads(Path(path).read_text())
+    payload["migration"]["schema_version"] = SCHEMA_VERSION - 1
+    Path(path).write_text(json.dumps(payload))
+
+    with pytest.raises(ReindexCheckpointError):
         FileReindexCheckpoint(path, identity())
 
 

@@ -9,6 +9,7 @@ from pydantic import SecretStr
 
 from ringkas_worker.embedding import CloudflareWorkersAiEmbeddingClient, EmbeddingBatchResult, EmbeddingVector
 from ringkas_worker.qdrant_setup import COLLECTION_NAME, LEGACY_COLLECTION_NAME
+from ringkas_worker.sparse_retrieval import SparseQuery
 from ringkas_worker.indexing import (
     ChunkIndexer,
     ChunkIndexingResult,
@@ -21,6 +22,7 @@ from ringkas_worker.indexing import (
     QdrantIndexingSettings,
     QdrantUpsertIncompleteError,
     QdrantIndexingTransportError,
+    SparseIndexingFailure,
 )
 
 
@@ -36,6 +38,20 @@ class FakeEmbedding:
         self.calls.append((tuple(texts), input_type, truncate))
         if isinstance(self.result, Exception):
             raise self.result
+        return self.result
+
+
+class FakeSparseEncoder:
+    def __init__(self, result=None):
+        self.result = result or SparseQuery((1,), (1.0,))
+        self.calls = []
+
+    def encode_documents(self, texts):
+        values = tuple(texts)
+        self.calls.append(values)
+        return tuple(self.result for _ in values)
+
+    def encode_query(self, query):
         return self.result
 
 
@@ -65,7 +81,12 @@ def chunk(*, point=None, chunk_id=None, text=" unchanged  text ", **overrides):
 
 
 def indexer(embedding, qdrant=None):
-    return QdrantChunkIndexer(embedding, qdrant or FakeQdrant(), QdrantIndexingSettings(qdrant_api_key=SecretStr(""), expected_dense_vector_size=2))
+    return QdrantChunkIndexer(
+        embedding,
+        qdrant or FakeQdrant(),
+        QdrantIndexingSettings(qdrant_api_key=SecretStr(""), expected_dense_vector_size=2),
+        FakeSparseEncoder(),
+    )
 
 
 def result(count=1, dimension=2, indexes=None, declared_dimension=_MISSING):
@@ -76,7 +97,7 @@ def result(count=1, dimension=2, indexes=None, declared_dimension=_MISSING):
     )
 
 
-def test_protocol_and_valid_indexing_maps_exact_payload_and_named_dense_vector():
+def test_protocol_and_valid_indexing_maps_exact_payload_and_named_dense_sparse_vectors():
     qdrant = FakeQdrant()
     embedding = FakeEmbedding(result(2))
     service = indexer(embedding, qdrant)
@@ -89,7 +110,9 @@ def test_protocol_and_valid_indexing_maps_exact_payload_and_named_dense_vector()
     _, points, wait, _ = qdrant.calls[0]
     assert wait is True
     assert [point.id for point in points] == list(output.point_ids)
-    assert all(set(point.vector) == {"dense"} for point in points)
+    assert all(set(point.vector) == {"dense", "sparse"} for point in points)
+    assert points[0].vector["sparse"].indices == [1]
+    assert points[0].vector["sparse"].values == [1.0]
     assert set(points[0].payload) == {
         "document_id", "chunk_id", "title", "publication_year", "region", "region_level", "topic",
         "page_start", "page_end", "section_heading", "chunk_index", "extraction_method",
@@ -160,6 +183,25 @@ def test_embedding_count_mismatch_prevents_upsert():
         indexer(FakeEmbedding(EmbeddingBatchResult((), 2)), qdrant).index([chunk()])
     assert not qdrant.calls
     assert caught.value.__cause__ is None and caught.value.__context__ is None
+
+
+def test_sparse_encoding_failure_prevents_upsert():
+    qdrant = FakeQdrant()
+
+    class FailingSparseEncoder(FakeSparseEncoder):
+        def encode_documents(self, texts):
+            raise RuntimeError("sparse-provider-secret")
+
+    service = QdrantChunkIndexer(
+        FakeEmbedding(result()),
+        qdrant,
+        QdrantIndexingSettings(qdrant_api_key=SecretStr(""), expected_dense_vector_size=2),
+        FailingSparseEncoder(),
+    )
+    with pytest.raises(SparseIndexingFailure) as caught:
+        service.index([chunk()])
+    assert not qdrant.calls
+    assert "sparse-provider-secret" not in repr(caught.value)
 
 
 @pytest.mark.parametrize("vectors", [
@@ -249,6 +291,7 @@ def test_environment_composition_uses_cloudflare_and_versioned_1024_contract(mon
     monkeypatch.setenv("QDRANT_DENSE_VECTOR_SIZE", "1024")
     qdrant = FakeQdrant()
     monkeypatch.setattr("ringkas_worker.indexing.qdrant_client_from_settings", lambda _: qdrant)
+    monkeypatch.setattr("ringkas_worker.indexing.FastEmbedSparseEncoder.from_environment", lambda: FakeSparseEncoder())
 
     service = QdrantChunkIndexer.from_environment()
     assert isinstance(service._embedding_client, CloudflareWorkersAiEmbeddingClient)
@@ -265,6 +308,7 @@ def test_1024_index_vector_is_accepted_before_upsert():
         FakeEmbedding(result(dimension=1024)),
         qdrant,
         QdrantIndexingSettings(qdrant_api_key=SecretStr(""), expected_dense_vector_size=1024),
+        FakeSparseEncoder(),
     )
     service.index([chunk()])
     assert len(qdrant.point_batches[0][0].vector["dense"]) == 1024

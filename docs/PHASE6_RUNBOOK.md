@@ -180,7 +180,7 @@ Verify PostgreSQL metadata and chunk count:
 ```powershell
 docker compose --env-file .env -f infra/docker-compose.yml exec -T postgres psql -U <postgres-user> -d <postgres-database> -c "SELECT title, publication_year, region, page_count, ingestion_status FROM documents WHERE title = 'Profil Kemiskinan Provinsi DKI Jakarta 2025';"
 docker compose --env-file .env -f infra/docker-compose.yml exec -T postgres psql -U <postgres-user> -d <postgres-database> -c "SELECT count(*) FROM chunks WHERE document_id IN (SELECT id FROM documents WHERE title = 'Profil Kemiskinan Provinsi DKI Jakarta 2025');"
-$qdrant = Invoke-RestMethod http://localhost:6333/collections/ringkas_chunks_cf_qwen3_embedding_v1
+$qdrant = Invoke-RestMethod http://localhost:6333/collections/ringkas_chunks_cf_qwen3_embedding_v2
 [pscustomobject]@{ Status = 200; CollectionStatus = $qdrant.result.status; Points = $qdrant.result.points_count; Distance = $qdrant.result.config.params.vectors.distance }
 ```
 

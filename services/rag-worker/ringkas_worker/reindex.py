@@ -20,6 +20,7 @@ from ringkas_worker.indexing import (
     QdrantChunkIndexer,
     QdrantIndexingSettings,
 )
+from ringkas_worker.sparse_retrieval import FastEmbedSparseEncoder
 from ringkas_worker.logging_config import configure_logging
 from ringkas_worker.qdrant_setup import (
     COLLECTION_NAME,
@@ -259,6 +260,7 @@ def main() -> int:
         )
         QdrantCollectionSetup(qdrant).setup(qdrant_settings.spec)
         with CloudflareWorkersAiEmbeddingClient(embedding_settings) as embedding_client:
+            sparse_encoder = FastEmbedSparseEncoder.from_environment()
             indexer = QdrantChunkIndexer(
                 embedding_client,
                 qdrant,
@@ -267,6 +269,7 @@ def main() -> int:
                     qdrant_api_key=qdrant_settings.qdrant_api_key,
                     expected_dense_vector_size=verified.dimension,
                 ),
+                sparse_encoder,
             )
             result = ReindexRunner(
                 PostgresChunkSource(os.environ["DATABASE_URL"]),

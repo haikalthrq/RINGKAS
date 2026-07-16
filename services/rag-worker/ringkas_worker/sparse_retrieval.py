@@ -4,6 +4,7 @@ import math
 import os
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from numbers import Integral, Real
 from typing import Any, Protocol, runtime_checkable
 from urllib.parse import urlsplit
 from uuid import UUID
@@ -32,6 +33,13 @@ class SparseRetrievalTransportError(SparseRetrievalError):
 
 class SparseRetrievalResponseError(SparseRetrievalError):
     code = "malformed_sparse_retrieval_response"
+
+
+class SparseEncodingError(SparseRetrievalError):
+    code = "sparse_encoding_error"
+
+
+SPARSE_MODEL_NAME = "Qdrant/bm25"
 
 
 def _raise_safe(error: SparseRetrievalError) -> None:
@@ -116,6 +124,96 @@ class SparseQuery:
         object.__setattr__(self, "values", tuple(value for _, value in pairs))
 
 
+@runtime_checkable
+class SparseEncoder(Protocol):
+    def encode_documents(self, texts: Sequence[str]) -> tuple[SparseQuery, ...]: ...
+
+    def encode_query(self, query: str) -> SparseQuery: ...
+
+
+def _query_from_embedding(embedding: object) -> SparseQuery:
+    indices = getattr(embedding, "indices", None)
+    values = getattr(embedding, "values", None)
+    if isinstance(indices, (str, bytes, bytearray)) or isinstance(values, (str, bytes, bytearray)):
+        _raise_safe(SparseEncodingError("FastEmbed sparse output is invalid"))
+    try:
+        raw_indices, raw_values = tuple(indices), tuple(values)
+    except (TypeError, ValueError):
+        _raise_safe(SparseEncodingError("FastEmbed sparse output is invalid"))
+    if not raw_indices or len(raw_indices) != len(raw_values):
+        _raise_safe(SparseEncodingError("FastEmbed sparse output is empty or mismatched"))
+    converted_indices: list[int] = []
+    converted_values: list[float] = []
+    for index, value in zip(raw_indices, raw_values, strict=True):
+        if isinstance(index, bool) or not isinstance(index, Integral) or int(index) < 0:
+            _raise_safe(SparseEncodingError("FastEmbed sparse indices are invalid"))
+        if isinstance(value, bool) or not isinstance(value, Real):
+            _raise_safe(SparseEncodingError("FastEmbed sparse values are invalid"))
+        converted_indices.append(int(index))
+        try:
+            converted = float(value)
+        except (OverflowError, TypeError, ValueError):
+            _raise_safe(SparseEncodingError("FastEmbed sparse values are invalid"))
+        if not math.isfinite(converted):
+            _raise_safe(SparseEncodingError("FastEmbed sparse values are invalid"))
+        converted_values.append(converted)
+    try:
+        return SparseQuery(tuple(converted_indices), tuple(converted_values))
+    except SparseRetrievalQueryError:
+        _raise_safe(SparseEncodingError("FastEmbed sparse output is invalid"))
+    except Exception:
+        _raise_safe(SparseEncodingError("FastEmbed sparse output is invalid"))
+    raise AssertionError("unreachable")
+
+
+class FastEmbedSparseEncoder:
+    """Encode passages and queries with the approved local BM25 model."""
+
+    def __init__(self, model: object | None = None) -> None:
+        if model is None:
+            try:
+                from fastembed import SparseTextEmbedding
+
+                model = SparseTextEmbedding(model_name=SPARSE_MODEL_NAME, lazy_load=True)
+            except Exception:
+                _raise_safe(SparseEncodingError("FastEmbed BM25 model is unavailable"))
+        self._model = model
+
+    @classmethod
+    def from_environment(cls) -> FastEmbedSparseEncoder:
+        return cls()
+
+    def encode_documents(self, texts: Sequence[str]) -> tuple[SparseQuery, ...]:
+        values = self._validate_texts(texts)
+        try:
+            embeddings = tuple(self._model.embed(values))
+        except Exception:
+            _raise_safe(SparseEncodingError("FastEmbed BM25 document encoding failed"))
+        if len(embeddings) != len(values):
+            _raise_safe(SparseEncodingError("FastEmbed BM25 document encoding count is invalid"))
+        return tuple(_query_from_embedding(embedding) for embedding in embeddings)
+
+    def encode_query(self, query: str) -> SparseQuery:
+        if not isinstance(query, str) or not query.strip():
+            _raise_safe(SparseRetrievalQueryError("sparse query text must be nonblank"))
+        try:
+            embeddings = tuple(self._model.query_embed(query))
+        except Exception:
+            _raise_safe(SparseEncodingError("FastEmbed BM25 query encoding failed"))
+        if len(embeddings) != 1:
+            _raise_safe(SparseEncodingError("FastEmbed BM25 query encoding count is invalid"))
+        return _query_from_embedding(embeddings[0])
+
+    @staticmethod
+    def _validate_texts(texts: Sequence[str]) -> tuple[str, ...]:
+        if isinstance(texts, (str, bytes, bytearray)) or not isinstance(texts, Sequence):
+            _raise_safe(SparseEncodingError("sparse document inputs must be a sequence of strings"))
+        values = tuple(texts)
+        if not values or any(not isinstance(text, str) or not text.strip() for text in values):
+            _raise_safe(SparseEncodingError("sparse document inputs must be nonblank strings"))
+        return values
+
+
 @dataclass(frozen=True, slots=True)
 class SparseRetrievalSettings:
     qdrant_url: str = "http://qdrant:6333"
@@ -197,10 +295,17 @@ class QdrantSparseQueryClient(Protocol):
 
 
 class QdrantSparseRetriever:
-    def __init__(self, qdrant_client: QdrantSparseQueryClient, settings: SparseRetrievalSettings) -> None:
+    def __init__(self, qdrant_client: QdrantSparseQueryClient, settings: SparseRetrievalSettings, *, _owned_clients: tuple[object, ...] = ()) -> None:
         if not isinstance(qdrant_client, QdrantSparseQueryClient) or not isinstance(settings, SparseRetrievalSettings):
             _raise_safe(SparseRetrievalConfigurationError("sparse retrieval clients or settings have invalid types"))
-        self._qdrant_client, self._settings = qdrant_client, settings
+        self._qdrant_client, self._settings, self._owned_clients = qdrant_client, settings, _owned_clients
+
+    def close(self) -> None:
+        owned_clients, self._owned_clients = self._owned_clients, ()
+        for client in owned_clients:
+            close = getattr(client, "close", None)
+            if callable(close):
+                close()
 
     def retrieve(self, query: SparseQuery) -> SparseRetrievalResult:
         if not isinstance(query, SparseQuery):

@@ -11,6 +11,7 @@ from ringkas_worker.qdrant_setup import (
     COLLECTION_NAME,
     DENSE_VECTOR_NAME,
     SPARSE_VECTOR_NAME,
+    PREVIOUS_COLLECTION_NAME,
     QdrantCollectionSetup,
     QdrantConnectionError,
     QdrantSchemaMismatchError,
@@ -52,12 +53,12 @@ class FakeClient:
         return self.create_result
 
 
-def compatible_collection(size=384, distance=models.Distance.COSINE, *, dense_name=DENSE_VECTOR_NAME, sparse_name=SPARSE_VECTOR_NAME):
+def compatible_collection(size=384, distance=models.Distance.COSINE, *, dense_name=DENSE_VECTOR_NAME, sparse_name=SPARSE_VECTOR_NAME, sparse_modifier=models.Modifier.IDF):
     return SimpleNamespace(
         config=SimpleNamespace(
             params=SimpleNamespace(
                 vectors={dense_name: models.VectorParams(size=size, distance=distance)},
-                sparse_vectors={sparse_name: models.SparseVectorParams()},
+                sparse_vectors={sparse_name: models.SparseVectorParams(modifier=sparse_modifier)},
             )
         )
     )
@@ -112,6 +113,20 @@ def test_first_setup_creates_exact_named_schema():
     assert request["vectors_config"][DENSE_VECTOR_NAME].size == 512
     assert request["vectors_config"][DENSE_VECTOR_NAME].distance is models.Distance.DOT
     assert set(request["sparse_vectors_config"]) == {SPARSE_VECTOR_NAME}
+    assert request["sparse_vectors_config"][SPARSE_VECTOR_NAME].modifier is models.Modifier.IDF
+
+
+def test_approved_collection_contract_is_versioned_1024_cosine_with_idf_sparse():
+    client = FakeClient()
+    result = QdrantCollectionSetup(client).setup(spec(dense_size=1024, dense_distance="cosine"))
+    assert result.collection_name == COLLECTION_NAME
+    assert COLLECTION_NAME != "ringkas_chunks_v1"
+    request = client.create_calls[0]
+    assert request["vectors_config"][DENSE_VECTOR_NAME].size == 1024
+    assert request["vectors_config"][DENSE_VECTOR_NAME].distance is models.Distance.COSINE
+    assert request["sparse_vectors_config"][SPARSE_VECTOR_NAME].modifier is models.Modifier.IDF
+    assert COLLECTION_NAME == "ringkas_chunks_cf_qwen3_embedding_v2"
+    assert PREVIOUS_COLLECTION_NAME == "ringkas_chunks_cf_qwen3_embedding_v1"
 
 
 def test_second_setup_is_noop_without_recreation():
@@ -191,6 +206,7 @@ def test_existing_compatible_collection_is_noop():
         compatible_collection(distance=models.Distance.DOT),
         compatible_collection(dense_name="renamed"),
         compatible_collection(sparse_name="renamed"),
+        compatible_collection(sparse_modifier=None),
     ],
 )
 def test_incompatible_collection_fails_without_mutation(collection):
@@ -262,6 +278,12 @@ def test_qdrant_url_rejects_credentials_query_and_fragment_without_leaking_secre
 def test_non_versioned_collection_name_is_rejected():
     with pytest.raises(QdrantSetupConfigurationError):
         spec(collection_name="ringkas_chunks_test")
+
+
+@pytest.mark.parametrize("collection_name", ["ringkas_chunks_v1", PREVIOUS_COLLECTION_NAME])
+def test_previous_collections_are_not_write_targets(collection_name):
+    with pytest.raises(QdrantSetupConfigurationError):
+        spec(collection_name=collection_name)
 
 
 def standalone_settings(size=384):

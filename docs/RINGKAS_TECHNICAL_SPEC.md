@@ -367,7 +367,7 @@ QDRANT_API_KEY=TBD_OPTIONAL
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
-QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v1
+QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v2
 QDRANT_DENSE_VECTOR_SIZE=1024
 PDF_STORAGE_PATH=/data/ringkas/pdfs
 BPS_API_KEY=
@@ -528,7 +528,7 @@ Additional profile fields may include:
 Suggested collection name:
 
 ```text
-ringkas_chunks_cf_qwen3_embedding_v1
+ringkas_chunks_cf_qwen3_embedding_v2
 ```
 
 ### 10.2 Vector Types
@@ -536,9 +536,10 @@ ringkas_chunks_cf_qwen3_embedding_v1
 MVP uses hybrid retrieval:
 
 - Dense vector from the approved Cloudflare Workers AI embedding model.
-- Sparse vector for lexical retrieval.
+- Sparse BM25 vector from FastEmbed model `Qdrant/bm25` for lexical retrieval.
 
-Exact sparse method: TBD.
+Qdrant applies the sparse vector `IDF` modifier; the same FastEmbed model is
+used for document indexing and query encoding.
 
 Important rule:
 
@@ -929,8 +930,9 @@ creation must fail safely when the verified dimension does not match
 configuration.
 
 The current implementation/task records for T-0402 and T-0403 are historical
-NVIDIA-based records. The approved Cloudflare target is implemented by
-T-0415 through T-0417 and uses the versioned collection above.
+NVIDIA-based records. T-0415 through T-0417 implement and verify the approved
+Cloudflare client, versioned collection, and compatible hybrid indexing/query
+path.
 
 ---
 

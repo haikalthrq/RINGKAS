@@ -14,10 +14,11 @@ from ringkas_worker.dimension import DimensionVerificationError, verify_live_dim
 
 
 LEGACY_COLLECTION_NAME = "ringkas_chunks_v1"
-COLLECTION_NAME = "ringkas_chunks_cf_qwen3_embedding_v1"
+PREVIOUS_COLLECTION_NAME = "ringkas_chunks_cf_qwen3_embedding_v1"
+COLLECTION_NAME = "ringkas_chunks_cf_qwen3_embedding_v2"
 DENSE_VECTOR_NAME = "dense"
 SPARSE_VECTOR_NAME = "sparse"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 SUPPORTED_DISTANCES = ("cosine", "dot", "euclid", "manhattan")
 
 
@@ -161,7 +162,9 @@ class QdrantCollectionSetup:
                             distance=_distance_model(spec.dense_distance),
                         )
                     },
-                    sparse_vectors_config={SPARSE_VECTOR_NAME: models.SparseVectorParams()},
+                    sparse_vectors_config={
+                        SPARSE_VECTOR_NAME: models.SparseVectorParams(modifier=models.Modifier.IDF)
+                    },
                 )
                 create_succeeded = create_result is True
             except Exception:
@@ -210,10 +213,22 @@ def _schema_matches(collection: Any, spec: QdrantSetupSpec) -> bool:
     if not isinstance(sparse_vectors, dict) or set(sparse_vectors) != {SPARSE_VECTOR_NAME}:
         return False
     dense = vectors[DENSE_VECTOR_NAME]
-    return getattr(dense, "size", None) == spec.dense_size and _distance_value(getattr(dense, "distance", None)) == spec.dense_distance
+    sparse = sparse_vectors[SPARSE_VECTOR_NAME]
+    return (
+        getattr(dense, "size", None) == spec.dense_size
+        and _distance_value(getattr(dense, "distance", None)) == spec.dense_distance
+        and _modifier_value(getattr(sparse, "modifier", None)) == "idf"
+    )
 
 
 def _distance_value(value: Any) -> str | None:
+    candidate = getattr(value, "value", value)
+    if not isinstance(candidate, str):
+        return None
+    return candidate.rsplit(".", 1)[-1].lower()
+
+
+def _modifier_value(value: Any) -> str | None:
     candidate = getattr(value, "value", value)
     if not isinstance(candidate, str):
         return None

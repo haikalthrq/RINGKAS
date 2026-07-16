@@ -11,8 +11,11 @@ from qdrant_client import models
 
 from ringkas_worker.qdrant_setup import COLLECTION_NAME, LEGACY_COLLECTION_NAME
 from ringkas_worker.sparse_retrieval import (
+    FastEmbedSparseEncoder,
     QdrantSparseRetriever,
+    SPARSE_MODEL_NAME,
     SparseQuery,
+    SparseEncodingError,
     SparseRetrievalConfigurationError,
     SparseRetrievalQueryError,
     SparseRetrievalResponseError,
@@ -30,6 +33,21 @@ class FakeQdrant:
         if self.error:
             raise self.error
         return SimpleNamespace(points=self.points)
+
+
+class FakeSparseModel:
+    def __init__(self):
+        self.passage_calls = []
+        self.query_calls = []
+
+    def embed(self, texts):
+        values = tuple(texts)
+        self.passage_calls.append(values)
+        return tuple(SimpleNamespace(indices=(7, 2), values=(0.7, 0.2)) for _ in values)
+
+    def query_embed(self, query):
+        self.query_calls.append(query)
+        return (SimpleNamespace(indices=(5, 1), values=(0.5, 0.1)),)
 
 
 def payload(**updates):
@@ -54,6 +72,29 @@ def assert_safe(error: BaseException, *forbidden: object) -> None:
     rendered = "".join(traceback.format_exception(error))
     assert error.__cause__ is None and error.__context__ is None
     assert all(str(value) not in text for text in (str(error), repr(error), rendered) for value in forbidden)
+
+
+def test_fastembed_bm25_encodes_documents_and_query_with_one_model():
+    model = FakeSparseModel()
+    encoder = FastEmbedSparseEncoder(model)
+
+    documents = encoder.encode_documents(("first document", "second document"))
+    query = encoder.encode_query("query text")
+
+    assert SPARSE_MODEL_NAME == "Qdrant/bm25"
+    assert model.passage_calls == [("first document", "second document")]
+    assert model.query_calls == ["query text"]
+    assert documents[0] == SparseQuery((2, 7), (0.2, 0.7))
+    assert query == SparseQuery((1, 5), (0.1, 0.5))
+
+
+def test_fastembed_empty_output_is_rejected_without_fallback():
+    class EmptyModel(FakeSparseModel):
+        def query_embed(self, query):
+            return (SimpleNamespace(indices=(), values=()),)
+
+    with pytest.raises(SparseEncodingError):
+        FastEmbedSparseEncoder(EmptyModel()).encode_query("query")
 
 
 def test_query_sorting_and_exact_contract():

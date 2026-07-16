@@ -11,7 +11,13 @@ from ringkas_worker.db.citations import PostgresCitationSourceRepository
 from ringkas_worker.fusion import RrfFusion, RrfSettings
 from ringkas_worker.retrieval import QdrantDenseRetriever
 from ringkas_worker.selection import FinalSelectionSettings, FinalTopKSelector
-from ringkas_worker.sparse_retrieval import SparseRetrievalResult, SparseRetrievalSettings
+from ringkas_worker.sparse_retrieval import (
+    FastEmbedSparseEncoder,
+    QdrantSparseRetriever,
+    SparseEncoder,
+    SparseRetrievalSettings,
+    qdrant_client_from_settings,
+)
 from ringkas_worker.sufficiency import QualitativeRetrievalSufficiencyEvaluator
 
 MAX_REQUEST_BYTES = 16 * 1024
@@ -23,13 +29,14 @@ def _valid_token(token: str) -> bool:
 
 
 class QueryEngine:
-    def __init__(self, dense, fusion, selector, citation_builder, sufficiency, sparse_limit: int) -> None:
+    def __init__(self, dense, sparse_encoder: SparseEncoder, sparse, fusion, selector, citation_builder, sufficiency) -> None:
         self._dense = dense
+        self._sparse_encoder = sparse_encoder
+        self._sparse = sparse
         self._fusion = fusion
         self._selector = selector
         self._citation_builder = citation_builder
         self._sufficiency = sufficiency
-        self._sparse_limit = sparse_limit
 
     @classmethod
     def from_environment(cls) -> QueryEngine:
@@ -37,26 +44,33 @@ class QueryEngine:
         if not database_url.strip():
             raise ValueError("DATABASE_URL is required")
         dense = QdrantDenseRetriever.from_environment()
+        sparse_client = None
         try:
+            sparse_settings = SparseRetrievalSettings.from_environment()
+            sparse_encoder = FastEmbedSparseEncoder.from_environment()
+            sparse_client = qdrant_client_from_settings(sparse_settings)
             return cls(
                 dense,
+                sparse_encoder,
+                QdrantSparseRetriever(sparse_client, sparse_settings, _owned_clients=(sparse_client,)),
                 RrfFusion(RrfSettings.from_environment()),
                 FinalTopKSelector(FinalSelectionSettings.from_environment()),
                 GroundedCitationBuilder(PostgresCitationSourceRepository(database_url)),
                 QualitativeRetrievalSufficiencyEvaluator.default(),
-                SparseRetrievalSettings.from_environment().sparse_top_k,
             )
         except Exception:
+            if sparse_client is not None:
+                sparse_client.close()
             dense.close()
             raise
 
     def close(self) -> None:
         self._dense.close()
+        self._sparse.close()
 
     def query(self, question: str) -> dict[str, Any]:
         dense = self._dense.retrieve(question)
-        # Sparse encoding is intentionally not approved yet; preserve the hybrid pipeline shape.
-        sparse = SparseRetrievalResult(dense.collection_name, self._sparse_limit, ())
+        sparse = self._sparse.retrieve(self._sparse_encoder.encode_query(question))
         selected = self._selector.select(self._fusion.fuse(dense, sparse))
         citations = self._citation_builder.build(selected)
         sufficiency = self._sufficiency.evaluate(question, selected, citations)

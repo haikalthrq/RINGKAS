@@ -525,9 +525,9 @@ Embedding target yang disetujui:
 - model: `@cf/qwen/qwen3-embedding-0.6b`;
 - tidak ada fallback embedding otomatis.
 
-Task T-0415 sampai T-0417 telah menyelesaikan migrasi dari catatan historis
-NVIDIA ke target Cloudflare-only, termasuk verifikasi dimensi, collection
-berversi, dan penggunaan model yang kompatibel untuk indexing/query.
+Task T-0415 sampai T-0417 telah mengimplementasikan dan memverifikasi client
+Cloudflare, verifikasi dimensi, collection berversi, serta jalur hybrid
+dense+sparse indexing/query yang diwajibkan.
 Provider/model embedding yang berbeda tidak boleh dicampur dengan vector lama.
 Perubahan provider/model wajib menggunakan collection Qdrant berversi baru dan
 full corpus reindex.
