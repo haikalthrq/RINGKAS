@@ -10,11 +10,14 @@ from urllib.parse import urlsplit
 from pydantic import AnyHttpUrl, SecretStr, TypeAdapter, ValidationError
 from qdrant_client import QdrantClient, models
 
+from ringkas_worker.dimension import DimensionVerificationError, verify_live_dimension_from_environment
+
 
 LEGACY_COLLECTION_NAME = "ringkas_chunks_v1"
 COLLECTION_NAME = "ringkas_chunks_cf_qwen3_embedding_v1"
 DENSE_VECTOR_NAME = "dense"
 SPARSE_VECTOR_NAME = "sparse"
+SCHEMA_VERSION = 1
 SUPPORTED_DISTANCES = ("cosine", "dot", "euclid", "manhattan")
 
 
@@ -60,6 +63,10 @@ class QdrantSetupSpec:
             raise QdrantSetupConfigurationError("collection name must not be empty")
         object.__setattr__(self, "collection_name", self.collection_name.strip())
         object.__setattr__(self, "dense_distance", self.dense_distance.strip().lower())
+        if self.collection_name != COLLECTION_NAME:
+            raise QdrantSetupConfigurationError(
+                f"collection name must be {COLLECTION_NAME}"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -216,10 +223,16 @@ def _distance_value(value: Any) -> str | None:
 def main() -> int:
     logger = logging.getLogger(__name__)
     try:
+        verified = verify_live_dimension_from_environment()
         settings = QdrantSetupSettings.from_environment()
         assert settings.spec is not None
+        if settings.spec.dense_size != verified.dimension:
+            raise DimensionVerificationError("live embedding dimension does not match configuration")
         client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key.get_secret_value() or None)
         result = QdrantCollectionSetup(client).setup(settings.spec)
+    except DimensionVerificationError:
+        logger.error("Qdrant collection setup failed [embedding_dimension_verification_failed]")
+        return 2
     except QdrantSetupError as error:
         logger.error("Qdrant collection setup failed [%s]: %s", error.code, str(error))
         return 2

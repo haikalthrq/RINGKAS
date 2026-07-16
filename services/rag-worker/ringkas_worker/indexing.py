@@ -166,6 +166,8 @@ class QdrantIndexingSettings:
         if isinstance(self.expected_dense_vector_size, bool) or not isinstance(self.expected_dense_vector_size, int) or self.expected_dense_vector_size <= 0:
             _raise_safe(IndexingConfigurationError("expected dense vector size must be positive"))
         object.__setattr__(self, "collection_name", self.collection_name.strip())
+        if self.collection_name != COLLECTION_NAME:
+            _raise_safe(IndexingConfigurationError(f"collection name must be {COLLECTION_NAME}"))
 
     @classmethod
     def from_environment(cls) -> QdrantIndexingSettings:
@@ -228,7 +230,7 @@ class QdrantChunkIndexer:
         vectors = self._validate_embeddings(embedded, len(validated))
         points = tuple(self._point(chunk, vector) for chunk, vector in zip(validated, vectors, strict=True))
         try:
-            response = self._qdrant_client.upsert(self._settings.collection_name, points, wait=True)
+            response = self._qdrant_client.upsert(self._settings.collection_name, list(points), wait=True)
         except Exception:
             error = QdrantIndexingTransportError("Qdrant upsert failed")
         else:

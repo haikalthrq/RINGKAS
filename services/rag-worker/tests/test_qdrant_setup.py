@@ -5,6 +5,8 @@ from types import SimpleNamespace
 import pytest
 from qdrant_client import models
 
+import ringkas_worker.qdrant_setup as qdrant_setup
+from ringkas_worker.dimension import DimensionVerificationError, VerifiedEmbeddingDimension
 from ringkas_worker.qdrant_setup import (
     COLLECTION_NAME,
     DENSE_VECTOR_NAME,
@@ -257,5 +259,108 @@ def test_qdrant_url_rejects_credentials_query_and_fragment_without_leaking_secre
     assert error.__context__ is None
 
 
-def test_collection_name_is_normalized():
-    assert spec(collection_name="  ringkas_chunks_test  ").collection_name == "ringkas_chunks_test"
+def test_non_versioned_collection_name_is_rejected():
+    with pytest.raises(QdrantSetupConfigurationError):
+        spec(collection_name="ringkas_chunks_test")
+
+
+def standalone_settings(size=384):
+    return QdrantSetupSettings("http://qdrant:6333", spec=spec(dense_size=size))
+
+
+def patch_standalone(monkeypatch, client, *, verified=None, events=None):
+    verified = verified or VerifiedEmbeddingDimension("@cf/qwen/qwen3-embedding-0.6b", 384)
+
+    def verify():
+        if events is not None:
+            events.append("verify")
+        return verified
+
+    def client_factory(**kwargs):
+        if events is not None:
+            events.append("client")
+        return client
+
+    monkeypatch.setattr(qdrant_setup, "verify_live_dimension_from_environment", verify)
+    monkeypatch.setattr(
+        qdrant_setup.QdrantSetupSettings,
+        "from_environment",
+        classmethod(lambda cls: standalone_settings(verified.dimension)),
+    )
+    monkeypatch.setattr(qdrant_setup, "QdrantClient", client_factory)
+
+
+def test_standalone_matching_live_dimension_reaches_setup_before_client(monkeypatch):
+    client = FakeClient()
+    events = []
+    patch_standalone(monkeypatch, client, events=events)
+    assert qdrant_setup.main() == 0
+    assert events == ["verify", "client"]
+    assert len(client.create_calls) == 1
+
+
+def test_standalone_missing_expected_dimension_makes_zero_qdrant_mutations(monkeypatch):
+    monkeypatch.delenv("QDRANT_DENSE_VECTOR_SIZE", raising=False)
+    constructed = []
+    monkeypatch.setattr(qdrant_setup, "QdrantClient", lambda **kwargs: constructed.append(kwargs))
+    assert qdrant_setup.main() == 2
+    assert not constructed
+
+
+def test_standalone_missing_credentials_makes_zero_qdrant_mutations(monkeypatch):
+    monkeypatch.setenv("QDRANT_DENSE_VECTOR_SIZE", "384")
+    for name in ("CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL"):
+        monkeypatch.delenv(name, raising=False)
+    constructed = []
+    monkeypatch.setattr(qdrant_setup, "QdrantClient", lambda **kwargs: constructed.append(kwargs))
+    assert qdrant_setup.main() == 2
+    assert not constructed
+
+
+def test_standalone_live_config_mismatch_makes_zero_qdrant_mutations(monkeypatch):
+    constructed = []
+    monkeypatch.setattr(
+        qdrant_setup,
+        "verify_live_dimension_from_environment",
+        lambda: VerifiedEmbeddingDimension("@cf/qwen/qwen3-embedding-0.6b", 385),
+    )
+    monkeypatch.setattr(
+        qdrant_setup.QdrantSetupSettings,
+        "from_environment",
+        classmethod(lambda cls: standalone_settings(384)),
+    )
+    monkeypatch.setattr(qdrant_setup, "QdrantClient", lambda **kwargs: constructed.append(kwargs))
+    assert qdrant_setup.main() == 2
+    assert not constructed
+
+
+@pytest.mark.parametrize("failure", [
+    DimensionVerificationError("live mismatch token input vector raw response"),
+    DimensionVerificationError("provider failure token input vector raw response"),
+])
+def test_standalone_verification_failure_makes_zero_qdrant_mutations(monkeypatch, failure, caplog):
+    constructed = []
+
+    def verify():
+        raise failure
+
+    monkeypatch.setattr(qdrant_setup, "verify_live_dimension_from_environment", verify)
+    monkeypatch.setattr(qdrant_setup, "QdrantClient", lambda **kwargs: constructed.append(kwargs))
+    assert qdrant_setup.main() == 2
+    assert not constructed
+    assert "embedding_dimension_verification_failed" in caplog.text
+    assert all(secret not in caplog.text for secret in ("token", "input", "vector", "raw response"))
+
+
+def test_standalone_compatible_existing_collection_remains_accepted(monkeypatch):
+    client = FakeClient(compatible_collection())
+    patch_standalone(monkeypatch, client)
+    assert qdrant_setup.main() == 0
+    assert not client.create_calls
+
+
+def test_standalone_incompatible_existing_collection_remains_rejected(monkeypatch):
+    client = FakeClient(compatible_collection(385))
+    patch_standalone(monkeypatch, client)
+    assert qdrant_setup.main() == 2
+    assert not client.create_calls

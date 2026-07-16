@@ -8,6 +8,7 @@ from qdrant_client import models
 from pydantic import SecretStr
 
 from ringkas_worker.embedding import EmbeddingBatchResult, EmbeddingVector
+from ringkas_worker.qdrant_setup import LEGACY_COLLECTION_NAME
 from ringkas_worker.indexing import (
     ChunkIndexer,
     ChunkIndexingResult,
@@ -43,8 +44,10 @@ class FakeQdrant:
         self.response = models.UpdateResult(status=models.UpdateStatus.COMPLETED, operation_id=1) if response is _MISSING else response
         self.error = error
         self.calls = []
+        self.point_batches = []
 
     def upsert(self, collection_name, points, wait=True, **kwargs):
+        self.point_batches.append(points)
         self.calls.append((collection_name, tuple(points), wait, kwargs))
         if self.error:
             raise self.error
@@ -94,6 +97,7 @@ def test_protocol_and_valid_indexing_maps_exact_payload_and_named_dense_vector()
     }
     assert points[0].payload["chunk_id"] == str(first.chunk_id)
     assert points[0].payload["topic"] is None and points[0].payload["pdf_url"] is None
+    assert isinstance(qdrant.point_batches[0], list)
 
 
 @pytest.mark.parametrize("value", [[], "text", 1, None])
@@ -227,3 +231,12 @@ def test_qdrant_failure_is_sanitized_and_repeated_request_uses_same_ids():
     service.index([item])
     service.index([item])
     assert qdrant.calls[0][1][0].id == qdrant.calls[1][1][0].id == item.qdrant_point_id
+
+
+def test_legacy_collection_cannot_receive_new_vectors():
+    with pytest.raises(IndexingConfigurationError):
+        QdrantIndexingSettings(
+            qdrant_api_key=SecretStr(""),
+            collection_name=LEGACY_COLLECTION_NAME,
+            expected_dense_vector_size=2,
+        )
