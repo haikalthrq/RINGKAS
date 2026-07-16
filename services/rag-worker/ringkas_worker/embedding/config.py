@@ -131,14 +131,18 @@ class CloudflareWorkersAiEmbeddingSettings:
 
     @classmethod
     def from_environment(cls) -> CloudflareWorkersAiEmbeddingSettings:
+        conversion_failed = False
         try:
+            api_token = SecretStr(os.getenv("CLOUDFLARE_API_TOKEN", ""))
             account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
-            token = os.getenv("CLOUDFLARE_API_TOKEN", "")
             model = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL", "")
             connect = float(os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_CONNECT_TIMEOUT_SECONDS", "10"))
             read = float(os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_READ_TIMEOUT_SECONDS", "60"))
         except (OverflowError, TypeError, ValueError):
+            conversion_failed = True
+            connect = read = 0.0
+        if conversion_failed:
             raise_sanitized(EmbeddingConfigurationError("Cloudflare embedding timeout configuration is invalid"))
-        return cls(account_id, SecretStr(token), model, connect, read)
+        return cls(account_id, api_token, model, connect, read)
 
     from_env = from_environment
