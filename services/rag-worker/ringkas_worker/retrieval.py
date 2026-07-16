@@ -11,10 +11,13 @@ from uuid import UUID
 from pydantic import SecretStr
 from qdrant_client import QdrantClient
 
-from ringkas_worker.embedding import EmbeddingBatchResult, EmbeddingClient
-from ringkas_worker.qdrant_setup import DENSE_VECTOR_NAME, LEGACY_COLLECTION_NAME
-
-COLLECTION_NAME = LEGACY_COLLECTION_NAME
+from ringkas_worker.embedding import (
+    CloudflareWorkersAiEmbeddingClient,
+    CloudflareWorkersAiEmbeddingSettings,
+    EmbeddingBatchResult,
+    EmbeddingClient,
+)
+from ringkas_worker.qdrant_setup import COLLECTION_NAME, DENSE_VECTOR_NAME
 
 
 class DenseRetrievalError(Exception):
@@ -134,6 +137,8 @@ class DenseRetrievalSettings:
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
                 _raise_safe(DenseRetrievalConfigurationError(f"{name} must be a positive integer"))
         object.__setattr__(self, "collection_name", self.collection_name.strip())
+        if self.collection_name != COLLECTION_NAME:
+            _raise_safe(DenseRetrievalConfigurationError(f"collection name must be {COLLECTION_NAME}"))
 
     @classmethod
     def from_environment(cls) -> DenseRetrievalSettings:
@@ -196,7 +201,14 @@ class QdrantQueryClient(Protocol):
 
 
 class QdrantDenseRetriever:
-    def __init__(self, embedding_client: EmbeddingClient, qdrant_client: QdrantQueryClient, settings: DenseRetrievalSettings) -> None:
+    def __init__(
+        self,
+        embedding_client: EmbeddingClient,
+        qdrant_client: QdrantQueryClient,
+        settings: DenseRetrievalSettings,
+        *,
+        _owned_clients: tuple[object, ...] = (),
+    ) -> None:
         if not isinstance(embedding_client, EmbeddingClient) or not isinstance(qdrant_client, QdrantQueryClient):
             _raise_safe(DenseRetrievalConfigurationError("retrieval clients have invalid types"))
         if not isinstance(settings, DenseRetrievalSettings):
@@ -204,6 +216,32 @@ class QdrantDenseRetriever:
         self._embedding_client = embedding_client
         self._qdrant_client = qdrant_client
         self._settings = settings
+        self._owned_clients = _owned_clients
+
+    @classmethod
+    def from_environment(cls) -> QdrantDenseRetriever:
+        settings = DenseRetrievalSettings.from_environment()
+        embedding_settings = CloudflareWorkersAiEmbeddingSettings.from_environment()
+        embedding_client = CloudflareWorkersAiEmbeddingClient(embedding_settings)
+        try:
+            qdrant_client = qdrant_client_from_settings(settings)
+        except Exception:
+            embedding_client.close()
+            raise
+        return cls(embedding_client, qdrant_client, settings, _owned_clients=(embedding_client, qdrant_client))
+
+    def close(self) -> None:
+        owned_clients, self._owned_clients = self._owned_clients, ()
+        for client in owned_clients:
+            close = getattr(client, "close", None)
+            if callable(close):
+                close()
+
+    def __enter__(self) -> QdrantDenseRetriever:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
 
     def retrieve(self, query: str, *, input_type: str | None = None, truncate: str | None = None) -> DenseRetrievalResult:
         if not isinstance(query, str):

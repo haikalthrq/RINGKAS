@@ -8,7 +8,8 @@ from uuid import uuid4
 import pytest
 from pydantic import SecretStr
 
-from ringkas_worker.embedding import EmbeddingBatchResult, EmbeddingVector
+from ringkas_worker.embedding import CloudflareWorkersAiEmbeddingClient, EmbeddingBatchResult, EmbeddingVector
+from ringkas_worker.qdrant_setup import COLLECTION_NAME, LEGACY_COLLECTION_NAME
 from ringkas_worker.retrieval import (
     DenseRetriever,
     DenseRetrievalConfigurationError,
@@ -95,7 +96,7 @@ def test_protocol_query_contract_and_ordered_immutable_candidates():
     assert [item.qdrant_point_id for item in result.candidates] == [str(first.id), str(second.id)]
     assert embedding.calls == [(("  unchanged query  ",), "custom", "END")]
     call = qdrant.calls[0]
-    assert call["collection_name"] == "ringkas_chunks_v1"
+    assert call["collection_name"] == COLLECTION_NAME
     assert call["using"] == "dense" and call["limit"] == 20
     assert call["with_payload"] is True and call["with_vectors"] is False
     assert call["score_threshold"] is None and "query_filter" not in call
@@ -280,3 +281,31 @@ def test_settings_require_positive_dimensions_and_limits(value):
         settings(expected_dense_vector_size=value)
     with pytest.raises(DenseRetrievalConfigurationError):
         settings(dense_top_k=value)
+
+
+def test_legacy_collection_is_rejected():
+    with pytest.raises(DenseRetrievalConfigurationError):
+        settings(collection_name=LEGACY_COLLECTION_NAME)
+
+
+def test_environment_composition_uses_cloudflare_and_versioned_1024_contract(monkeypatch):
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "account-id")
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "cloudflare-token")
+    monkeypatch.setenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL", "@cf/qwen/qwen3-embedding-0.6b")
+    monkeypatch.setenv("QDRANT_DENSE_VECTOR_SIZE", "1024")
+    qdrant = FakeQdrant()
+    monkeypatch.setattr("ringkas_worker.retrieval.qdrant_client_from_settings", lambda _: qdrant)
+
+    service = QdrantDenseRetriever.from_environment()
+    assert isinstance(service._embedding_client, CloudflareWorkersAiEmbeddingClient)
+    assert service._embedding_client._settings.model == "@cf/qwen/qwen3-embedding-0.6b"
+    assert service._settings.expected_dense_vector_size == 1024
+    assert service._settings.collection_name == COLLECTION_NAME
+    service.close()
+    assert service._embedding_client._closed is True
+
+
+def test_1024_query_vector_is_accepted_before_query():
+    service, _, qdrant = retriever(result=EmbeddingBatchResult((EmbeddingVector(0, (1.0,) * 1024),), 1024), expected_dense_vector_size=1024)
+    service.retrieve("query")
+    assert len(qdrant.calls[0]["query"]) == 1024

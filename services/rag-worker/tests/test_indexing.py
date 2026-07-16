@@ -7,8 +7,8 @@ import pytest
 from qdrant_client import models
 from pydantic import SecretStr
 
-from ringkas_worker.embedding import EmbeddingBatchResult, EmbeddingVector
-from ringkas_worker.qdrant_setup import LEGACY_COLLECTION_NAME
+from ringkas_worker.embedding import CloudflareWorkersAiEmbeddingClient, EmbeddingBatchResult, EmbeddingVector
+from ringkas_worker.qdrant_setup import COLLECTION_NAME, LEGACY_COLLECTION_NAME
 from ringkas_worker.indexing import (
     ChunkIndexer,
     ChunkIndexingResult,
@@ -240,3 +240,31 @@ def test_legacy_collection_cannot_receive_new_vectors():
             collection_name=LEGACY_COLLECTION_NAME,
             expected_dense_vector_size=2,
         )
+
+
+def test_environment_composition_uses_cloudflare_and_versioned_1024_contract(monkeypatch):
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "account-id")
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "cloudflare-token")
+    monkeypatch.setenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL", "@cf/qwen/qwen3-embedding-0.6b")
+    monkeypatch.setenv("QDRANT_DENSE_VECTOR_SIZE", "1024")
+    qdrant = FakeQdrant()
+    monkeypatch.setattr("ringkas_worker.indexing.qdrant_client_from_settings", lambda _: qdrant)
+
+    service = QdrantChunkIndexer.from_environment()
+    assert isinstance(service._embedding_client, CloudflareWorkersAiEmbeddingClient)
+    assert service._embedding_client._settings.model == "@cf/qwen/qwen3-embedding-0.6b"
+    assert service._settings.expected_dense_vector_size == 1024
+    assert service._settings.collection_name == COLLECTION_NAME
+    service.close()
+    assert service._embedding_client._closed is True
+
+
+def test_1024_index_vector_is_accepted_before_upsert():
+    qdrant = FakeQdrant()
+    service = QdrantChunkIndexer(
+        FakeEmbedding(result(dimension=1024)),
+        qdrant,
+        QdrantIndexingSettings(qdrant_api_key=SecretStr(""), expected_dense_vector_size=1024),
+    )
+    service.index([chunk()])
+    assert len(qdrant.point_batches[0][0].vector["dense"]) == 1024

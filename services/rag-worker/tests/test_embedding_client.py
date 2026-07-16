@@ -236,6 +236,11 @@ def test_cloudflare_context_manager_and_use_after_close() -> None:
         client.embed(["text"])
 
 
+def test_cloudflare_model_mismatch_is_rejected() -> None:
+    with pytest.raises(EmbeddingConfigurationError):
+        CloudflareWorkersAiEmbeddingSettings("account-id", SecretStr("cloudflare-token"), "other-model")
+
+
 @pytest.mark.parametrize("name", ["CLOUDFLARE_WORKERS_AI_EMBEDDING_CONNECT_TIMEOUT_SECONDS", "CLOUDFLARE_WORKERS_AI_EMBEDDING_READ_TIMEOUT_SECONDS"])
 def test_cloudflare_invalid_timeout_environment_is_typed(monkeypatch: pytest.MonkeyPatch, name: str) -> None:
     monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "account")

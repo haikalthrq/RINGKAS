@@ -11,7 +11,12 @@ from uuid import UUID
 from pydantic import SecretStr
 from qdrant_client import QdrantClient, models
 
-from ringkas_worker.embedding import EmbeddingBatchResult, EmbeddingClient
+from ringkas_worker.embedding import (
+    CloudflareWorkersAiEmbeddingClient,
+    CloudflareWorkersAiEmbeddingSettings,
+    EmbeddingBatchResult,
+    EmbeddingClient,
+)
 from ringkas_worker.qdrant_setup import COLLECTION_NAME, DENSE_VECTOR_NAME
 
 
@@ -207,7 +212,14 @@ class QdrantUpsertClient(Protocol):
 
 
 class QdrantChunkIndexer:
-    def __init__(self, embedding_client: EmbeddingClient, qdrant_client: QdrantUpsertClient, settings: QdrantIndexingSettings) -> None:
+    def __init__(
+        self,
+        embedding_client: EmbeddingClient,
+        qdrant_client: QdrantUpsertClient,
+        settings: QdrantIndexingSettings,
+        *,
+        _owned_clients: tuple[object, ...] = (),
+    ) -> None:
         if not isinstance(embedding_client, EmbeddingClient) or not isinstance(qdrant_client, QdrantUpsertClient):
             _raise_safe(IndexingConfigurationError("indexing clients have invalid types"))
         if not isinstance(settings, QdrantIndexingSettings):
@@ -215,6 +227,32 @@ class QdrantChunkIndexer:
         self._embedding_client = embedding_client
         self._qdrant_client = qdrant_client
         self._settings = settings
+        self._owned_clients = _owned_clients
+
+    @classmethod
+    def from_environment(cls) -> QdrantChunkIndexer:
+        settings = QdrantIndexingSettings.from_environment()
+        embedding_settings = CloudflareWorkersAiEmbeddingSettings.from_environment()
+        embedding_client = CloudflareWorkersAiEmbeddingClient(embedding_settings)
+        try:
+            qdrant_client = qdrant_client_from_settings(settings)
+        except Exception:
+            embedding_client.close()
+            raise
+        return cls(embedding_client, qdrant_client, settings, _owned_clients=(embedding_client, qdrant_client))
+
+    def close(self) -> None:
+        owned_clients, self._owned_clients = self._owned_clients, ()
+        for client in owned_clients:
+            close = getattr(client, "close", None)
+            if callable(close):
+                close()
+
+    def __enter__(self) -> QdrantChunkIndexer:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
 
     def index(self, chunks: Sequence[IndexableChunk], *, input_type: str | None = None, truncate: str | None = None) -> ChunkIndexingResult:
         validated = self._validate_batch(chunks)

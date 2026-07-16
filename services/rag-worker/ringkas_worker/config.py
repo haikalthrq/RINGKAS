@@ -60,7 +60,6 @@ class WorkerSettings(BaseSettings):
     database_url: SecretStr = Field(validation_alias="DATABASE_URL", repr=False)
     qdrant_url: AnyHttpUrl = Field(default="http://qdrant:6333", validation_alias="QDRANT_URL")
     qdrant_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="QDRANT_API_KEY", repr=False)
-    nvidia_nim_api_key: SecretStr = Field(default=SecretStr(""), validation_alias="NVIDIA_NIM_API_KEY", repr=False)
     pdf_storage_path: Path = Field(default=Path("/data/ringkas/pdfs"), validation_alias="PDF_STORAGE_PATH")
     pdf_max_size_bytes: int = Field(default=50 * 1024 * 1024, validation_alias="PDF_MAX_SIZE_BYTES")
     pdf_connect_timeout_seconds: float = Field(default=10.0, validation_alias="PDF_CONNECT_TIMEOUT_SECONDS")

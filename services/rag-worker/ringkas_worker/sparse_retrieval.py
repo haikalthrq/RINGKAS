@@ -141,6 +141,8 @@ class SparseRetrievalSettings:
         if isinstance(self.sparse_top_k, bool) or not isinstance(self.sparse_top_k, int) or self.sparse_top_k <= 0:
             _raise_safe(SparseRetrievalConfigurationError("sparse top-k must be a positive integer"))
         object.__setattr__(self, "collection_name", self.collection_name.strip())
+        if self.collection_name != COLLECTION_NAME:
+            _raise_safe(SparseRetrievalConfigurationError(f"collection name must be {COLLECTION_NAME}"))
 
     @classmethod
     def from_environment(cls) -> SparseRetrievalSettings:

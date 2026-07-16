@@ -9,6 +9,7 @@ import pytest
 from pydantic import SecretStr
 from qdrant_client import models
 
+from ringkas_worker.qdrant_setup import COLLECTION_NAME, LEGACY_COLLECTION_NAME
 from ringkas_worker.sparse_retrieval import (
     QdrantSparseRetriever,
     SparseQuery,
@@ -64,6 +65,7 @@ def test_query_sorting_and_exact_contract():
     assert isinstance(call["query"], models.SparseVector)
     assert call["query"].indices == [2, 7] and call["query"].values == [0.2, 0.7]
     assert call["using"] == "sparse" and call["limit"] == 20
+    assert call["collection_name"] == COLLECTION_NAME
     assert call["with_payload"] is True and call["with_vectors"] is False
     assert call["score_threshold"] is None and "query_filter" not in call
 
@@ -175,3 +177,8 @@ def test_api_key_is_masked_in_repr():
 def test_sparse_top_k_is_positive_integer(value):
     with pytest.raises(SparseRetrievalConfigurationError):
         SparseRetrievalSettings(sparse_top_k=value)
+
+
+def test_legacy_collection_is_rejected():
+    with pytest.raises(SparseRetrievalConfigurationError):
+        SparseRetrievalSettings(collection_name=LEGACY_COLLECTION_NAME)
