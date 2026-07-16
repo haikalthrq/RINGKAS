@@ -519,10 +519,17 @@ Generation:
 - fallback: Cloudflare Workers AI;
 - OpenCode Zen / DeepSeek V4 Flash Free: experimental only.
 
-Embedding:
+Embedding target yang disetujui:
 
-- NVIDIA NIM saja;
-- tidak ada fallback embedding.
+- Cloudflare Workers AI saja;
+- model: `@cf/qwen/qwen3-embedding-0.6b`;
+- tidak ada fallback embedding otomatis.
+
+Implementasi saat ini masih merefleksikan catatan historis NVIDIA pada task
+embedding yang telah selesai; migrasi ke target ini belum dianggap selesai.
+Provider/model embedding yang berbeda tidak boleh dicampur dengan vector lama.
+Perubahan provider/model wajib menggunakan collection Qdrant berversi baru dan
+full corpus reindex.
 
 Jika embedding provider gagal:
 
@@ -532,7 +539,9 @@ Jika embedding provider gagal:
 Catatan:
 
 - Model generation spesifik masih TBD.
-- Model embedding spesifik masih TBD.
+- Dimensi output vector model Cloudflare harus diverifikasi live sebelum
+  collection baru dibuat; dokumentasi upstream belum cukup untuk mengunci
+  dimensi atau parameter `dimensions`.
 - Rate limit dan availability provider harus diverifikasi sebelum implementasi.
 
 ---
@@ -739,8 +748,8 @@ Asumsi awal:
 2. Publikasi BPS DKI Jakarta 5 tahun terakhir tersedia dalam format PDF digital yang dapat diproses tanpa OCR.
 3. Jumlah publikasi dalam scope MVP tidak melebihi 300 dokumen, atau dapat diprioritaskan jika lebih.
 4. VPS memiliki storage cukup untuk menyimpan PDF, metadata, dan service backend.
-5. NVIDIA NIM dapat digunakan sebagai provider generation dan embedding untuk MVP, tetapi model spesifik dan limit masih perlu diverifikasi.
-6. Cloudflare Workers AI dapat menjadi fallback generation, tetapi model spesifik dan limit masih perlu diverifikasi.
+5. NVIDIA NIM digunakan sebagai provider generation utama; model spesifik dan limit masih perlu diverifikasi.
+6. Cloudflare Workers AI digunakan sebagai fallback generation dan satu-satunya provider embedding; model embedding `@cf/qwen/qwen3-embedding-0.6b` telah disetujui.
 7. RAGAS dan LLM-as-judge dapat membantu evaluasi otomatis, tetapi tetap memiliki keterbatasan.
 8. Manual audit 20% cukup untuk baseline awal MVP, bukan untuk klaim akurasi menyeluruh.
 
@@ -753,7 +762,7 @@ TBD yang masih perlu diputuskan:
 1. Endpoint API BPS spesifik yang digunakan.
 2. Struktur response API BPS untuk metadata dan PDF.
 3. Model generation NVIDIA NIM spesifik.
-4. Model embedding NVIDIA NIM spesifik.
+4. Verifikasi live dimensi output embedding Cloudflare dan lock konfigurasi dimensinya.
 5. Model fallback Cloudflare Workers AI spesifik.
 6. Sparse retrieval method di Qdrant.
 7. Reranker provider/model jika feature flag diaktifkan.

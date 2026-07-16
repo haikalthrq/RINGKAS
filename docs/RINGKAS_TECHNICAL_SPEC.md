@@ -46,7 +46,7 @@ Keputusan arsitektur inti:
 | Fusion | Reciprocal Rank Fusion / RRF |
 | Generation primary | NVIDIA NIM |
 | Generation fallback | Cloudflare Workers AI fallback untuk generation |
-| Embedding provider | NVIDIA NIM only |
+| Embedding provider | Cloudflare Workers AI only: `@cf/qwen/qwen3-embedding-0.6b` |
 | Auth | ASP.NET Core Identity + Google OAuth via backend |
 | Admin UI | Sederhana: trigger ingestion, status job, log ringkas |
 
@@ -192,7 +192,7 @@ Tanggung jawab:
 - Menandai PDF tanpa text layer sebagai `unsupported_or_extraction_failed`.
 - Cleaning text.
 - Chunking dengan LangChain `RecursiveCharacterTextSplitter`.
-- Membuat embedding menggunakan NVIDIA NIM.
+- Membuat embedding menggunakan Cloudflare Workers AI dengan model yang disetujui.
 - Menyimpan vector dan payload ke Qdrant.
 - Menyimpan metadata dokumen/chunk ke PostgreSQL.
 - Menjalankan evaluation harness.
@@ -344,8 +344,8 @@ NVIDIA_NIM_GENERATION_ALLOWED_HOSTS=TBD
 NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS=TBD
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
-CLOUDFLARE_WORKERS_AI_MODEL=TBD
-CLOUDFLARE_WORKERS_AI_TIMEOUT_SECONDS=TBD
+CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=TBD
+CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS=TBD
 QDRANT_URL=http://qdrant:6333
 QDRANT_API_KEY=TBD_OPTIONAL
 PDF_STORAGE_PATH=/data/ringkas/pdfs
@@ -359,7 +359,11 @@ REGISTERED_DAILY_QUOTA=TBD
 DATABASE_URL=postgresql://...
 QDRANT_URL=http://qdrant:6333
 QDRANT_API_KEY=TBD_OPTIONAL
-NVIDIA_NIM_API_KEY=TBD
+CLOUDFLARE_ACCOUNT_ID=TBD
+CLOUDFLARE_API_TOKEN=TBD
+CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
+QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v1
+QDRANT_DENSE_VECTOR_SIZE=TBD_AFTER_LIVE_VERIFICATION
 PDF_STORAGE_PATH=/data/ringkas/pdfs
 BPS_API_KEY=TBD_IF_REQUIRED
 BPS_BASE_URL=TBD
@@ -519,14 +523,14 @@ Additional profile fields may include:
 Suggested collection name:
 
 ```text
-ringkas_chunks_v1
+ringkas_chunks_cf_qwen3_embedding_v1
 ```
 
 ### 10.2 Vector Types
 
 MVP uses hybrid retrieval:
 
-- Dense vector from NVIDIA NIM embedding model.
+- Dense vector from the approved Cloudflare Workers AI embedding model.
 - Sparse vector for lexical retrieval.
 
 Exact sparse method: TBD.
@@ -879,9 +883,17 @@ Each chunk must include:
 
 ### 18.1 Embedding Provider
 
-- Provider: NVIDIA NIM.
-- Model name: TBD after checking availability in account.
+- Provider: Cloudflare Workers AI only.
+- Model name: `@cf/qwen/qwen3-embedding-0.6b`.
 - No embedding fallback.
+
+Cloudflare Workers AI embedding contract:
+
+- Endpoint: `POST https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/run/@cf/qwen/qwen3-embedding-0.6b`.
+- Authentication: `Authorization: Bearer <token>`.
+- Request body uses `text`, accepting one string or an array of strings for batching.
+- Documented context window: 8,192 tokens.
+- Exact output vector dimension is not inferred or hardcoded; current provider documentation does not establish it or a configurable `dimensions` parameter.
 
 Reason:
 
@@ -898,11 +910,21 @@ Python worker writes:
 
 ### 18.3 Re-indexing Policy
 
-If embedding model changes:
+If embedding provider or model changes:
 
 - Create a new Qdrant collection version.
 - Re-embed all chunks.
 - Do not mix embeddings from different models in the same vector space unless explicitly designed.
+
+The exact output dimension is not inferred or hardcoded from upstream Qwen
+documentation. Before creating the new collection, live verification must call
+the configured model, validate a consistent non-zero dimension for every
+returned vector, and lock that value in configuration. Collection creation must
+fail safely when the verified dimension does not match configuration.
+
+The current implementation/task records for T-0402 and T-0403 are historical
+NVIDIA-based records. The approved Cloudflare target is not implemented until
+T-0415 through T-0417 are complete.
 
 ---
 
@@ -1312,8 +1334,8 @@ Note:
 |---|---|---|
 | Domain and HTTPS | TBD | Caddy recommended if no preference |
 | NVIDIA NIM generation model | TBD | choose after account availability check |
-| NVIDIA NIM embedding model | TBD | must be locked before indexing |
-| Cloudflare Workers AI fallback model | TBD | fallback only |
+| Cloudflare Workers AI embedding model | Approved | `@cf/qwen/qwen3-embedding-0.6b`; exact vector dimension requires live verification |
+| Cloudflare Workers AI generation fallback model | TBD | generation fallback only |
 | Registered user daily quota | TBD | after provider limit estimation |
 | Session vs JWT | TBD | depends on deployment/domain setup |
 | Sparse vector method in Qdrant | TBD | do not claim BM25 unless implemented |
@@ -1334,8 +1356,8 @@ AI agents working on RINGKAS must obey:
 5. OCR must not be implemented in MVP.
 6. Docling must not be used as production parser in MVP.
 7. PyMuPDF is the MVP parser.
-8. Embedding provider is NVIDIA NIM only.
-9. Do not add embedding fallback automatically.
+8. Embedding provider is Cloudflare Workers AI only with the approved Qwen3 model.
+9. Do not add embedding fallback automatically; provider/model changes require a new collection and full reindex.
 10. All substantive answers require citation.
 11. Do not expose retrieval score as answer accuracy.
 12. Do not add user document upload.

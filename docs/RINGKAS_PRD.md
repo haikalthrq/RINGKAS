@@ -27,6 +27,12 @@ MVP RINGKAS berfokus pada publikasi BPS DKI Jakarta tingkat provinsi dalam 5 tah
 
 Produk disajikan melalui Next.js + TypeScript dengan App Router sebagai frontend/web presentation layer dan API consumer terhadap ASP.NET Core Web API. ASP.NET Core tetap menjadi main backend/API dan source of truth untuk domain logic, authentication, authorization, Chat/Q&A, document search, admin ingestion, rate limiting, dan application logging. Python RAG Worker tetap menjadi internal processing service. Next.js tidak mengakses PostgreSQL atau Qdrant secara langsung.
 
+Arsitektur embedding yang disetujui menggunakan Cloudflare Workers AI saja dengan
+model `@cf/qwen/qwen3-embedding-0.6b`. Tidak ada fallback embedding otomatis.
+Migrasi dari implementasi historis ke target ini belum selesai; provider/model
+embedding tidak boleh dicampur dalam collection Qdrant yang sama. Perubahan
+provider/model memerlukan collection Qdrant berversi baru dan full corpus reindex.
+
 ---
 
 ## 3. Background and Problem
@@ -479,4 +485,3 @@ Dokumen lanjutan:
 - `TASKS.md` untuk backlog granular.
 - `AGENTS.md` untuk aturan AI agent.
 - `EVALUATION_PLAN.md` untuk detail evaluasi RAG.
-

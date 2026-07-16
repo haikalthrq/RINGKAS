@@ -166,8 +166,8 @@ Backdate diperbolehkan.
 | Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
 |---|---:|---|---|---|---|---|---|---|---|
 | T-0401 | 2026-06-24 | P0 | Vector DB | Add Qdrant collection setup script | T-0005, T-0314 | Collection created with dense and sparse vector support placeholder | Script idempotent | Wrong vector schema | done |
-| T-0402 | 2026-06-24 | P0 | Embedding | Add NVIDIA NIM embedding client placeholder | T-0313 | Embedding client with env-based model name | Can call or mock embedding provider | Provider limit unknown | done |
-| T-0403 | 2026-06-25 | P0 | Embedding | Index chunk embeddings into Qdrant | T-0401, T-0402 | Chunk vectors stored in Qdrant with metadata payload | Qdrant points map to chunk IDs | Broken source mapping | done |
+| T-0402 | 2026-06-24 | P0 | Embedding | Historical record: add NVIDIA NIM embedding client placeholder | T-0313 | Historical embedding client/config record | Historical record retained; superseded by approved Cloudflare migration tasks | Superseded provider decision could be mistaken for current target | done |
+| T-0403 | 2026-06-25 | P0 | Embedding | Historical record: index chunk embeddings into Qdrant | T-0401, T-0402 | Historical Qdrant indexing record | Historical record retained; existing vectors must not be mixed with the new model | Existing vector space is incompatible with new model | done |
 | T-0404 | 2026-06-25 | P1 | Retrieval | Implement dense retrieval | T-0403 | Query vector search returns top candidates | Returns chunk IDs and scores | Low recall | done |
 | T-0405 | 2026-06-26 | P1 | Retrieval | Implement sparse retrieval placeholder | T-0401 | Sparse retrieval path exists | Can be mocked if sparse model pending | Hybrid not truly ready | done |
 | T-0406 | 2026-06-26 | P0 | Retrieval | Implement RRF fusion | T-0404, T-0405 | Dense + sparse candidates fused | Config supports dense top-20 + sparse top-20 | Fusion bugs | done |
@@ -177,7 +177,20 @@ Backdate diperbolehkan.
 | T-0410 | 2026-06-28 | P1 | Logging | Add retrieval debug log for developer | T-0407 | Logs query, filters, candidates, selected chunks | Sensitive content handled carefully | Privacy/log bloat | done |
 | T-0411 | 2026-06-29 | P1 | API | Add document search backend endpoint | T-0305 | `/api/documents/search` | Supports keyword/metadata basics | Search too broad | done |
 | T-0412 | 2026-06-30 | P1 | API | Add citation/source endpoint | T-0408 | `/api/sources/{id}` or equivalent | Returns source excerpt and metadata | Exposes wrong source | done |
-| T-0413 | 2026-06-30 | P0 | Worker | Wire end-to-end ingestion processor | T-0304, T-0308, T-0310, T-0312, T-0315, T-0403 | Claimed jobs run metadata retrieval, download, deduplication, parsing, cleaning, chunking, embedding, indexing, status, and logging flow | A queued job reaches completed or failed deterministically; indexed chunks retain source mapping; unsupported and per-document failures are recorded without stopping the batch | Pipeline components remain disconnected or jobs become stuck | todo |
+| T-0413 | 2026-06-30 | P0 | Worker | Wire end-to-end ingestion processor | T-0304, T-0308, T-0310, T-0312, T-0315, T-0403, T-0417 | Claimed jobs run metadata retrieval, download, deduplication, parsing, cleaning, chunking, Cloudflare embedding, versioned Qdrant indexing, status, and logging flow | A queued job reaches completed or failed deterministically only after the approved embedding migration/integration is complete; indexed chunks retain source mapping; unsupported and per-document failures are recorded without stopping the batch | Pipeline components remain disconnected or jobs become stuck; vectors may be written to the wrong collection | todo |
+
+### Batch 1 — Cloudflare Embedding Architecture Alignment
+
+T-0402 and T-0403 above remain as historical completed implementation records.
+They are superseded by the approved Cloudflare-only embedding target and do not
+mean that the migration is complete.
+
+| Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
+|---|---:|---|---|---|---|---|---|---|---|
+| T-0414 | 2026-07-16 | P0 | Docs/Config | Lock Cloudflare Workers AI embedding architecture and configuration contract | T-0402, T-0403 | Source-of-truth docs and env examples define Cloudflare-only embedding, model identifier, separate generation variables, versioned collection contract, no fallback, live dimension verification requirement, and migration boundary | All source-of-truth docs are consistent; no vector dimension is invented; placeholders only; no application code, collection, or production data is changed | Documentation drift or accidental mixing of generation and embedding configuration | done |
+| T-0415 | 2026-07-16 | P0 | Embedding | Implement Cloudflare Workers AI Qwen3 embedding client with sanitized errors, bounded timeout, batching, response validation, and tests | T-0414 | Worker client for `@cf/qwen/qwen3-embedding-0.6b` with safe configuration and tests | Calls the documented Cloudflare endpoint; uses bearer auth; supports string/array input batching; sanitizes errors; enforces bounded timeout; validates non-empty consistent vectors; tests pass without secrets | Provider response shape, limits, or availability differ from assumptions | todo |
+| T-0416 | 2026-07-16 | P0 | Vector DB/Embedding | Add live dimension verification, versioned Qdrant collection migration, and full reindex tooling | T-0414, T-0415 | Live dimension verifier, configuration lock, safe collection creation, migration tooling, and full corpus reindex command | Every returned vector has one consistent non-zero dimension; collection creation fails on mismatch; old and new vectors are never mixed; full corpus reindex is resumable/observable | Incorrect dimension or partial reindex can corrupt retrieval compatibility | todo |
+| T-0417 | 2026-07-16 | P0 | Worker/Retrieval | Integrate the new embedding client into indexing and query embedding, then verify dense retrieval uses one compatible vector space | T-0415, T-0416 | Indexing and query paths use the same approved model and versioned collection | Ingestion and query embedding use the Cloudflare client/model; dense vectors match the verified collection dimension; compatibility is tested; hybrid dense+sparse, RRF, and Top-10 remain intact; the sufficiency interface/path is not altered | Index/query model mismatch causes empty or incorrect dense retrieval | todo |
 
 ---
 
@@ -209,7 +222,7 @@ Backdate diperbolehkan.
 | T-0604 | 2026-07-06 | P0 | Quota | Enforce guest 1-prompt quota | T-0111, T-0504 | Guest limited to one prompt | Guest cannot spam chat | Abuse risk | todo |
 | T-0605 | 2026-07-06 | P1 | Quota | Add registered user daily quota placeholder | T-0111 | Configurable daily quota | Quota value env/config-based | Cost overrun | todo |
 | T-0606 | 2026-07-06 | P1 | Security | Add admin endpoint abuse protection | T-0507, T-0508 | Admin endpoints still rate-limited/protected | Repeated ingestion abuse prevented | Resource exhaustion | todo |
-| T-0607 | 2026-07-07 | P0 | Integration | End-to-end ingestion smoke test | T-0413, T-0507 | One sample document ingested to Qdrant through the admin-triggered job flow | Document chunks searchable | Pipeline broken late | todo |
+| T-0607 | 2026-07-07 | P0 | Integration | End-to-end ingestion smoke test | T-0413, T-0507 | One sample document ingested to Qdrant through the admin-triggered job flow | Document chunks searchable after the working T-0413 Cloudflare embedding pipeline is available | Pipeline broken late | todo |
 | T-0608 | 2026-07-07 | P0 | Integration | End-to-end chat smoke test | T-0504, T-0607 | User asks question and receives cited answer | No citation means failure | Hallucination | todo |
 | T-0609 | 2026-07-07 | P1 | Docs | Update implementation docs | T-0607, T-0608 | README/docs include setup and known limitations | New dev/agent can run project | Docs stale | todo |
 

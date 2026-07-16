@@ -45,7 +45,7 @@ Next.js + TypeScript dengan App Router berfungsi sebagai frontend/web presentati
 12. Hybrid retrieval menggunakan Qdrant dense + sparse vector.
 13. RRF fusion.
 14. Generation dengan NVIDIA NIM primary dan Cloudflare Workers AI fallback.
-15. Embedding dengan NVIDIA NIM.
+15. Embedding dengan Cloudflare Workers AI model `@cf/qwen/qwen3-embedding-0.6b` saja.
 16. Evaluasi automated-first menggunakan RAGAS/LLM-as-judge dan manual audit 20%.
 
 ### 3.2 Out of Scope MVP
@@ -359,7 +359,8 @@ Setiap chunk wajib memiliki metadata:
 
 #### FR-EMB-001 Embedding Provider
 
-Embedding menggunakan NVIDIA NIM pada MVP.
+Embedding menggunakan Cloudflare Workers AI saja dengan model
+`@cf/qwen/qwen3-embedding-0.6b` pada target MVP.
 
 #### FR-EMB-002 No Embedding Fallback
 
@@ -369,13 +370,18 @@ Tidak ada fallback embedding provider.
 
 Jika embedding provider gagal, sistem menampilkan error dan tidak otomatis memakai embedding model berbeda.
 
+#### FR-EMB-005 Versioned Collection and Dimension Verification
+
+Provider/model embedding tidak boleh dicampur dengan vector yang sudah ada.
+Perubahan provider/model memerlukan collection Qdrant berversi baru dan full
+corpus reindex. Dimensi output harus diverifikasi live dari configured model,
+memastikan semua vector berdimensi sama dan non-zero, lalu dikunci sebelum
+collection baru dibuat. Pembuatan collection harus gagal aman jika dimensi
+terverifikasi tidak cocok dengan konfigurasi.
+
 #### FR-EMB-004 Qdrant Storage
 
 Embedding dan chunk payload disimpan di Qdrant.
-
-#### FR-EMB-005 Model Specific TBD
-
-Model embedding spesifik masih TBD dan harus dikunci sebelum indexing penuh.
 
 ---
 
@@ -845,7 +851,7 @@ MVP secara sistem dianggap memenuhi SRD jika:
 1. Endpoint API BPS spesifik.
 2. API response schema BPS.
 3. Model generation NVIDIA NIM spesifik.
-4. Model embedding NVIDIA NIM spesifik.
+4. Verifikasi live dimensi output model embedding Cloudflare.
 5. Model Cloudflare Workers AI fallback spesifik.
 6. Sparse vector method di Qdrant.
 7. Qdrant collection schema final.
@@ -893,4 +899,3 @@ Dokumen ini perlu diturunkan lagi menjadi:
 7. `EVALUATION_PLAN.md`
 8. `TASKS.md`
 9. `AGENTS.md`
-

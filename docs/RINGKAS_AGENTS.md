@@ -191,7 +191,7 @@ Tidak boleh:
 
 - Menambahkan OCR ke MVP.
 - Menjadikan Docling parser production.
-- Menggunakan embedding fallback selain NVIDIA NIM.
+- Menggunakan embedding provider selain Cloudflare Workers AI atau menambahkan embedding fallback.
 - Mengubah corpus scope tanpa approval.
 - Membuat angka/statistik sendiri di output.
 
@@ -565,8 +565,8 @@ Agents must not invent final values for unresolved TBD items.
 Known TBD examples:
 
 1. Exact NVIDIA NIM generation model.
-2. Exact NVIDIA NIM embedding model.
-3. Exact Cloudflare Workers AI fallback model.
+2. Live-verified output dimension for the approved Cloudflare embedding model.
+3. Exact Cloudflare Workers AI generation fallback model.
 4. Registered user daily quota.
 5. Final session vs JWT strategy if not yet locked.
 6. Domain and HTTPS provider.
@@ -612,10 +612,12 @@ DATABASE_URL=
 QDRANT_URL=
 NVIDIA_NIM_API_KEY=
 NVIDIA_NIM_GENERATION_MODEL=
-NVIDIA_NIM_EMBEDDING_MODEL=
 CLOUDFLARE_ACCOUNT_ID=
 CLOUDFLARE_API_TOKEN=
 CLOUDFLARE_WORKERS_AI_MODEL=
+CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
+QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v1
+QDRANT_DENSE_VECTOR_SIZE=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 AUTH_SECRET=
