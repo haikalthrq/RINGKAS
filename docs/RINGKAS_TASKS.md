@@ -75,7 +75,7 @@ Backdate diperbolehkan.
 
 ## 6. Target Timeline Summary
 
-**Planned MVP completion:** 2026-07-15
+**Original planned MVP completion:** 2026-07-15 (historical milestone; Phase 7 review is being completed after this date)
 
 | Phase | Date Range | Focus |
 |---|---:|---|
@@ -86,7 +86,7 @@ Backdate diperbolehkan.
 | Phase 4 | 2026-06-24 to 2026-06-30 | Embedding, Qdrant indexing, retrieval, citation, ingestion orchestration |
 | Phase 5 | 2026-07-01 to 2026-07-04 | Generation, chat, document search, admin ingestion |
 | Phase 6 | 2026-07-05 to 2026-07-13 | Evaluation harness, logging, rate limit, hardening |
-| Phase 7 | 2026-07-14 to 2026-07-15 | MVP integration review and documentation lock |
+| Phase 7 | 2026-07-21 to 2026-07-23 | MVP integration review and documentation lock |
 
 ---
 
@@ -185,8 +185,10 @@ Backdate diperbolehkan.
 
 T-0402 and T-0403 above remain as historical completed implementation records.
 They are superseded by the approved Cloudflare-only embedding target. T-0415
-through T-0417 completed the migration, live dimension verification, versioned
-collection integration, and compatible indexing/query embedding paths.
+and T-0416 completed the client, live dimension verification, and versioned
+collection migration. T-0417 is now complete: sparse indexing/query preserves the
+required hybrid path, with live reindex and retrieval evidence recorded in the
+task report.
 
 | Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
 |---|---:|---|---|---|---|---|---|---|---|
@@ -235,10 +237,10 @@ collection integration, and compatible indexing/query embedding paths.
 
 | Task ID | Target Commit Date | Priority | Area | Task | Dependencies | Expected Output | Acceptance Criteria | Risk | Status |
 |---|---:|---|---|---|---|---|---|---|---|
-| T-0701 | 2026-07-14 | P0 | Review | Run MVP scope review against Project Brief/PRD/SRD | T-0609 | Scope review checklist | No out-of-scope feature slipped in | Scope creep | todo |
-| T-0702 | 2026-07-14 | P0 | Review | Run Technical Spec compliance review | T-0609 | Compliance notes | ASP.NET main backend + Python worker architecture intact | Architecture drift | todo |
-| T-0703 | 2026-07-15 | P1 | Review | Identify remaining TBDs | T-0701 | List of unresolved decisions | Operational limits, sparse/retrieval, quota/session, deployment, and evaluation decisions listed | Hidden blockers | todo |
-| T-0704 | 2026-07-15 | P1 | Docs | Lock task plan and prepare AGENTS.md input | T-0701, T-0702 | Clean task backlog ready for agents | AGENTS.md can reference tasks | Agent ambiguity | todo |
+| T-0701 | 2026-07-21 | P0 | Review | Run MVP scope review against Project Brief/PRD/SRD | T-0609 | Scope review checklist | No out-of-scope feature slipped in | Scope creep | done |
+| T-0702 | 2026-07-22 | P0 | Review | Run Technical Spec compliance review | T-0609 | Compliance notes | ASP.NET main backend + Python worker architecture intact | Architecture drift | done |
+| T-0703 | 2026-07-23 | P1 | Review | Identify remaining TBDs | T-0701 | List of unresolved decisions | Operational limits, sparse/retrieval, quota/session, deployment, and evaluation decisions listed | Hidden blockers | done |
+| T-0704 | 2026-07-23 | P1 | Docs | Lock task plan and prepare AGENTS.md input | T-0701, T-0702 | Clean task backlog ready for agents | AGENTS.md can reference tasks | Agent ambiguity | done |
 
 ---
 

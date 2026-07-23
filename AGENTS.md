@@ -25,20 +25,20 @@ Tujuan utama:
 
 Agents wajib mengikuti dokumen berikut dalam urutan prioritas:
 
-1. `RINGKAS_PROJECT_BRIEF.md`
-2. `RINGKAS_PRD.md`
-3. `RINGKAS_SRD.md`
-4. `RINGKAS_TECHNICAL_SPEC.md`
-5. `RINGKAS_TASKS.md`
-6. `RINGKAS_AGENTS.md`
+1. `docs/RINGKAS_PROJECT_BRIEF.md`
+2. `docs/RINGKAS_PRD.md`
+3. `docs/RINGKAS_SRD.md`
+4. `docs/RINGKAS_TECHNICAL_SPEC.md`
+5. `docs/RINGKAS_TASKS.md`
+6. `docs/RINGKAS_AGENTS.md`
 
 Jika terjadi konflik:
 
-- Technical implementation detail mengikuti `RINGKAS_TECHNICAL_SPEC.md`.
-- Product behavior mengikuti `RINGKAS_PRD.md`.
-- System requirement mengikuti `RINGKAS_SRD.md`.
-- Task execution mengikuti `RINGKAS_TASKS.md`.
-- Scope besar mengikuti `RINGKAS_PROJECT_BRIEF.md`.
+- Technical implementation detail mengikuti `docs/RINGKAS_TECHNICAL_SPEC.md`.
+- Product behavior mengikuti `docs/RINGKAS_PRD.md`.
+- System requirement mengikuti `docs/RINGKAS_SRD.md`.
+- Task execution mengikuti `docs/RINGKAS_TASKS.md`.
+- Scope besar mengikuti `docs/RINGKAS_PROJECT_BRIEF.md`.
 - Agent workflow mengikuti dokumen ini.
 
 Jika agent menemukan konflik antar dokumen, agent **tidak boleh langsung mengambil keputusan besar**. Agent harus melaporkan konflik ke Supervisor Agent.
@@ -59,7 +59,7 @@ Default setup proyek:
 Supervisor Agent bertugas:
 
 1. Membaca semua dokumen proyek.
-2. Memilih task dari `RINGKAS_TASKS.md`.
+2. Memilih task dari `docs/RINGKAS_TASKS.md`.
 3. Menentukan scope kerja subagent.
 4. Memberikan instruksi spesifik berbasis Task ID.
 5. Mereview hasil subagent.
@@ -232,16 +232,17 @@ Tidak boleh:
 
 ### 6.1 Architecture Constraints
 
-1. Backend/API utama wajib ASP.NET Core jika memungkinkan.
-2. Python RAG Worker adalah service internal, bukan public-facing backend utama.
+1. ASP.NET Core Web API adalah main backend/API dan source of truth untuk domain logic dan authorization.
+2. Python RAG Worker dan `rag-query` adalah service internal, bukan public-facing backend.
 3. Frontend MVP menggunakan Next.js + TypeScript dengan App Router sebagai presentation layer dan API consumer terhadap ASP.NET Core.
-4. Monorepo wajib modular.
-5. Deployment MVP menggunakan satu VPS.
-6. Docker Compose digunakan untuk MVP.
-7. PostgreSQL container digunakan untuk metadata/auth/job/log.
-8. Qdrant container digunakan untuk vector database.
-9. PDF storage berada di `/data/ringkas/pdfs`.
-10. Object storage adalah future plan, bukan MVP core.
+4. Next.js tidak boleh mengakses PostgreSQL atau Qdrant secara langsung atau mengambil alih core backend responsibilities.
+5. Monorepo wajib modular.
+6. Deployment MVP menggunakan satu VPS.
+7. Docker Compose digunakan untuk MVP.
+8. PostgreSQL container digunakan untuk metadata/auth/job/log.
+9. Qdrant container digunakan untuk vector database.
+10. PDF storage berada di `/data/ringkas/pdfs`.
+11. Object storage adalah future plan, bukan MVP core.
 
 ### 6.2 RAG Constraints
 
@@ -315,7 +316,7 @@ Agents dilarang mengimplementasikan fitur berikut kecuali Supervisor memberi app
 
 Subagent wajib melakukan hal berikut sebelum mengedit file:
 
-1. Baca assigned Task ID dari `RINGKAS_TASKS.md`.
+1. Baca assigned Task ID dari `docs/RINGKAS_TASKS.md`.
 2. Baca dependency task.
 3. Baca expected output.
 4. Baca acceptance criteria.
@@ -606,7 +607,7 @@ CLOUDFLARE_ACCOUNT_ID=
 CLOUDFLARE_API_TOKEN=
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=@cf/meta/llama-3.3-70b-instruct-fp8-fast
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
-QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v1
+QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v2
 QDRANT_DENSE_VECTOR_SIZE=1024
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
@@ -678,6 +679,16 @@ Recommended early execution order:
 7. T-0601 to T-0609
 8. T-0701 to T-0704
 
+For the current repository state, agents must also read:
+
+- `docs/PHASE6_RUNBOOK.md`
+- `docs/PHASE7_REVIEW.md`
+
+T-0417 retrieval work is complete and recorded in `docs/PHASE7_REVIEW.md`.
+Agents must preserve the approved sparse retrieval path and must not claim full
+production readiness while the remaining deployment and evaluation TBDs stay
+open; agents must not invent their values.
+
 ---
 
 ## 21. When to Add More Subagents
@@ -720,8 +731,8 @@ Do not start with too many subagents if repo is still empty.
 You are the RINGKAS Supervisor Agent.
 
 Your job:
-- Manage implementation using RINGKAS_TASKS.md.
-- Enforce RINGKAS_PROJECT_BRIEF.md, RINGKAS_PRD.md, RINGKAS_SRD.md, and RINGKAS_TECHNICAL_SPEC.md.
+- Manage implementation using docs/RINGKAS_TASKS.md.
+- Enforce docs/RINGKAS_PROJECT_BRIEF.md, docs/RINGKAS_PRD.md, docs/RINGKAS_SRD.md, and docs/RINGKAS_TECHNICAL_SPEC.md.
 - Assign one task at a time to the Subagent Executor.
 - Review changes against acceptance criteria.
 - Prevent scope creep.
