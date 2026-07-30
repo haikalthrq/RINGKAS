@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-24T00:00:00.000Z",
+  "title": "Design System: RINGKAS",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Institutional Blue",
+        "canonical": "oklch(43% 0.12 245)",
+        "tonalRamp": ["oklch(24% 0.08 245)", "oklch(32% 0.10 245)", "oklch(40% 0.12 245)", "oklch(48% 0.13 245)", "oklch(58% 0.12 245)", "oklch(68% 0.09 245)", "oklch(80% 0.06 245)", "oklch(94% 0.025 245)"]
+      },
+      "primary-soft": {
+        "role": "primary",
+        "displayName": "Blue Wash",
+        "canonical": "oklch(95% 0.025 245)",
+        "tonalRamp": ["oklch(28% 0.07 245)", "oklch(38% 0.09 245)", "oklch(48% 0.10 245)", "oklch(58% 0.10 245)", "oklch(68% 0.08 245)", "oklch(78% 0.06 245)", "oklch(88% 0.04 245)", "oklch(96% 0.018 245)"]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Statistical Orange",
+        "canonical": "oklch(68% 0.17 55)",
+        "tonalRamp": ["oklch(28% 0.09 55)", "oklch(38% 0.12 55)", "oklch(48% 0.15 55)", "oklch(58% 0.17 55)", "oklch(68% 0.17 55)", "oklch(76% 0.14 55)", "oklch(86% 0.09 55)", "oklch(95% 0.035 55)"]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Quiet White",
+        "canonical": "oklch(98% 0.008 245)",
+        "tonalRamp": ["oklch(25% 0.012 245)", "oklch(35% 0.012 245)", "oklch(45% 0.012 245)", "oklch(55% 0.012 245)", "oklch(65% 0.01 245)", "oklch(75% 0.01 245)", "oklch(86% 0.008 245)", "oklch(98% 0.008 245)"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface White",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": ["oklch(25% 0 0)", "oklch(35% 0 0)", "oklch(45% 0 0)", "oklch(55% 0 0)", "oklch(65% 0 0)", "oklch(75% 0 0)", "oklch(88% 0 0)", "oklch(100% 0 0)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(27% 0.04 245)",
+        "tonalRamp": ["oklch(17% 0.025 245)", "oklch(27% 0.04 245)", "oklch(37% 0.04 245)", "oklch(47% 0.035 245)", "oklch(57% 0.03 245)", "oklch(67% 0.02 245)", "oklch(80% 0.014 245)", "oklch(96% 0.006 245)"]
+      },
+      "error": {
+        "role": "semantic",
+        "displayName": "Error Red",
+        "canonical": "oklch(43% 0.18 25)",
+        "tonalRamp": ["oklch(24% 0.10 25)", "oklch(34% 0.14 25)", "oklch(44% 0.18 25)", "oklch(54% 0.18 25)", "oklch(64% 0.15 25)", "oklch(74% 0.11 25)", "oklch(84% 0.07 25)", "oklch(95% 0.025 25)"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Inter Display",
+        "purpose": "Task headings that name the current research action."
+      },
+      "body": {
+        "displayName": "Inter Text",
+        "purpose": "Readable answers, explanations, metadata, and source excerpts."
+      }
+    },
+      "shadows": [
+      {
+        "name": "page-ambient",
+      "value": "0 4px 8px rgba(6, 44, 69, 0.05)",
+        "purpose": "Quiet lift for the primary research surface only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-only",
+        "value": "none",
+        "purpose": "The current system uses no decorative choreography; state changes should remain immediate and readable."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "640px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Compact rounded action for submitting a question, search, or admin operation.",
+      "html": "<button class='ds-btn-primary'>Ask RINGKAS</button>",
+      "css": ".ds-btn-primary { background: #f58220; color: #062c45; padding: 11px 18px; border: 0; border-radius: 10px; font: 700 1rem Inter, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms ease-out; } .ds-btn-primary:hover { background: #a94f0f; color: #fff; } .ds-btn-primary:focus-visible { outline: 3px solid #8dc4df; outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "White, readable field for questions, document search, and filters.",
+      "html": "<label class='ds-field-label'>Search publications<input class='ds-field' type='search' placeholder='Search by title or keyword'></label>",
+      "css": ".ds-field-label { display: grid; gap: 8px; color: #345365; font: 600 1rem/1.5 Inter, system-ui, sans-serif; } .ds-field { width: 100%; padding: 12px 14px; border: 1px solid #b9ceda; border-radius: 10px; background: #fff; color: #062c45; font: inherit; } .ds-field:focus-visible { outline: 3px solid #8dc4df; border-color: #005b96; }"
+    },
+    {
+      "name": "Navigation Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Rounded navigation item with a quiet default and clear active route.",
+      "html": "<a class='ds-nav-link ds-nav-link--active' href='/chat'>Chat</a>",
+      "css": ".ds-nav-link { display: inline-block; padding: 8px 13px; border-radius: 10px; background: #e6eff4; color: #345365; font: 400 1rem/1.5 Inter, system-ui, sans-serif; } .ds-nav-link:hover { color: #062c45; } .ds-nav-link--active { background: #e8f2f8; color: #083b5c; } .ds-nav-link:focus-visible { outline: 3px solid #8dc4df; outline-offset: 2px; }"
+    },
+    {
+      "name": "Page Card",
+      "kind": "card",
+      "refersTo": "page-card",
+      "description": "Primary working surface that holds one focused product task.",
+      "html": "<section class='ds-page-card'><h1>Ask about BPS publications</h1><p>Find an evidence-grounded answer.</p></section>",
+      "css": ".ds-page-card { max-width: 720px; padding: 32px; border: 1px solid #d6e3eb; border-radius: 20px; background: #fff; color: #102f43; box-shadow: 0 4px 8px rgba(6, 44, 69, 0.05); } .ds-page-card h1 { margin: 0 0 12px; font: 400 clamp(1.8rem, 3vw, 2.4rem)/1.15 Inter, system-ui, sans-serif; } .ds-page-card p { margin: 0; color: #4f6a7a; font: 400 1rem/1.5 Inter, system-ui, sans-serif; }"
+    },
+    {
+      "name": "Information Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Tonal container for answer, source, search, and admin state.",
+      "html": "<section class='ds-panel'><header><h2>Answer</h2><span>Ready</span></header><p>Ask a question to receive an evidence-grounded answer.</p></section>",
+      "css": ".ds-panel { padding: 20px; border: 1px solid #d6e3eb; border-radius: 16px; background: #edf4f8; color: #102f43; } .ds-panel header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; } .ds-panel h2 { margin: 0; font: 400 1.05rem/1.5 Inter, system-ui, sans-serif; } .ds-panel span { color: #345365; font: 700 0.72rem/1.5 Inter, system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; } .ds-panel p { color: #67808e; font: 400 0.92rem/1.5 Inter, system-ui, sans-serif; }"
+    },
+    {
+      "name": "Document Card",
+      "kind": "card",
+      "refersTo": "document-card",
+      "description": "Inspectable result card for a publication or citation.",
+      "html": "<article class='ds-document-card'><h3>Publication title</h3><p>2024 · DKI Jakarta · Province</p><a href='https://bps.go.id'>View source publication</a></article>",
+      "css": ".ds-document-card { display: grid; gap: 14px; padding: 16px; border: 1px solid #d6e3eb; border-radius: 12px; background: #fff; color: #102f43; } .ds-document-card h3 { margin: 0; font: 400 1rem/1.5 Inter, system-ui, sans-serif; } .ds-document-card p { margin: 0; color: #67808e; font: 400 0.86rem/1.5 Inter, system-ui, sans-serif; } .ds-document-card a { color: #005b96; font: 600 0.9rem/1.5 Inter, system-ui, sans-serif; text-decoration: underline; text-underline-offset: 3px; } .ds-document-card a:focus-visible { outline: 3px solid #8dc4df; outline-offset: 2px; }"
+    },
+    {
+      "name": "State Badge",
+      "kind": "custom",
+      "refersTo": "state-badge",
+      "description": "Small semantic label for panel readiness and evidence sufficiency.",
+      "html": "<span class='ds-state-badge ds-state-badge--sufficient'>Sufficient evidence</span>",
+      "css": ".ds-state-badge { color: #345365; font: 700 0.72rem/1.5 Inter, system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; } .ds-state-badge--sufficient { color: #216b4a; } .ds-state-badge--partial { color: #a94f0f; } .ds-state-badge--insufficient { color: #a73531; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Ruang Baca Fokus",
+    "overview": "RINGKAS is a light, single-sans research workspace inspired by the institutional clarity of Indonesian official statistics. The system places a focused conversation surface on a cool-white canvas, uses institutional blue for structure and navigation, and brings a more visible statistical orange into actions and evidence moments. Rounded controls, thin borders, and compact metadata make a dense research task feel approachable without turning it into a dashboard.\n\nThe tone is friendly, official, and educational, but never bureaucratic or theatrical. It borrows the blue-orange register of a public statistics institution without copying BPS marks or becoming a government portal clone. It explicitly rejects an overconfident AI voice and a generic corporate dashboard; the interface earns trust through visible evidence and honest states.",
+    "keyCharacteristics": ["Institutional Blue + Statistical Orange + Quiet White palette", "One Inter-based type system", "Restrained, readable controls with soft rounded corners", "Flat surfaces with a single ambient page shadow", "Evidence, limitation, loading, and error states treated as first-class content"],
+    "rules": [
+      {"name": "The Blue Structure, Orange Evidence Rule", "body": "Institutional Blue owns the frame and navigation. Statistical Orange owns action and evidence moments. Never use either color as decorative wallpaper or as an inactive-state fill.", "section": "colors"},
+      {"name": "The One Sans Rule", "body": "Keep interface labels, buttons, data, and prose in the same Inter stack. Create hierarchy with scale, weight, spacing, and color, never a novelty display face.", "section": "typography"},
+      {"name": "The Flat-by-Default Rule", "body": "Surfaces are flat at rest. Add depth only when a layer needs to separate from its parent; do not stack shadows to make ordinary content look elevated.", "section": "elevation"}
+    ],
+    "dos": ["Do keep the main working surface centered at a readable width and reserve the deepest hierarchy for the question, answer, and source evidence.", "Do use Institutional Blue for structure and navigation, and Statistical Orange for primary action and evidence moments; keep inactive surfaces neutral.", "Do preserve the one-family Inter stack and the existing 10px, 12px, 16px, 20px, and 24px radius vocabulary.", "Do make loading, error, partial evidence, insufficient evidence, and empty states visible in the content area.", "Do keep the mobile collapse at 640px structural: stack the header and reduce page-card padding to 24px."],
+    "donts": ["Don't make RINGKAS feel like an AI that is \"sok tahu\"; never let visual certainty outrun the presence of a citation or limitation message.", "Don't turn the product into a generic corporate dashboard; metrics and operational panels must remain secondary to the research task.", "Don't use gradients, gradient text, decorative glass surfaces, or saturated inactive states.", "Don't add repeated card grids, nested cards, or ornamental section scaffolding when an inline panel or simple document list is clearer.", "Don't use a shadow vocabulary heavier than the single page ambient shadow or introduce a second font family for UI labels."]
+  }
+}

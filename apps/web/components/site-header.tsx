@@ -3,27 +3,31 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "./auth-provider";
-
-const links = [{ href: "/", label: "Home" }, { href: "/chat", label: "Chat" }];
+import { useInterfaceLanguage } from "@/lib/language";
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { isLoading, isAuthenticated, currentUser, hasAnyRole } = useAuth();
-  const visibleLinks = [...links];
-  if (isAuthenticated) visibleLinks.push({ href: "/documents", label: "Documents" });
-  if (hasAnyRole("admin", "system_maintainer")) visibleLinks.push({ href: "/admin", label: "Admin" });
+  const { isLoading, isAuthenticated, hasAnyRole } = useAuth();
+  const [language] = useInterfaceLanguage();
+  const labels = language === "id"
+    ? { home: "Beranda", chat: "Chat", documents: "Dokumen", admin: "Admin", checking: "Memeriksa sesi...", subtitle: "Riset BPS dengan bukti" }
+    : { home: "Home", chat: "Chat", documents: "Documents", admin: "Admin", checking: "Checking session...", subtitle: "BPS research, with evidence" };
+  const visibleLinks = isAuthenticated ? [{ href: "/chat", label: labels.chat }] : [{ href: "/", label: labels.home }, { href: "/chat", label: labels.chat }];
+  if (isAuthenticated) visibleLinks.push({ href: "/documents", label: labels.documents });
+  if (hasAnyRole("admin", "system_maintainer")) visibleLinks.push({ href: "/admin", label: labels.admin });
   if (!isLoading && !isAuthenticated) visibleLinks.push(
-    { href: "/login", label: "Login" }, { href: "/register", label: "Register" }
+    { href: "/login", label: language === "id" ? "Masuk" : "Sign in" }, { href: "/register", label: language === "id" ? "Daftar" : "Register" }
   );
 
   return <>
     <header className="site-header">
-      <div className="brand-block"><Link className="brand" href="/">RINGKAS</Link><p className="brand-subtitle">BPS publication Q&amp;A</p></div>
-      <nav className="nav" aria-label="Main navigation">
-        {visibleLinks.map(({ href, label }) => <Link className={`nav-link${pathname === href ? " active" : ""}`} href={href} key={href}>{label}</Link>)}
-        {isLoading ? <span className="nav-link nav-link-static">Loading session...</span> : null}
-      </nav>
+      <div className="site-header-inner">
+        <Link className="brand" href="/"><span className="brand-mark" aria-hidden="true">R</span><span className="brand-block"><strong>RINGKAS</strong><small>{labels.subtitle}</small></span></Link>
+        <nav className="nav" aria-label="Main navigation">
+          {visibleLinks.map(({ href, label }) => <Link aria-current={pathname === href ? "page" : undefined} className={`nav-link${pathname === href ? " active" : ""}`} href={href} key={href}>{label}</Link>)}
+          {isLoading ? <span className="nav-link nav-link-static">{labels.checking}</span> : null}
+        </nav>
+      </div>
     </header>
-    {currentUser ? <p className="session-note">Signed in as {currentUser.email ?? "user"}</p> : null}
   </>;
 }

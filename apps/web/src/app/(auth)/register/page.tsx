@@ -11,6 +11,7 @@ import type { CurrentUser } from "@/lib/auth-types";
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<AuthFormErrors>({});
   const { setCurrentUser } = useAuth();
@@ -19,12 +20,16 @@ export default function RegisterPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSubmitting) return;
-    setIsSubmitting(true);
     setErrors({});
+    if (password !== confirmPassword) {
+      setErrors({ confirmPassword: "Passwords do not match." });
+      return;
+    }
+    setIsSubmitting(true);
     try {
       const user = await apiRequest<CurrentUser>("/api/auth/register", { method: "POST", body: { email, password } });
       setCurrentUser(user);
-      router.replace("/documents");
+      router.replace("/chat");
     } catch (error) { setErrors(resolveAuthErrors(error, "Registration failed. Please review the form.")); }
     finally { setIsSubmitting(false); }
   }
@@ -33,6 +38,7 @@ export default function RegisterPage() {
     <form className="auth-form" onSubmit={handleSubmit} noValidate>
       <label className="field"><span>Email</span><input autoComplete="email" disabled={isSubmitting} name="email" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} />{errors.email ? <span className="field-error">{errors.email}</span> : null}</label>
       <label className="field"><span>Password</span><input autoComplete="new-password" disabled={isSubmitting} name="password" onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />{errors.password ? <span className="field-error">{errors.password}</span> : null}</label>
+      <label className="field"><span>Confirm password</span><input aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined} aria-invalid={Boolean(errors.confirmPassword)} autoComplete="new-password" disabled={isSubmitting} name="confirmPassword" onChange={(event) => { setConfirmPassword(event.target.value); setErrors((current) => current.confirmPassword ? { ...current, confirmPassword: undefined } : current); }} required type="password" value={confirmPassword} />{errors.confirmPassword ? <span className="field-error" id="confirm-password-error">{errors.confirmPassword}</span> : null}</label>
       {errors.form ? <p className="form-error">{errors.form}</p> : null}<button className="primary-button" disabled={isSubmitting} type="submit">{isSubmitting ? "Creating account..." : "Create account"}</button>
     </form><p className="page-footnote">Already have an account? <Link href="/login">Login</Link></p></section>;
 }

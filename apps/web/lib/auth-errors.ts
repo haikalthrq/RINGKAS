@@ -3,6 +3,7 @@ import { ApiClientError } from "./api-client";
 export interface AuthFormErrors {
   email?: string;
   password?: string;
+  confirmPassword?: string;
   form?: string;
 }
 
