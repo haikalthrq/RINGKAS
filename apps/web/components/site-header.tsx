@@ -9,14 +9,15 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { isLoading, isAuthenticated, hasAnyRole } = useAuth();
   const [language] = useInterfaceLanguage();
-  const labels = language === "id"
+  const headerLanguage = pathname === "/" ? "id" : language;
+  const labels = headerLanguage === "id"
     ? { home: "Beranda", chat: "Chat", documents: "Dokumen", admin: "Admin", checking: "Memeriksa sesi...", subtitle: "Riset BPS dengan bukti" }
     : { home: "Home", chat: "Chat", documents: "Documents", admin: "Admin", checking: "Checking session...", subtitle: "BPS research, with evidence" };
-  const visibleLinks = isAuthenticated ? [{ href: "/chat", label: labels.chat }] : [{ href: "/", label: labels.home }, { href: "/chat", label: labels.chat }];
+  const visibleLinks = [{ href: "/", label: labels.home }, { href: "/chat", label: labels.chat }];
   if (isAuthenticated) visibleLinks.push({ href: "/documents", label: labels.documents });
   if (hasAnyRole("admin", "system_maintainer")) visibleLinks.push({ href: "/admin", label: labels.admin });
   if (!isLoading && !isAuthenticated) visibleLinks.push(
-    { href: "/login", label: language === "id" ? "Masuk" : "Sign in" }, { href: "/register", label: language === "id" ? "Daftar" : "Register" }
+    { href: "/login", label: headerLanguage === "id" ? "Masuk" : "Sign in" }, { href: "/register", label: headerLanguage === "id" ? "Daftar" : "Register" }
   );
 
   return <>

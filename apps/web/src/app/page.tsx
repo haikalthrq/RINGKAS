@@ -1,63 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { useInterfaceLanguage } from "@/lib/language";
 
 export default function HomePage() {
-  const [language] = useInterfaceLanguage();
-  const router = useRouter();
   const { isLoading: authLoading, isAuthenticated } = useAuth();
-  const labels = language === "id"
-    ? {
-      kicker: "Asisten statistik berbasis sumber",
-      scope: "Publikasi BPS DKI Jakarta",
-      title: "Pahami statistik dengan bukti yang bisa diperiksa.",
-      description: "RINGKAS membantu kamu mencari dan memahami publikasi BPS DKI Jakarta. Setiap jawaban berangkat dari dokumen terindeks, menampilkan citation, dan menyatakan saat bukti belum cukup.",
-      start: "Coba RINGKAS",
-      signIn: "Masuk untuk menyimpan riwayat",
-      accessNote: "Chat tamu tersedia untuk satu pertanyaan. Pencarian dokumen dan riwayat tersimpan tersedia setelah masuk.",
-      principle: "Yang dijaga RINGKAS",
-      steps: [["Berbasis publikasi", "Jawaban hanya berasal dari corpus BPS yang tersedia."], ["Citation terlihat", "Buka metadata, halaman, excerpt, dan URL sumber."], ["Batasan jujur", "RINGKAS tidak mengisi celah ketika bukti belum cukup."]]
-    }
-    : {
-      kicker: "Source-grounded statistics assistant",
-      scope: "BPS DKI Jakarta publications",
-      title: "Understand statistics with evidence you can check.",
-      description: "RINGKAS helps you search and understand BPS DKI Jakarta publications. Every answer starts from indexed documents, shows its citations, and says when the evidence is not enough.",
-      start: "Try RINGKAS",
-      signIn: "Sign in for history",
-      accessNote: "Guest chat is available for one question. Document search and saved history are available after sign-in.",
-      principle: "What RINGKAS protects",
-      steps: [["Publication-based", "Answers come only from the available BPS corpus."], ["Citations visible", "Open source metadata, pages, excerpts, and URLs."], ["Honest limits", "RINGKAS does not fill gaps when evidence is insufficient."]]
-    };
 
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) router.replace("/chat");
-  }, [authLoading, isAuthenticated, router]);
-
-  if (authLoading || isAuthenticated) {
-    return <section className="page-card status-card" aria-live="polite"><p className="eyebrow">RINGKAS</p><h1>{language === "id" ? "Membuka ruang riset..." : "Opening the research workspace..."}</h1></section>;
+  if (authLoading) {
+    return <section className="page-card status-card" aria-live="polite"><p className="eyebrow">RINGKAS</p><h1>Membuka ruang riset...</h1></section>;
   }
 
   return (
-    <section className="home-card" aria-labelledby="home-title">
-      <div className="home-kicker"><span>RINGKAS / BPS</span><span className="home-scope"><i aria-hidden="true" /> {labels.scope}</span></div>
-      <div className="home-copy">
-        <p className="eyebrow">{labels.kicker}</p>
-        <h1 id="home-title">{labels.title}</h1>
-        <p>{labels.description}</p>
-      </div>
-      <div className="home-actions">
-        <Link className="primary-button" href="/chat">{labels.start}</Link>
-        <Link className="secondary-button" href="/login">{labels.signIn}</Link>
-      </div>
-      <p className="home-access-note">{labels.accessNote}</p>
-      <div className="home-proof" aria-label={labels.principle}>
-        {labels.steps.map(([title, description]) => <span key={title}><b>{title}</b><small>{description}</small></span>)}
-      </div>
-    </section>
+    <div className="home-page">
+      <section className="home-card" aria-labelledby="home-title">
+        <div className="home-kicker"><span>RINGKAS / BPS</span><span className="home-scope"><i aria-hidden="true" /> Publikasi DKI Jakarta</span></div>
+        <div className="home-hero">
+          <div className="home-copy">
+            <p className="eyebrow">Asisten statistik berbasis sumber</p>
+            <h1 id="home-title"><span className="home-title-brand">RINGKAS</span><span className="home-title-expansion">Retrieval Informasi Nasional Generatif untuk Kajian Arsip Statistik</span><span className="home-title-tagline">Bukti dulu.<br />Baru percaya.</span></h1>
+            <p className="home-description">RINGKAS membantu kamu mencari dan memahami publikasi BPS DKI Jakarta. Jawaban disusun dari dokumen terindeks, lalu dikembalikan ke sumber yang bisa kamu periksa.</p>
+            <div className="home-actions">
+              <Link className="primary-button" href="/chat">{isAuthenticated ? "Buka ruang riset" : "Mulai riset"}</Link>
+              {!isAuthenticated ? <Link className="secondary-button" href="/login">Masuk untuk menyimpan</Link> : null}
+            </div>
+            <p className="home-access-note">{isAuthenticated ? "Ruang riset, pencarian dokumen, dan riwayat pertanyaan tersedia dari navigation." : "Chat tamu tersedia untuk satu pertanyaan. Pencarian dokumen dan riwayat tersimpan tersedia setelah masuk."}</p>
+          </div>
+          <div className="home-visual" aria-label="Contoh tampilan citation RINGKAS">
+            <div className="evidence-preview">
+              <div className="preview-top"><span>RINGKAS / CONTOH CITATION</span><b>BUKTI</b></div>
+              <div className="preview-rule" />
+              <p className="preview-question">Bagaimana menemukan statistik yang bisa dipertanggungjawabkan?</p>
+              <div className="preview-answer"><span>[01]</span><p>Jawaban ringkas dari publikasi BPS, dengan halaman dan konteks yang bisa dibuka.</p></div>
+              <div className="preview-source"><small>SUMBER</small><strong>Publikasi BPS DKI Jakarta</strong><span>Wilayah · Tahun · Halaman · Excerpt</span></div>
+              <div className="preview-bottom"><span>Citation terbuka</span><i aria-hidden="true" /></div>
+            </div>
+          </div>
+        </div>
+        <div className="home-proof" aria-label="Prinsip RINGKAS">
+          <span><b>Berbasis publikasi</b><small>Jawaban hanya berasal dari corpus BPS yang tersedia.</small></span>
+          <span><b>Citation terlihat</b><small>Buka metadata, halaman, excerpt, dan URL sumber.</small></span>
+          <span><b>Batasan jujur</b><small>RINGKAS tidak mengisi celah ketika bukti belum cukup.</small></span>
+        </div>
+        <div className="home-footer"><span>RINGKAS</span><p>Riset statistik yang membantu kamu bergerak dari pertanyaan ke bukti.</p><b>DKI JAKARTA / PUBLIKASI BPS</b></div>
+      </section>
+    </div>
   );
 }

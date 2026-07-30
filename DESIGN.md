@@ -216,7 +216,8 @@ RINGKAS is flat by default. Thin borders and tonal layering establish the workin
 - **Mobile:** At `640px` and below, the header stacks brand and navigation and left-aligns the links.
 
 ### Route Roles
-- **Home (`/`):** Public landing page that explains what RINGKAS protects: publication-grounded answers, visible citations, and honest limits. It is the entry point for guests and first-time visitors, not the authenticated workspace.
+- **Home (`/`):** Landing page that explains what RINGKAS protects: publication-grounded answers, visible citations, and honest limits. It is the entry point for guests and first-time visitors, and remains accessible from the authenticated shell.
+- **Landing composition:** The Home surface uses the "Ruang Bukti" direction: the RINGKAS wordmark leads into its full expansion, which sits above a smaller evidence tagline; Indonesian-first copy carries the voice, a blue institutional field frames the page, Statistical Orange signals evidence, and one citation artifact replaces a generic feature-card grid.
 - **Chat (`/chat`):** Primary landing destination after authentication and the main research workspace.
 - **Documents / Admin:** Protected surfaces. Their access boundary is explicit in Home and chat copy rather than presented as public navigation.
 
