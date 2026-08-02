@@ -17,6 +17,7 @@ interface ChatCitation {
   page_start: number | null;
   page_end: number | null;
   source_url: string;
+  pdf_url?: string | null;
   snippet: string;
 }
 
@@ -83,7 +84,7 @@ const copy = {
     ],
     questionLabel: "Pertanyaan kamu",
     placeholder: "Tulis pertanyaan tentang publikasi BPS DKI Jakarta...",
-    shortcut: "Ctrl/Cmd + Enter untuk mengirim",
+    shortcut: "Enter untuk mengirim · Shift+Enter untuk baris baru",
     characterLimit: "Maksimal 2.000 karakter",
     ask: "Tanyakan ke RINGKAS",
     checking: "Memeriksa bukti...",
@@ -145,7 +146,7 @@ const copy = {
     ],
     questionLabel: "Your question",
     placeholder: "Ask about BPS publications for DKI Jakarta...",
-    shortcut: "Ctrl/Cmd + Enter to send",
+    shortcut: "Enter to send · Shift+Enter for a new line",
     characterLimit: "Maximum 2,000 characters",
     ask: "Ask RINGKAS",
     checking: "Checking evidence...",
@@ -356,10 +357,9 @@ export function ChatWorkspace() {
   }
 
   function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-      event.preventDefault();
-      void sendQuestion(draft);
-    }
+    if (event.key !== "Enter" || event.shiftKey) return;
+    event.preventDefault();
+    void sendQuestion(draft);
   }
 
   function retryQuestion() {
@@ -585,7 +585,7 @@ function SourceDrawer({ labels, citation, index, onClose }: { labels: ChatLabels
   const drawerRef = useRef<HTMLElement>(null);
   useEffect(() => drawerRef.current?.focus(), []);
   const page = formatPage(citation, labels);
-  const safeSource = getSafeUrl(citation.source_url);
+  const safeSource = getSafeUrl(citation.pdf_url ?? citation.source_url);
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.key === "Escape") {

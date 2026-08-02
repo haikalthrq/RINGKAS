@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -20,7 +21,8 @@ public sealed record InternalRetrievalCitation(
     [property: JsonPropertyName("page_start")] int? PageStart,
     [property: JsonPropertyName("page_end")] int? PageEnd,
     [property: JsonPropertyName("source_url")] string SourceUrl,
-    string Snippet);
+    string Snippet,
+    [property: JsonPropertyName("pdf_url")] string? PdfUrl = null);
 
 public sealed record InternalRetrievalResponse(
     [property: JsonPropertyName("source_sufficiency")] string SourceSufficiency,
@@ -48,31 +50,40 @@ public sealed class InternalRetrievalClient(HttpClient httpClient, IConfiguratio
         var settings = ReadSettings();
         using var timeout = new CancellationTokenSource(settings.Timeout);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
-        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(settings.BaseUrl, "retrieve"));
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.Token);
-        request.Content = new StringContent(JsonSerializer.Serialize(new { question }), Encoding.UTF8, "application/json");
         try
         {
-            using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linked.Token);
-            if (!response.IsSuccessStatusCode || response.Content.Headers.ContentType?.MediaType != "application/json" || response.Content.Headers.ContentLength > MaxResponseBytes)
+            for (var attempt = 0; attempt < 3; attempt++)
             {
-                throw new InternalRetrievalException("Internal retrieval is unavailable.");
-            }
-            await using var stream = await response.Content.ReadAsStreamAsync(linked.Token);
-            using var content = new MemoryStream();
-            var buffer = new byte[8192];
-            int read;
-            while ((read = await stream.ReadAsync(buffer, linked.Token)) > 0)
-            {
-                if (content.Length + read > MaxResponseBytes)
+                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(settings.BaseUrl, "retrieve"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.Token);
+                request.Content = new StringContent(JsonSerializer.Serialize(new { question }), Encoding.UTF8, "application/json");
+                using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linked.Token);
+                if (response.StatusCode == HttpStatusCode.ServiceUnavailable && attempt < 2)
                 {
-                    throw new InternalRetrievalException("Internal retrieval returned an invalid response.");
+                    await Task.Delay(TimeSpan.FromMilliseconds(250 * (attempt + 1)), linked.Token);
+                    continue;
                 }
-                content.Write(buffer, 0, read);
+                if (!response.IsSuccessStatusCode || response.Content.Headers.ContentType?.MediaType != "application/json" || response.Content.Headers.ContentLength > MaxResponseBytes)
+                {
+                    throw new InternalRetrievalException("Internal retrieval is unavailable.");
+                }
+                await using var stream = await response.Content.ReadAsStreamAsync(linked.Token);
+                using var content = new MemoryStream();
+                var buffer = new byte[8192];
+                int read;
+                while ((read = await stream.ReadAsync(buffer, linked.Token)) > 0)
+                {
+                    if (content.Length + read > MaxResponseBytes)
+                    {
+                        throw new InternalRetrievalException("Internal retrieval returned an invalid response.");
+                    }
+                    content.Write(buffer, 0, read);
+                }
+                content.Position = 0;
+                var result = await JsonSerializer.DeserializeAsync<InternalRetrievalResponse>(content, JsonOptions, linked.Token);
+                return Validate(result);
             }
-            content.Position = 0;
-            var result = await JsonSerializer.DeserializeAsync<InternalRetrievalResponse>(content, JsonOptions, linked.Token);
-            return Validate(result);
+            throw new InternalRetrievalException("Internal retrieval is unavailable.");
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -124,7 +135,8 @@ public sealed class InternalRetrievalClient(HttpClient httpClient, IConfiguratio
                 string.IsNullOrWhiteSpace(citation.Title) || citation.Year <= 0 || string.IsNullOrWhiteSpace(citation.Region) ||
                 string.IsNullOrWhiteSpace(citation.Snippet) || citation.Snippet.Length > 20_000 ||
                 (citation.PageStart is null) != (citation.PageEnd is null) || citation.PageStart is <= 0 || citation.PageEnd < citation.PageStart ||
-                !Uri.TryCreate(citation.SourceUrl, UriKind.Absolute, out var source) || source.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(source.UserInfo))
+                !Uri.TryCreate(citation.SourceUrl, UriKind.Absolute, out var source) || source.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(source.UserInfo) ||
+                citation.PdfUrl is not null && (!Uri.TryCreate(citation.PdfUrl, UriKind.Absolute, out var pdf) || pdf.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(pdf.UserInfo) || !string.IsNullOrEmpty(pdf.Fragment)))
             {
                 throw new InternalRetrievalException("Internal retrieval returned an invalid response.");
             }

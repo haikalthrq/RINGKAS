@@ -98,6 +98,7 @@ class QueryEngine:
                     "page_start": citation.page_start,
                     "page_end": citation.page_end,
                     "source_url": citation.source_url,
+                    "pdf_url": citation.pdf_url,
                     "snippet": citation.excerpt,
                 }
                 for citation in visible

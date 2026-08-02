@@ -27,6 +27,29 @@ public sealed class InternalRetrievalClientTests
 
         Assert.Equal("partial", response.SourceSufficiency);
         Assert.Single(response.Citations);
+        Assert.Equal("https://webapi.bps.go.id/download.php?f=test", response.Citations[0].PdfUrl);
+    }
+
+    [Fact]
+    public async Task RetriesTransientServiceUnavailableResponse()
+    {
+        var attempts = 0;
+        var handler = new DelegateHandler(request =>
+        {
+            attempts++;
+            return attempts < 3
+                ? new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+                : new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(ValidResponse, Encoding.UTF8, "application/json")
+                };
+        });
+        var client = new InternalRetrievalClient(new HttpClient(handler), Configuration());
+
+        var response = await client.RetrieveAsync("kemiskinan");
+
+        Assert.Equal("partial", response.SourceSufficiency);
+        Assert.Equal(3, attempts);
     }
 
     [Fact]
@@ -76,7 +99,7 @@ public sealed class InternalRetrievalClientTests
     }
 
     private const string ValidResponse = """
-        {"source_sufficiency":"partial","requires_limitation":true,"requires_refusal":false,"limitation_reason":"Limited evidence.","citations":[{"document_id":"11111111-1111-1111-1111-111111111111","chunk_id":"22222222-2222-2222-2222-222222222222","title":"Statistik DKI","year":2026,"region":"DKI Jakarta","page_start":1,"page_end":1,"source_url":"https://bps.go.id/source","snippet":"Relevant evidence."}]}
+        {"source_sufficiency":"partial","requires_limitation":true,"requires_refusal":false,"limitation_reason":"Limited evidence.","citations":[{"document_id":"11111111-1111-1111-1111-111111111111","chunk_id":"22222222-2222-2222-2222-222222222222","title":"Statistik DKI","year":2026,"region":"DKI Jakarta","page_start":1,"page_end":1,"source_url":"https://bps.go.id/source","pdf_url":"https://webapi.bps.go.id/download.php?f=test","snippet":"Relevant evidence."}]}
         """;
 
     private sealed class DelegateHandler(Func<HttpRequestMessage, HttpResponseMessage> send) : HttpMessageHandler

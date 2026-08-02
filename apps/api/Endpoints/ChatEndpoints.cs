@@ -257,7 +257,8 @@ public sealed record ChatCitation(
     [property: JsonPropertyName("page_start")] int? PageStart,
     [property: JsonPropertyName("page_end")] int? PageEnd,
     [property: JsonPropertyName("source_url")] string SourceUrl,
-    string Snippet);
+    string Snippet,
+    [property: JsonPropertyName("pdf_url")] string? PdfUrl = null);
 
 public sealed record ChatResponse(
     string Answer,
@@ -297,7 +298,7 @@ public sealed class ChatService(IInternalRetrievalClient retrieval, IGenerationC
         var result = await retrieval.RetrieveAsync(question, cancellationToken);
         var citations = result.Citations.Select(citation => new ChatCitation(
             citation.DocumentId, citation.ChunkId, citation.Title, citation.Year, citation.Region,
-            citation.PageStart, citation.PageEnd, citation.SourceUrl, citation.Snippet)).ToArray();
+            citation.PageStart, citation.PageEnd, citation.SourceUrl, citation.Snippet, citation.PdfUrl)).ToArray();
         if (result.RequiresRefusal)
         {
             return new ChatResponse(Refusal, citations, result.SourceSufficiency, null);
