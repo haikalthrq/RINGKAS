@@ -80,6 +80,23 @@ def test_http_boundary_requires_token_and_valid_bounded_json():
         thread.join(timeout=2)
 
 
+def test_health_endpoint_is_public():
+    server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(SimpleNamespace(query=lambda _: {}), "t" * 32))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        connection = http.client.HTTPConnection("127.0.0.1", server.server_port, timeout=2)
+        connection.request("GET", "/health")
+        response = connection.getresponse()
+        assert response.status == 200
+        assert json.loads(response.read()) == {"status": "healthy"}
+        connection.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
 def test_server_rejects_short_internal_token_before_startup():
     with patch.dict("os.environ", {"RAG_INTERNAL_TOKEN": "short"}, clear=True):
         assert main() == 2

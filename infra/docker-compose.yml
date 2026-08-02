@@ -114,6 +114,12 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/health', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 120s
     networks:
       - ringkas
 
@@ -154,7 +160,7 @@ services:
       postgres:
         condition: service_healthy
       rag-query:
-        condition: service_started
+        condition: service_healthy
     networks:
       - ringkas
 

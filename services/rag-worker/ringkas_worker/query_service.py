@@ -47,7 +47,7 @@ class QueryEngine:
         sparse_client = None
         try:
             sparse_settings = SparseRetrievalSettings.from_environment()
-            sparse_encoder = FastEmbedSparseEncoder.from_environment()
+            sparse_encoder = FastEmbedSparseEncoder.from_environment(lazy_load=False)
             sparse_client = qdrant_client_from_settings(sparse_settings)
             return cls(
                 dense,
@@ -116,6 +116,12 @@ def make_handler(engine: QueryEngine, token: str) -> type[BaseHTTPRequestHandler
         def log_message(self, _format: str, *_args: object) -> None:
             return
 
+        def do_GET(self) -> None:
+            if self.path == "/health":
+                self._reply(200, {"status": "healthy"})
+                return
+            self._reply(404, {"error": "not_found"})
+
         def do_POST(self) -> None:
             if self.path != "/retrieve":
                 self._reply(404, {"error": "not_found"})
@@ -171,6 +177,7 @@ def main() -> int:
         return 2
     try:
         engine = QueryEngine.from_environment()
+        engine.query("RINGKAS readiness check")
         port = int(os.getenv("RAG_QUERY_PORT", "8081"))
         if not 1 <= port <= 65535:
             raise ValueError("invalid port")

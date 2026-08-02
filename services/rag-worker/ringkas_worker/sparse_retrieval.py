@@ -169,19 +169,19 @@ def _query_from_embedding(embedding: object) -> SparseQuery:
 class FastEmbedSparseEncoder:
     """Encode passages and queries with the approved local BM25 model."""
 
-    def __init__(self, model: object | None = None) -> None:
+    def __init__(self, model: object | None = None, *, lazy_load: bool = True) -> None:
         if model is None:
             try:
                 from fastembed import SparseTextEmbedding
 
-                model = SparseTextEmbedding(model_name=SPARSE_MODEL_NAME, lazy_load=True)
+                model = SparseTextEmbedding(model_name=SPARSE_MODEL_NAME, lazy_load=lazy_load)
             except Exception:
                 _raise_safe(SparseEncodingError("FastEmbed BM25 model is unavailable"))
         self._model = model
 
     @classmethod
-    def from_environment(cls) -> FastEmbedSparseEncoder:
-        return cls()
+    def from_environment(cls, *, lazy_load: bool = True) -> FastEmbedSparseEncoder:
+        return cls(lazy_load=lazy_load)
 
     def encode_documents(self, texts: Sequence[str]) -> tuple[SparseQuery, ...]:
         values = self._validate_texts(texts)
