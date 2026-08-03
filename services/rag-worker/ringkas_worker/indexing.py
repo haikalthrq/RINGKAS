@@ -242,7 +242,7 @@ class QdrantChunkIndexer:
         embedding_settings = CloudflareWorkersAiEmbeddingSettings.from_environment()
         embedding_client = CloudflareWorkersAiEmbeddingClient(embedding_settings)
         try:
-            sparse_encoder = FastEmbedSparseEncoder.from_environment()
+            sparse_encoder = FastEmbedSparseEncoder.from_environment(lazy_load=False)
             qdrant_client = qdrant_client_from_settings(settings)
         except Exception:
             embedding_client.close()

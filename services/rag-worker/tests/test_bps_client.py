@@ -239,6 +239,39 @@ def test_client_handles_upstream_and_json_errors(response: httpx.Response, expec
             client.fetch_publications()
 
 
+def test_client_retries_transient_upstream_failure() -> None:
+    attempts = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        return httpx.Response(503, request=request) if attempts < 3 else httpx.Response(200, json=OFFICIAL_PAYLOAD, request=request)
+
+    with BpsClient("https://placeholder.invalid", transport=httpx.MockTransport(handler)) as client:
+        publications = client.fetch_publications()
+
+    assert attempts == 3
+    assert len(publications) == 1
+
+
+def test_client_fetches_all_publication_pages() -> None:
+    payloads = [
+        {"status": "OK", "data": [{"page": 1, "pages": 2, "per_page": 1, "count": 1, "total": 2}, OFFICIAL_PAYLOAD["data"][1]]},
+        {"status": "OK", "data": [{"page": 2, "pages": 2, "per_page": 1, "count": 1, "total": 2}, OFFICIAL_PAYLOAD["data"][1]]},
+    ]
+    seen_pages: list[str | None] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen_pages.append(request.url.params.get("page"))
+        return httpx.Response(200, json=payloads[len(seen_pages) - 1], request=request)
+
+    with BpsClient("https://placeholder.invalid", transport=httpx.MockTransport(handler)) as client:
+        publications = client.fetch_publications()
+
+    assert seen_pages == [None, "2"]
+    assert len(publications) == 2
+
+
 def test_timeout_error_does_not_retain_authenticated_request() -> None:
     secret = "timeout-header-secret"
 

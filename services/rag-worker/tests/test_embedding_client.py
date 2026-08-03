@@ -32,6 +32,16 @@ def cloudflare_settings() -> CloudflareWorkersAiEmbeddingSettings:
     return CloudflareWorkersAiEmbeddingSettings("account-id", SecretStr("cloudflare-token"), "@cf/qwen/qwen3-embedding-0.6b")
 
 
+def cloudflare_settings_with_secondary() -> CloudflareWorkersAiEmbeddingSettings:
+    return CloudflareWorkersAiEmbeddingSettings(
+        "primary-account",
+        SecretStr("primary-token"),
+        "@cf/qwen/qwen3-embedding-0.6b",
+        secondary_account_id="secondary-account",
+        secondary_api_token=SecretStr("secondary-token"),
+    )
+
+
 def json_handler(payload: object, seen: list[httpx.Request] | None = None):
     def handler(request: httpx.Request) -> httpx.Response:
         if seen is not None:
@@ -78,6 +88,24 @@ def test_cloudflare_endpoint_auth_and_input_forms() -> None:
     assert seen[0].headers["authorization"] == "Bearer cloudflare-token"
     assert json.loads(seen[0].content)["text"] == "single"
     assert json.loads(seen[1].content)["text"] == ["first", "second"]
+
+
+def test_cloudflare_same_model_secondary_account_handles_primary_rate_limit() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        if "primary-account" in str(request.url):
+            return httpx.Response(429, request=request)
+        return httpx.Response(200, json={"success": True, "result": {"data": [[1.0]]}, "model": "@cf/qwen/qwen3-embedding-0.6b"}, request=request)
+
+    with CloudflareWorkersAiEmbeddingClient(cloudflare_settings_with_secondary(), transport=httpx.MockTransport(handler)) as client:
+        result = client.embed(["text"])
+
+    assert result.dimension == 1
+    assert "primary-account" in str(seen[0].url)
+    assert "secondary-account" in str(seen[1].url)
+    assert seen[1].headers["authorization"] == "Bearer secondary-token"
 
 
 def test_cloudflare_internal_batching_preserves_order_and_indexes() -> None:
@@ -239,6 +267,16 @@ def test_cloudflare_context_manager_and_use_after_close() -> None:
 def test_cloudflare_model_mismatch_is_rejected() -> None:
     with pytest.raises(EmbeddingConfigurationError):
         CloudflareWorkersAiEmbeddingSettings("account-id", SecretStr("cloudflare-token"), "other-model")
+
+
+def test_cloudflare_secondary_configuration_must_be_complete() -> None:
+    with pytest.raises(EmbeddingConfigurationError):
+        CloudflareWorkersAiEmbeddingSettings(
+            "account-id",
+            SecretStr("cloudflare-token"),
+            "@cf/qwen/qwen3-embedding-0.6b",
+            secondary_account_id="secondary-account",
+        )
 
 
 @pytest.mark.parametrize("name", ["CLOUDFLARE_WORKERS_AI_EMBEDDING_CONNECT_TIMEOUT_SECONDS", "CLOUDFLARE_WORKERS_AI_EMBEDDING_READ_TIMEOUT_SECONDS"])

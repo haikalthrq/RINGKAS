@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from types import TracebackType
 from typing import Self
+from time import sleep
 
 import httpx
 from pydantic import SecretStr
@@ -11,6 +12,7 @@ from ringkas_worker.bps.errors import (
     BpsConfigurationError,
     BpsInvalidJsonError,
     BpsNetworkError,
+    BpsResponseShapeError,
     BpsTimeoutError,
     BpsUpstreamError,
 )
@@ -21,6 +23,13 @@ from ringkas_worker.config import WorkerSettings
 
 RequestAuthenticator = Callable[[httpx.Request], httpx.Request]
 PUBLICATION_QUERY = {"model": "publication", "domain": "3100", "lang": "ind"}
+MAX_REQUEST_ATTEMPTS = 3
+
+
+def _raise_safe(error: BpsClientError) -> None:
+    error.__cause__ = None
+    error.__context__ = None
+    raise error from None
 
 
 def query_key_authenticator(api_key: SecretStr) -> RequestAuthenticator:
@@ -102,49 +111,76 @@ class BpsClient:
         params = dict(PUBLICATION_QUERY)
         if self._keyword:
             params["keyword"] = self._keyword
-        request = self._client.build_request(
-            "GET",
-            self._publications_path or ".",
-            params=params,
-        )
-        if self._authenticator is not None:
-            authentication_failed = False
+        publications: list[PublicationMetadata] = []
+        page = 1
+        while True:
+            page_params = params if page == 1 else {**params, "page": page}
+            payload = self._fetch_payload(page_params)
+            publications.extend(map_publications(payload))
+            pages = _page_count(payload)
+            if page >= pages:
+                return publications
+            page += 1
+
+    def _fetch_payload(self, params: dict[str, str | int]) -> object:
+        for attempt in range(MAX_REQUEST_ATTEMPTS):
+            request = self._client.build_request(
+                "GET",
+                self._publications_path or ".",
+                params=params,
+            )
+            if self._authenticator is not None:
+                try:
+                    request = self._authenticator(request)
+                except Exception:
+                    raise BpsAuthenticationError("BPS authentication adapter failed") from None
+
+            request_timed_out = False
+            request_failed = False
             try:
-                request = self._authenticator(request)
-            except Exception:
-                authentication_failed = True
-            if authentication_failed:
-                raise BpsAuthenticationError("BPS authentication adapter failed") from None
+                response = self._client.send(request)
+            except httpx.TimeoutException:
+                request_timed_out = True
+            except httpx.RequestError:
+                request_failed = True
 
-        response: httpx.Response | None = None
-        request_timed_out = False
-        request_failed = False
-        try:
-            response = self._client.send(request)
-        except httpx.TimeoutException:
-            request_timed_out = True
-        except httpx.RequestError:
-            request_failed = True
+            if request_timed_out:
+                if attempt < MAX_REQUEST_ATTEMPTS - 1:
+                    sleep(0.25 * (attempt + 1))
+                    continue
+                _raise_safe(BpsTimeoutError("BPS request timed out"))
+            if request_failed:
+                if attempt < MAX_REQUEST_ATTEMPTS - 1:
+                    sleep(0.25 * (attempt + 1))
+                    continue
+                _raise_safe(BpsNetworkError("BPS request failed"))
 
-        if request_timed_out:
-            raise BpsTimeoutError("BPS request timed out") from None
-        if request_failed:
-            raise BpsNetworkError("BPS request failed") from None
+            if response.status_code == 429 or response.status_code >= 500:
+                if attempt < MAX_REQUEST_ATTEMPTS - 1:
+                    response.close()
+                    sleep(0.25 * (attempt + 1))
+                    continue
+            if not response.is_success:
+                raise BpsUpstreamError(response.status_code)
+            invalid_json = False
+            try:
+                payload = response.json()
+            except ValueError:
+                invalid_json = True
+            if invalid_json:
+                _raise_safe(BpsInvalidJsonError("BPS response was not valid JSON"))
 
-        assert response is not None
-        if not response.is_success:
-            raise BpsUpstreamError(response.status_code)
-        invalid_json = False
-        payload = None
-        try:
-            payload = response.json()
-        except ValueError:
-            invalid_json = True
+            return payload
+        _raise_safe(BpsNetworkError("BPS request failed"))
 
-        if invalid_json:
-            raise BpsInvalidJsonError("BPS response was not valid JSON") from None
 
-        try:
-            return map_publications(payload)
-        except BpsClientError:
-            raise
+def _page_count(payload: object) -> int:
+    if not isinstance(payload, dict):
+        _raise_safe(BpsResponseShapeError("BPS response has an invalid pagination container"))
+    data = payload.get("data")
+    if not isinstance(data, list) or not data or not isinstance(data[0], dict):
+        _raise_safe(BpsResponseShapeError("BPS response has an invalid pagination container"))
+    pages = data[0].get("pages", 1)
+    if isinstance(pages, bool) or not isinstance(pages, int) or not 1 <= pages <= 1000:
+        _raise_safe(BpsResponseShapeError("BPS response has an invalid page count"))
+    return pages

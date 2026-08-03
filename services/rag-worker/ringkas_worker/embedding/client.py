@@ -196,6 +196,13 @@ def _parse_usage(value: Any) -> EmbeddingUsage | None:
 class CloudflareWorkersAiEmbeddingClient:
     _API_ROOT = "https://api.cloudflare.com/client/v4/accounts"
     INTERNAL_BATCH_SIZE = 32
+    _FAILOVER_ERRORS = (
+        EmbeddingAuthenticationError,
+        EmbeddingProviderError,
+        EmbeddingRateLimitError,
+        EmbeddingTimeoutError,
+        EmbeddingTransportError,
+    )
 
     def __init__(self, settings: CloudflareWorkersAiEmbeddingSettings, *, transport: httpx.BaseTransport | None = None) -> None:
         if not isinstance(settings, CloudflareWorkersAiEmbeddingSettings):
@@ -206,6 +213,14 @@ class CloudflareWorkersAiEmbeddingClient:
         self._endpoint = f"{self._API_ROOT}/{settings.account_id}/ai/run/{settings.model}"
         timeout = httpx.Timeout(settings.read_timeout_seconds, connect=settings.connect_timeout_seconds)
         self._client = httpx.Client(timeout=timeout, transport=transport)
+        secondary_settings = settings.secondary_settings()
+        self._secondary_client: httpx.Client | None = None
+        self._secondary_endpoint: str | None = None
+        self._secondary_api_token = None
+        if secondary_settings is not None:
+            self._secondary_client = httpx.Client(timeout=timeout, transport=transport)
+            self._secondary_endpoint = f"{self._API_ROOT}/{secondary_settings.account_id}/ai/run/{secondary_settings.model}"
+            self._secondary_api_token = secondary_settings.api_token
         self._closed = False
 
     @classmethod
@@ -221,6 +236,8 @@ class CloudflareWorkersAiEmbeddingClient:
     def close(self) -> None:
         try:
             self._client.close()
+            if self._secondary_client is not None:
+                self._secondary_client.close()
         except Exception:
             raise_sanitized(EmbeddingTransportError("Cloudflare embedding client close failed"))
         self._closed = True
@@ -238,8 +255,20 @@ class CloudflareWorkersAiEmbeddingClient:
 
         vectors: list[EmbeddingVector] = []
         dimension: int | None = None
+        active_client = self._client
+        active_endpoint = self._endpoint
+        active_api_token = self._settings.api_token
         for start in range(0, len(values), self.INTERNAL_BATCH_SIZE):
-            result = self._embed_batch(values[start : start + self.INTERNAL_BATCH_SIZE])
+            batch = values[start : start + self.INTERNAL_BATCH_SIZE]
+            try:
+                result = self._embed_batch(batch, active_client, active_endpoint, active_api_token)
+            except self._FAILOVER_ERRORS:
+                if active_client is not self._client or self._secondary_client is None or self._secondary_endpoint is None:
+                    raise
+                active_client = self._secondary_client
+                active_endpoint = self._secondary_endpoint
+                active_api_token = self._secondary_api_token
+                result = self._embed_batch(batch, active_client, active_endpoint, active_api_token)
             if dimension is None:
                 dimension = result.dimension
             elif result.dimension != dimension:
@@ -248,12 +277,12 @@ class CloudflareWorkersAiEmbeddingClient:
         assert dimension is not None
         return EmbeddingBatchResult(tuple(vectors), dimension, self._settings.model)
 
-    def _embed_batch(self, values: tuple[str, ...]) -> EmbeddingBatchResult:
+    def _embed_batch(self, values: tuple[str, ...], client: httpx.Client, endpoint: str, api_token) -> EmbeddingBatchResult:
         try:
-            response = self._client.post(
-                self._endpoint,
+            response = client.post(
+                endpoint,
                 headers={
-                    "Authorization": f"Bearer {self._settings.api_token.get_secret_value()}",
+                    "Authorization": f"Bearer {api_token.get_secret_value()}",
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                 },

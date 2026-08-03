@@ -291,7 +291,7 @@ def test_environment_composition_uses_cloudflare_and_versioned_1024_contract(mon
     monkeypatch.setenv("QDRANT_DENSE_VECTOR_SIZE", "1024")
     qdrant = FakeQdrant()
     monkeypatch.setattr("ringkas_worker.indexing.qdrant_client_from_settings", lambda _: qdrant)
-    monkeypatch.setattr("ringkas_worker.indexing.FastEmbedSparseEncoder.from_environment", lambda: FakeSparseEncoder())
+    monkeypatch.setattr("ringkas_worker.indexing.FastEmbedSparseEncoder.from_environment", lambda **_: FakeSparseEncoder())
 
     service = QdrantChunkIndexer.from_environment()
     assert isinstance(service._embedding_client, CloudflareWorkersAiEmbeddingClient)
