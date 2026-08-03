@@ -69,6 +69,8 @@ OCR_ENABLED
 CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN
 RAG_QUERY_BASE_URL
 RAG_QUERY_ALLOWED_AUTHORITIES
 RAG_QUERY_TIMEOUT_SECONDS
@@ -91,9 +93,10 @@ REGISTERED_DAILY_QUOTA
 ```
 
 The accepted live embedding dimension is `1024` for the approved
-`@cf/qwen/qwen3-embedding-0.6b` model. Reverify and reindex before changing
-models. BPS authentication uses the documented `key` query parameter; never
-record its value.
+`@cf/qwen/qwen3-embedding-0.6b` model. A secondary Cloudflare account may be
+used only with the exact same model and independently verified contract; a
+different model requires a new collection and full reindex. BPS authentication
+uses the documented `key` query parameter; never record its value.
 
 ## Compose Startup And Migration
 

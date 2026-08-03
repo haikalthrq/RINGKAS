@@ -359,25 +359,33 @@ Setiap chunk wajib memiliki metadata:
 
 #### FR-EMB-001 Embedding Provider
 
-Embedding menggunakan Cloudflare Workers AI saja dengan model
-`@cf/qwen/qwen3-embedding-0.6b` pada target MVP.
+Embedding menggunakan Cloudflare Workers AI dengan model
+`@cf/qwen/qwen3-embedding-0.6b` pada target MVP. Sistem boleh memiliki satu
+akun Cloudflare utama dan satu akun Cloudflare sekunder opsional untuk
+account-level failover.
 
-#### FR-EMB-002 No Embedding Fallback
+#### FR-EMB-002 No Different-Model Embedding Fallback
 
-Tidak ada fallback embedding provider.
+Tidak ada fallback otomatis ke embedding model atau provider yang berbeda.
+Account-level failover ke akun Cloudflare kedua diperbolehkan hanya jika model
+ID, kontrak request, dan dimensi output sama serta sudah diverifikasi.
 
 #### FR-EMB-003 Embedding Failure
 
-Jika embedding provider gagal, sistem menampilkan error dan tidak otomatis memakai embedding model berbeda.
+Jika akun Cloudflare utama gagal, sistem boleh mencoba akun Cloudflare sekunder
+yang dikonfigurasi dan sudah diverifikasi. Jika kedua akun gagal, sistem
+menampilkan error dan tidak otomatis memakai embedding model/provider berbeda.
 
 #### FR-EMB-005 Versioned Collection and Dimension Verification
 
-Provider/model embedding tidak boleh dicampur dengan vector yang sudah ada.
-Perubahan provider/model memerlukan collection Qdrant berversi baru dan full
-corpus reindex. Dimensi output harus diverifikasi live dari configured model,
-memastikan semua vector berdimensi sama dan non-zero, lalu dikunci sebelum
-collection baru dibuat. Pembuatan collection harus gagal aman jika dimensi
-terverifikasi tidak cocok dengan konfigurasi.
+Provider/model/dimensi embedding yang berbeda tidak boleh dicampur dengan vector
+yang sudah ada. Perubahan model/provider/dimensi memerlukan collection Qdrant
+berversi baru dan full corpus reindex. Pergantian akun Cloudflare dengan model,
+kontrak, dan dimensi yang sama dapat memakai collection yang sama setelah
+verifikasi independen. Dimensi output harus diverifikasi live dari configured
+model pada setiap akun yang diaktifkan, memastikan semua vector berdimensi sama
+dan non-zero. Pembuatan collection harus gagal aman jika dimensi terverifikasi
+tidak cocok dengan konfigurasi.
 
 #### FR-EMB-004 Qdrant Storage
 
@@ -782,7 +790,9 @@ PDF scan tanpa text layer diberi status `unsupported_or_extraction_failed`.
 
 ### ERR-005 Embedding Provider Failure
 
-Jika embedding provider gagal, sistem menampilkan error dan tidak otomatis mengganti embedding model.
+Jika akun Cloudflare utama gagal, sistem boleh mencoba akun Cloudflare sekunder
+yang dikonfigurasi dengan kontrak identik. Jika keduanya gagal, sistem
+menampilkan error dan tidak otomatis mengganti embedding model/provider.
 
 ### ERR-006 Generation Primary Failure
 

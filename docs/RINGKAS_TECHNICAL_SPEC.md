@@ -367,6 +367,8 @@ QDRANT_API_KEY=TBD_OPTIONAL
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID=TBD_OPTIONAL
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN=TBD_OPTIONAL
 QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v2
 QDRANT_DENSE_VECTOR_SIZE=1024
 PDF_STORAGE_PATH=/data/ringkas/pdfs
@@ -891,7 +893,11 @@ Each chunk must include:
 
 - Provider: Cloudflare Workers AI only.
 - Model name: `@cf/qwen/qwen3-embedding-0.6b`.
-- No embedding fallback.
+- Optional secondary Cloudflare account may be used for account-level failover.
+- Secondary account must use the exact same model ID and request/response
+  contract as the primary account.
+- Each enabled account must pass independent live dimension verification.
+- No fallback to a different embedding model or provider.
 
 Cloudflare Workers AI embedding contract:
 
@@ -903,7 +909,9 @@ Cloudflare Workers AI embedding contract:
 
 Reason:
 
-> Embedding fallback is not allowed automatically because different embedding models may produce incompatible dimensions/vector spaces.
+> Different embedding models may produce incompatible dimensions/vector spaces.
+> Account-level failover using the exact same Cloudflare model is permitted only
+> when the account failover contract is explicit and independently verified.
 
 ### 18.2 Indexing
 
@@ -916,7 +924,14 @@ Python worker writes:
 
 ### 18.3 Re-indexing Policy
 
-If embedding provider or model changes:
+If the Cloudflare account changes while the exact model, contract, and verified
+dimension remain identical:
+
+- the existing collection may be reused after successful independent
+  verification;
+- no vector mixing or reindex is required solely because the account changed.
+
+If the embedding provider, model, or dimension changes:
 
 - Create a new Qdrant collection version.
 - Re-embed all chunks.
@@ -1353,6 +1368,7 @@ Note:
 |---|---|---|
 | Domain and HTTPS | TBD | Caddy recommended if no preference |
 | NVIDIA NIM generation model | Locked | `nvidia/nemotron-3-nano-30b-a3b`; hosted preview availability verified |
+| Cloudflare Workers AI embedding secondary account | Approved contract, implementation TBD | Optional account-level failover using the exact same `@cf/qwen/qwen3-embedding-0.6b` model and independently verified contract/dimension |
 | NVIDIA NIM secondary generation model | Locked reserve | `mistralai/mistral-small-4-119b-2603`; ordered after the Cloudflare fallback |
 | NVIDIA NIM lightweight generation model | Locked reserve | `nvidia/nemotron-mini-4b-instruct`; ordered after the NIM secondary model |
 | Cloudflare Workers AI embedding model | Approved and dimension-locked | `@cf/qwen/qwen3-embedding-0.6b`; live-verified vector dimension `1024` |
@@ -1378,8 +1394,8 @@ AI agents working on RINGKAS must obey:
 5. OCR must not be implemented in MVP.
 6. Docling must not be used as production parser in MVP.
 7. PyMuPDF is the MVP parser.
-8. Embedding provider is Cloudflare Workers AI only with the approved Qwen3 model.
-9. Do not add embedding fallback automatically; provider/model changes require a new collection and full reindex.
+8. Embedding provider is Cloudflare Workers AI only with the approved Qwen3 model; an explicitly configured second Cloudflare account may provide same-model account failover after independent verification.
+9. Do not add different-model/provider embedding fallback automatically; provider/model/dimension changes require a new collection and full reindex. Account changes with an identical verified model contract may reuse the collection.
 10. All substantive answers require citation.
 11. Do not expose retrieval score as answer accuracy.
 12. Do not add user document upload.

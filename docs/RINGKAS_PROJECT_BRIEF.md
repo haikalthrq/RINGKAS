@@ -521,21 +521,27 @@ Generation:
 
 Embedding target yang disetujui:
 
-- Cloudflare Workers AI saja;
+- Cloudflare Workers AI saja, dengan satu akun sekunder opsional untuk
+  account-level failover;
 - model: `@cf/qwen/qwen3-embedding-0.6b`;
-- tidak ada fallback embedding otomatis.
+- tidak ada fallback otomatis ke model/provider embedding berbeda;
+- akun sekunder wajib memakai model ID, kontrak request, dan dimensi output yang
+  sama serta diverifikasi sebelum diaktifkan.
 
 Task T-0415 sampai T-0417 telah mengimplementasikan dan memverifikasi client
 Cloudflare, verifikasi dimensi, collection berversi, serta jalur hybrid
 dense+sparse indexing/query yang diwajibkan.
 Provider/model embedding yang berbeda tidak boleh dicampur dengan vector lama.
-Perubahan provider/model wajib menggunakan collection Qdrant berversi baru dan
-full corpus reindex.
+Perubahan provider/model/dimensi wajib menggunakan collection Qdrant berversi
+baru dan full corpus reindex. Pergantian akun Cloudflare dengan model dan
+kontrak yang sama dapat memakai collection yang sama setelah verifikasi.
 
 Jika embedding provider gagal:
 
-- sistem menampilkan error;
-- sistem tidak otomatis memakai embedding model berbeda.
+- sistem boleh mencoba akun Cloudflare sekunder yang dikonfigurasi jika seluruh
+  kontraknya identik;
+- jika akun utama dan sekunder gagal, sistem menampilkan error;
+- sistem tidak otomatis memakai embedding model/provider berbeda.
 
 Catatan:
 
