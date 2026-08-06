@@ -12,7 +12,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${RINGKAS_DATA_ROOT:-../data}/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ringkas} -d ${POSTGRES_DB:-ringkas}"]
       interval: 10s
@@ -29,7 +29,7 @@ services:
       - "6333:6333"
       - "6334:6334"
     volumes:
-      - qdrant_storage:/qdrant/storage
+      - ${RINGKAS_DATA_ROOT:-../data}/qdrant:/qdrant/storage
     networks:
       - ringkas
 
@@ -76,7 +76,7 @@ services:
       CHUNK_OVERLAP_PERCENT: ${CHUNK_OVERLAP_PERCENT:-20}
       OCR_ENABLED: ${OCR_ENABLED:-false}
     volumes:
-      - pdf_storage:/data/ringkas/pdfs
+      - ${RINGKAS_DATA_ROOT:-../data}/pdfs:/data/ringkas/pdfs
     depends_on:
       postgres:
         condition: service_healthy
@@ -159,7 +159,7 @@ services:
       REGISTERED_DAILY_QUOTA: ${REGISTERED_DAILY_QUOTA:-}
       PDF_STORAGE_PATH: ${PDF_STORAGE_PATH:-/data/ringkas/pdfs}
     volumes:
-      - pdf_storage:/data/ringkas/pdfs:ro
+      - ${RINGKAS_DATA_ROOT:-../data}/pdfs:/data/ringkas/pdfs:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -183,11 +183,6 @@ services:
       - api
     networks:
       - ringkas
-
-volumes:
-  postgres_data:
-  qdrant_storage:
-  pdf_storage:
 
 networks:
   ringkas:

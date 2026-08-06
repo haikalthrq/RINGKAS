@@ -58,6 +58,7 @@ Desktop.ini
 
 # Docker / local runtime
 docker-compose.override.yml
+data/
 **/*.sqlite
 **/*.db
 **/tmp/
