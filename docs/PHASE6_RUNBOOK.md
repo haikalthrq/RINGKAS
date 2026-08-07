@@ -116,13 +116,14 @@ dotnet ef database update --project apps/api/Ringkas.Api.csproj --startup-projec
 Start the complete topology:
 
 ```powershell
-docker compose --env-file .env -f infra/docker-compose.yml up -d --build
-docker compose --env-file .env -f infra/docker-compose.yml ps
+docker compose --env-file .env -f infra/docker-compose.yml --profile ingestion up -d --build
+docker compose --env-file .env -f infra/docker-compose.yml --profile ingestion ps
 ```
 
 The public HTTP base is `http://localhost:3000`; Next.js rewrites `/api/*` to
 ASP.NET Core. The API, worker, PostgreSQL, Qdrant, and `rag-query` communicate
-inside Compose. `rag-query` has no public host port.
+inside Compose. `rag-query` has no public host port. For chat and search without
+ingestion, omit `--profile ingestion`; the polling worker then remains stopped.
 
 ## Registration And Admin Role Bootstrap
 

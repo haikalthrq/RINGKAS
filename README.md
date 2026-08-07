@@ -137,11 +137,18 @@ the Compose PostgreSQL service:
 dotnet ef database update --project apps/api/Ringkas.Api.csproj --startup-project apps/api/Ringkas.Api.csproj
 ```
 
-Start the full topology and inspect service state:
+Start the chat and search topology and inspect service state:
 
 ```powershell
 docker compose --env-file .env -f infra/docker-compose.yml up -d --build
 docker compose --env-file .env -f infra/docker-compose.yml ps
+```
+
+The polling worker is in the optional `ingestion` profile. Start it only when
+an ingestion job needs processing:
+
+```powershell
+docker compose --env-file .env -f infra/docker-compose.yml --profile ingestion up -d rag-worker
 ```
 
 The public smoke base URL is `http://localhost:3000`. The web container rewrites

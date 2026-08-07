@@ -34,6 +34,7 @@ services:
       - ringkas
 
   rag-worker:
+    profiles: ["ingestion"]
     build:
       context: ../services/rag-worker
       dockerfile: Dockerfile
