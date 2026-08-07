@@ -97,6 +97,14 @@ def test_fastembed_empty_output_is_rejected_without_fallback():
         FastEmbedSparseEncoder(EmptyModel()).encode_query("query")
 
 
+def test_fastembed_empty_document_output_is_skipped():
+    class EmptyModel(FakeSparseModel):
+        def embed(self, texts):
+            return (SimpleNamespace(indices=(), values=()),)
+
+    assert FastEmbedSparseEncoder(EmptyModel()).encode_documents(("punctuation-only",)) == (None,)
+
+
 def test_query_sorting_and_exact_contract():
     item = point()
     retriever, qdrant = service([item])

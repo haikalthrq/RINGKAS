@@ -217,6 +217,8 @@ class QdrantUpsertClient(Protocol):
 
 
 class QdrantChunkIndexer:
+    INDEX_BATCH_SIZE = 32
+
     def __init__(
         self,
         embedding_client: EmbeddingClient,
@@ -271,37 +273,49 @@ class QdrantChunkIndexer:
 
     def index(self, chunks: Sequence[IndexableChunk], *, input_type: str | None = None, truncate: str | None = None) -> ChunkIndexingResult:
         validated = self._validate_batch(chunks)
-        texts = tuple(chunk.text for chunk in validated)
-        try:
-            embedded = self._embedding_client.embed(texts, input_type=input_type, truncate=truncate)
-        except Exception:
-            error = EmbeddingIndexingFailure("embedding provider failed")
-        else:
-            error = None
-        if error is not None:
-            _raise_safe(error)
-        vectors = self._validate_embeddings(embedded, len(validated))
-        try:
-            sparse_vectors = self._sparse_encoder.encode_documents(texts)
-        except Exception:
-            _raise_safe(SparseIndexingFailure("sparse encoding failed"))
-        if len(sparse_vectors) != len(validated) or any(not isinstance(vector, SparseQuery) for vector in sparse_vectors):
-            _raise_safe(SparseIndexingFailure("sparse encoding count is invalid"))
-        points = tuple(
-            self._point(chunk, vector, sparse_vector)
-            for chunk, vector, sparse_vector in zip(validated, vectors, sparse_vectors, strict=True)
-        )
-        try:
-            response = self._qdrant_client.upsert(self._settings.collection_name, list(points), wait=True)
-        except Exception:
-            error = QdrantIndexingTransportError("Qdrant upsert failed")
-        else:
-            error = None
-        if error is not None:
-            _raise_safe(error)
-        if not isinstance(response, models.UpdateResult) or response.status is not models.UpdateStatus.COMPLETED:
-            _raise_safe(QdrantUpsertIncompleteError("Qdrant upsert did not complete"))
-        return ChunkIndexingResult(self._settings.collection_name, len(points), tuple(c.qdrant_point_id for c in validated), tuple(str(c.chunk_id) for c in validated))
+        point_ids: list[str] = []
+        chunk_ids: list[str] = []
+        for start in range(0, len(validated), self.INDEX_BATCH_SIZE):
+            batch = validated[start : start + self.INDEX_BATCH_SIZE]
+            texts = tuple(chunk.text for chunk in batch)
+            try:
+                embedded = self._embedding_client.embed(texts, input_type=input_type, truncate=truncate)
+            except Exception:
+                error = EmbeddingIndexingFailure("embedding provider failed")
+            else:
+                error = None
+            if error is not None:
+                _raise_safe(error)
+            vectors = self._validate_embeddings(embedded, len(batch))
+            try:
+                sparse_vectors = self._sparse_encoder.encode_documents(texts)
+            except Exception:
+                error = SparseIndexingFailure("sparse encoding failed")
+            else:
+                error = None
+            if error is not None:
+                _raise_safe(error)
+            if len(sparse_vectors) != len(batch) or any(
+                vector is not None and not isinstance(vector, SparseQuery) for vector in sparse_vectors
+            ):
+                _raise_safe(SparseIndexingFailure("sparse encoding count is invalid"))
+            points = tuple(
+                self._point(chunk, vector, sparse_vector)
+                for chunk, vector, sparse_vector in zip(batch, vectors, sparse_vectors, strict=True)
+            )
+            try:
+                response = self._qdrant_client.upsert(self._settings.collection_name, list(points), wait=True)
+            except Exception:
+                error = QdrantIndexingTransportError("Qdrant upsert failed")
+            else:
+                error = None
+            if error is not None:
+                _raise_safe(error)
+            if not isinstance(response, models.UpdateResult) or response.status is not models.UpdateStatus.COMPLETED:
+                _raise_safe(QdrantUpsertIncompleteError("Qdrant upsert did not complete"))
+            point_ids.extend(chunk.qdrant_point_id for chunk in batch)
+            chunk_ids.extend(str(chunk.chunk_id) for chunk in batch)
+        return ChunkIndexingResult(self._settings.collection_name, len(point_ids), tuple(point_ids), tuple(chunk_ids))
 
     def _validate_batch(self, chunks: Sequence[IndexableChunk]) -> tuple[IndexableChunk, ...]:
         if isinstance(chunks, (str, bytes, bytearray)) or not isinstance(chunks, Sequence) or not chunks:
@@ -350,7 +364,7 @@ class QdrantChunkIndexer:
         return tuple(converted_vectors)
 
     @staticmethod
-    def _point(chunk: IndexableChunk, vector: tuple[float, ...], sparse_vector: SparseQuery) -> models.PointStruct:
+    def _point(chunk: IndexableChunk, vector: tuple[float, ...], sparse_vector: SparseQuery | None) -> models.PointStruct:
         payload = {
             "document_id": str(chunk.document_id), "chunk_id": str(chunk.chunk_id), "title": chunk.title,
             "publication_year": chunk.publication_year, "region": chunk.region, "region_level": chunk.region_level,
@@ -359,14 +373,14 @@ class QdrantChunkIndexer:
             "extraction_method": chunk.extraction_method, "low_structure_confidence": chunk.low_structure_confidence,
             "source_url": chunk.source_url, "pdf_url": chunk.pdf_url,
         }
+        vectors: dict[str, object] = {DENSE_VECTOR_NAME: list(vector)}
+        if sparse_vector is not None:
+            vectors[SPARSE_VECTOR_NAME] = models.SparseVector(
+                indices=list(sparse_vector.indices), values=list(sparse_vector.values)
+            )
         return models.PointStruct(
             id=chunk.qdrant_point_id,
-            vector={
-                DENSE_VECTOR_NAME: list(vector),
-                SPARSE_VECTOR_NAME: models.SparseVector(
-                    indices=list(sparse_vector.indices), values=list(sparse_vector.values)
-                ),
-            },
+            vector=vectors,
             payload=payload,
         )
 

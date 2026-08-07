@@ -126,12 +126,12 @@ class SparseQuery:
 
 @runtime_checkable
 class SparseEncoder(Protocol):
-    def encode_documents(self, texts: Sequence[str]) -> tuple[SparseQuery, ...]: ...
+    def encode_documents(self, texts: Sequence[str]) -> tuple[SparseQuery | None, ...]: ...
 
     def encode_query(self, query: str) -> SparseQuery: ...
 
 
-def _query_from_embedding(embedding: object) -> SparseQuery:
+def _query_from_embedding(embedding: object, *, allow_empty: bool = False) -> SparseQuery | None:
     indices = getattr(embedding, "indices", None)
     values = getattr(embedding, "values", None)
     if isinstance(indices, (str, bytes, bytearray)) or isinstance(values, (str, bytes, bytearray)):
@@ -140,7 +140,11 @@ def _query_from_embedding(embedding: object) -> SparseQuery:
         raw_indices, raw_values = tuple(indices), tuple(values)
     except (TypeError, ValueError):
         _raise_safe(SparseEncodingError("FastEmbed sparse output is invalid"))
-    if not raw_indices or len(raw_indices) != len(raw_values):
+    if not raw_indices or not raw_values:
+        if allow_empty and not raw_indices and not raw_values:
+            return None
+        _raise_safe(SparseEncodingError("FastEmbed sparse output is empty or mismatched"))
+    if len(raw_indices) != len(raw_values):
         _raise_safe(SparseEncodingError("FastEmbed sparse output is empty or mismatched"))
     converted_indices: list[int] = []
     converted_values: list[float] = []
@@ -191,7 +195,7 @@ class FastEmbedSparseEncoder:
             _raise_safe(SparseEncodingError("FastEmbed BM25 document encoding failed"))
         if len(embeddings) != len(values):
             _raise_safe(SparseEncodingError("FastEmbed BM25 document encoding count is invalid"))
-        return tuple(_query_from_embedding(embedding) for embedding in embeddings)
+        return tuple(_query_from_embedding(embedding, allow_empty=True) for embedding in embeddings)
 
     def encode_query(self, query: str) -> SparseQuery:
         if not isinstance(query, str) or not query.strip():

@@ -123,6 +123,53 @@ def test_protocol_and_valid_indexing_maps_exact_payload_and_named_dense_sparse_v
     assert isinstance(qdrant.point_batches[0], list)
 
 
+def test_large_batches_split_before_sparse_encoding_and_upsert():
+    class BatchEmbedding:
+        def __init__(self):
+            self.calls = []
+
+        def embed(self, texts, *, input_type=None, truncate=None):
+            values = tuple(texts)
+            self.calls.append(values)
+            return result(len(values))
+
+    embedding = BatchEmbedding()
+    sparse = FakeSparseEncoder()
+    qdrant = FakeQdrant()
+    service = QdrantChunkIndexer(
+        embedding,
+        qdrant,
+        QdrantIndexingSettings(qdrant_api_key=SecretStr(""), expected_dense_vector_size=2),
+        sparse,
+    )
+
+    output = service.index([chunk() for _ in range(33)])
+
+    assert output.indexed_count == 33
+    assert [len(batch) for batch in embedding.calls] == [32, 1]
+    assert [len(batch) for batch in sparse.calls] == [32, 1]
+    assert [len(batch) for batch in qdrant.point_batches] == [32, 1]
+
+
+def test_empty_sparse_vector_keeps_dense_indexing():
+    class EmptySparseEncoder(FakeSparseEncoder):
+        def encode_documents(self, texts):
+            return tuple(None for _ in texts)
+
+    item = chunk()
+    qdrant = FakeQdrant()
+    service = QdrantChunkIndexer(
+        FakeEmbedding(result()),
+        qdrant,
+        QdrantIndexingSettings(qdrant_api_key=SecretStr(""), expected_dense_vector_size=2),
+        EmptySparseEncoder(),
+    )
+
+    service.index([item])
+
+    assert set(qdrant.point_batches[0][0].vector) == {"dense"}
+
+
 @pytest.mark.parametrize("value", [[], "text", 1, None])
 def test_empty_or_scalar_batches_rejected(value):
     service = indexer(FakeEmbedding(result()))
