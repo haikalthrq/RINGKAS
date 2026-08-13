@@ -17,6 +17,7 @@ class IngestionJob:
     scope_year_end: int
     max_documents: int
     started_at: datetime | None
+    heartbeat_at: datetime | None
     completed_at: datetime | None
     created_at: datetime
     error_summary: str | None
@@ -63,7 +64,7 @@ class IngestionJobRepository:
                     """
                     SELECT id, requested_by_user_id, status, scope_region,
                            scope_year_start, scope_year_end, max_documents,
-                           started_at, completed_at, created_at, error_summary
+                           started_at, heartbeat_at, completed_at, created_at, error_summary
                     FROM ingestion_jobs
                     WHERE status = %s
                     ORDER BY created_at ASC, id ASC
@@ -80,16 +81,42 @@ class IngestionJobRepository:
                 cursor.execute(
                     """
                     UPDATE ingestion_jobs
-                    SET status = %s, started_at = %s
+                    SET status = %s, started_at = %s, heartbeat_at = %s
                     WHERE id = %s AND status = %s
                     RETURNING id, requested_by_user_id, status, scope_region,
                               scope_year_start, scope_year_end, max_documents,
-                              started_at, completed_at, created_at, error_summary
+                              started_at, heartbeat_at, completed_at, created_at, error_summary
                     """,
-                    ("running", started_at, row[0], "queued"),
+                    ("running", started_at, started_at, row[0], "queued"),
                 )
                 claimed = cursor.fetchone()
                 return _to_job(claimed) if claimed is not None else None
+
+    def heartbeat(self, job_id: UUID) -> bool:
+        with self._connection_factory() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE ingestion_jobs SET heartbeat_at = CURRENT_TIMESTAMP WHERE id = %s AND status = %s",
+                    (job_id, "running"),
+                )
+                return cursor.rowcount == 1
+
+    def requeue_stale_jobs(self, timeout_seconds: int) -> int:
+        if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, int) or timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be a positive integer")
+        with self._connection_factory() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE ingestion_jobs
+                    SET status = %s, started_at = NULL, heartbeat_at = NULL, completed_at = NULL, error_summary = NULL
+                    WHERE status = %s
+                      AND COALESCE(heartbeat_at, started_at) IS NOT NULL
+                      AND COALESCE(heartbeat_at, started_at) < CURRENT_TIMESTAMP - (%s * INTERVAL '1 second')
+                    """,
+                    ("queued", "running", timeout_seconds),
+                )
+                return cursor.rowcount
 
     def mark_completed(self, job_id: UUID) -> bool:
         return self._mark_terminal(job_id, "completed", None)
@@ -106,7 +133,7 @@ class IngestionJobRepository:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """UPDATE ingestion_jobs
-                       SET status = %s, completed_at = %s, error_summary = %s
+                       SET status = %s, heartbeat_at = NULL, completed_at = %s, error_summary = %s
                        WHERE id = %s AND status = %s""",
                     (status, completed_at, summary, job_id, "running"),
                 )

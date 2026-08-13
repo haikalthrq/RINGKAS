@@ -159,8 +159,10 @@ services:
       GUEST_PROMPT_QUOTA: ${GUEST_PROMPT_QUOTA:-1}
       REGISTERED_DAILY_QUOTA: ${REGISTERED_DAILY_QUOTA:-}
       PDF_STORAGE_PATH: ${PDF_STORAGE_PATH:-/data/ringkas/pdfs}
+      DATA_PROTECTION_KEYS_PATH: ${DATA_PROTECTION_KEYS_PATH:-/data/ringkas/keys}
     volumes:
       - ${RINGKAS_DATA_ROOT:-../data}/pdfs:/data/ringkas/pdfs:ro
+      - ${RINGKAS_DATA_ROOT:-../data}/keys:/data/ringkas/keys
     depends_on:
       postgres:
         condition: service_healthy

@@ -95,7 +95,8 @@ def test_processor_postgresql_pipeline_persists_job_document_chunks_and_logs() -
         connection.execute('INSERT INTO "AspNetUsers" ("Id", "EmailConfirmed", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnabled", "AccessFailedCount") VALUES (%s, false, false, false, false, 0)', (user_id,))
         connection.execute("INSERT INTO ingestion_jobs (id, requested_by_user_id, status, scope_region, scope_year_start, scope_year_end, max_documents, created_at) VALUES (%s, %s, 'running', 'DKI Jakarta', 2020, 2026, 1, %s)", (job_id, user_id, datetime.now(timezone.utc)))
     publication = PublicationMetadata(title="Processor integration", publication_year=2025, region="DKI Jakarta", region_level="province", source_page_url="https://bps.example/source", pdf_url="https://files.example/document.pdf")
-    job = IngestionJob(job_id, user_id, "running", "DKI Jakarta", 2020, 2026, 1, datetime.now(timezone.utc), None, datetime.now(timezone.utc), None)
+    now = datetime.now(timezone.utc)
+    job = IngestionJob(job_id, user_id, "running", "DKI Jakarta", 2020, 2026, 1, now, now, None, now, None)
     page = PdfPage(1, "Integration source text", PdfPageMetadata(100, 100, 0))
 
     class Source:

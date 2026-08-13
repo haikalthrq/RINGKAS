@@ -27,7 +27,7 @@ def publication(region="DKI Jakarta", year=2025, pdf=True):
 def job(max_documents=10):
     now = datetime.now(timezone.utc)
     return IngestionJob(uuid4(), "user", "running", "DKI Jakarta", 2020, 2026,
-                        max_documents, now, None, now, None)
+                        max_documents, now, now, None, now, None)
 
 
 class Logs:
@@ -82,12 +82,12 @@ class Indexer:
     def index(self, chunks): self.calls.append(chunks)
 
 
-def processor(publications, documents=None, downloader=None, parser=None, cleaner=None, chunker=None, indexer=None, logs=None, jobs=None, chunks=None):
+def processor(publications, documents=None, downloader=None, parser=None, cleaner=None, chunker=None, indexer=None, logs=None, jobs=None, chunks=None, retry_count=0):
     return IngestionProcessor(
         publications=SimpleNamespace(fetch_publications=lambda: publications),
         downloader=downloader or Downloader(), parser=parser or Parser(), cleaner=cleaner or Cleaner(), chunker=chunker or Chunker(),
         indexer=indexer or Indexer(), jobs=jobs or Jobs(), documents=documents or Documents(), chunks=chunks or Chunks(),
-        logs=logs or Logs(),
+        logs=logs or Logs(), document_retry_count=retry_count,
     )
 
 
@@ -160,6 +160,26 @@ def test_download_failure_continues_and_is_counted_in_finished_summary():
     assert jobs.completed == 1
     assert any("failed=1" in entry[0][2] for entry in logs.entries)
     assert all("secret" not in entry[0][2] for entry in logs.entries)
+
+
+def test_transient_download_failure_retries_when_configured():
+    class FlakyDownloader:
+        calls = 0
+
+        def download(self, _publication):
+            self.calls += 1
+            if self.calls < 3:
+                raise RuntimeError("temporary provider failure")
+            return DownloadedPdf("a" * 64, "/tmp/a.pdf", False)
+
+    downloader = FlakyDownloader()
+    documents, indexer, jobs = Documents(), Indexer(), Jobs()
+    processor([publication()], documents=documents, downloader=downloader, indexer=indexer, jobs=jobs, retry_count=2).process(job())
+
+    assert downloader.calls == 3
+    assert documents.transitions[-1] == "indexed"
+    assert indexer.calls
+    assert jobs.completed == 1
 
 
 def test_required_logging_failure_is_systemic_and_does_not_chain_raw_exception():

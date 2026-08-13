@@ -1,5 +1,9 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Ringkas.Api.Auth;
 using Ringkas.Api.Data;
 
@@ -109,11 +113,120 @@ public static class AuthEndpoints
             statusCode: StatusCodes.Status501NotImplemented);
     }
 
-    private static IResult GoogleOAuthStartAsync(GoogleOAuthSettings googleOAuthSettings) =>
-        GoogleOAuthPlaceholderResult(googleOAuthSettings, "Google OAuth start placeholder.");
+    private static async Task<IResult> GoogleOAuthStartAsync(
+        HttpContext httpContext,
+        GoogleOAuthSettings googleOAuthSettings)
+    {
+        if (!googleOAuthSettings.IsConfigured)
+        {
+            return GoogleOAuthDisabledResult();
+        }
 
-    private static IResult GoogleOAuthCallbackAsync(GoogleOAuthSettings googleOAuthSettings) =>
-        GoogleOAuthPlaceholderResult(googleOAuthSettings, "Google OAuth callback placeholder.");
+        var returnUrl = GetSafeReturnUrl(httpContext.Request.Query["returnUrl"].ToString());
+        var callbackUrl = QueryHelpers.AddQueryString("/api/auth/google/callback", "returnUrl", returnUrl);
+
+        await httpContext.ChallengeAsync(
+            GoogleDefaults.AuthenticationScheme,
+            new AuthenticationProperties { RedirectUri = callbackUrl });
+
+        return Results.Empty;
+    }
+
+    private static async Task<IResult> GoogleOAuthCallbackAsync(
+        HttpContext httpContext,
+        string? returnUrl,
+        string? remoteError,
+        GoogleOAuthSettings googleOAuthSettings,
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager)
+    {
+        if (!googleOAuthSettings.IsConfigured)
+        {
+            return GoogleOAuthDisabledResult();
+        }
+
+        var safeReturnUrl = GetSafeReturnUrl(returnUrl);
+        var providerError = remoteError ?? httpContext.Request.Query["error"].ToString();
+        if (!string.IsNullOrWhiteSpace(providerError))
+        {
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "provider_error");
+        }
+
+        var externalLoginInfo = await signInManager.GetExternalLoginInfoAsync();
+        if (externalLoginInfo is null ||
+            !string.Equals(externalLoginInfo.LoginProvider, GoogleDefaults.AuthenticationScheme, StringComparison.Ordinal))
+        {
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "login_failed");
+        }
+
+        var signInResult = await signInManager.ExternalLoginSignInAsync(
+            externalLoginInfo.LoginProvider,
+            externalLoginInfo.ProviderKey,
+            isPersistent: false,
+            bypassTwoFactor: true);
+
+        if (signInResult.Succeeded)
+        {
+            return Results.LocalRedirect(safeReturnUrl);
+        }
+
+        if (signInResult.IsLockedOut || signInResult.IsNotAllowed || signInResult.RequiresTwoFactor)
+        {
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "account_unavailable");
+        }
+
+        var email = (externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email) ??
+            externalLoginInfo.Principal.FindFirstValue("email"))?.Trim();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "email_missing");
+        }
+
+        if (!IsGoogleEmailVerified(externalLoginInfo.Principal))
+        {
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "email_unverified");
+        }
+
+        if (await userManager.FindByEmailAsync(email) is not null)
+        {
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "account_exists");
+        }
+
+        var user = new ApplicationUser
+        {
+            Email = email,
+            EmailConfirmed = true,
+            UserName = email
+        };
+
+        var createResult = await userManager.CreateAsync(user);
+        if (!createResult.Succeeded)
+        {
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "account_creation_failed");
+        }
+
+        var roleResult = await userManager.AddToRoleAsync(user, AppRoles.User);
+        if (!roleResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "account_creation_failed");
+        }
+
+        var loginResult = await userManager.AddLoginAsync(
+            user,
+            new UserLoginInfo(
+                externalLoginInfo.LoginProvider,
+                externalLoginInfo.ProviderKey,
+                externalLoginInfo.ProviderDisplayName));
+        if (!loginResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "account_creation_failed");
+        }
+
+        await signInManager.SignInAsync(user, isPersistent: false);
+        return Results.LocalRedirect(safeReturnUrl);
+    }
 
     private static async Task<IResult> LoginAsync(
         LoginRequest request,
@@ -188,20 +301,44 @@ public static class AuthEndpoints
         return await userManager.GetUserAsync(httpContext.User);
     }
 
-    private static IResult GoogleOAuthPlaceholderResult(GoogleOAuthSettings googleOAuthSettings, string title)
+    internal static string GetSafeReturnUrl(string? returnUrl) =>
+        IsLocalReturnUrl(returnUrl) ? returnUrl! : "/chat";
+
+    internal static bool IsLocalReturnUrl(string? returnUrl)
     {
-        if (!googleOAuthSettings.IsConfigured)
+        if (string.IsNullOrWhiteSpace(returnUrl) ||
+            !returnUrl.StartsWith("/", StringComparison.Ordinal) ||
+            (returnUrl.Length > 1 && (returnUrl[1] == '/' || returnUrl[1] == '\\')))
         {
-            return Results.Problem(
-                title: "Google OAuth is disabled.",
-                detail: "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable this placeholder endpoint.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
+            return false;
         }
 
-        return Results.Problem(
-            title: title,
-            detail: "Google OAuth is recognized by configuration, but the actual OAuth flow is not implemented yet.",
-            statusCode: StatusCodes.Status501NotImplemented);
+        return !returnUrl.Any(char.IsControl) &&
+            !returnUrl.Contains('\\') &&
+            !returnUrl.Contains("://", StringComparison.Ordinal);
+    }
+
+    internal static bool IsGoogleEmailVerified(ClaimsPrincipal principal) =>
+        principal.Claims
+            .Where(claim => claim.Type is GoogleOAuthSettings.EmailVerifiedClaimType or "email_verified" or "verified_email")
+            .Any(claim => bool.TryParse(claim.Value, out var verified) && verified);
+
+    private static IResult GoogleOAuthDisabledResult() => Results.Problem(
+        title: "Google OAuth is disabled.",
+        detail: "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable Google sign-in.",
+        statusCode: StatusCodes.Status503ServiceUnavailable);
+
+    private static IResult GoogleOAuthErrorRedirect(string returnUrl, string errorCode)
+    {
+        var loginUrl = QueryHelpers.AddQueryString(
+            "/login",
+            new Dictionary<string, string?>
+            {
+                ["error"] = errorCode,
+                ["from"] = returnUrl
+            });
+
+        return Results.LocalRedirect(loginUrl);
     }
 
     private static IResult InvalidCredentials() => Results.Problem(

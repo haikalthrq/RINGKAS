@@ -51,6 +51,7 @@ def build_processor(settings: WorkerSettings, resources: ExitStack) -> Ingestion
         cleaner=ConservativeTextCleaner(),
         chunker=RecursiveTextChunker(chunk_size=settings.chunk_size_max, length_function=len),
         indexer=indexer,
+        document_retry_count=settings.ingestion_document_retry_count,
         jobs=jobs,
         documents=DocumentRepository(database_url),
         chunks=ChunkRepository(database_url),
@@ -82,6 +83,9 @@ def main() -> int:
     resources = ExitStack()
     try:
         processor = build_processor(settings, resources)
+        recovered_jobs = processor.jobs.requeue_stale_jobs(settings.ingestion_running_job_timeout_seconds)
+        if recovered_jobs:
+            logger.warning("Requeued stale ingestion jobs after worker recovery: count=%s", recovered_jobs)
         worker = PollingWorker(settings, processor.jobs, processor)
     except Exception:
         resources.close()

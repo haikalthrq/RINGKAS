@@ -72,6 +72,8 @@ class WorkerSettings(BaseSettings):
     bps_publications_path: str = Field(default="", validation_alias="BPS_PUBLICATIONS_PATH")
     bps_publication_keyword: str = Field(default="", validation_alias="BPS_PUBLICATION_KEYWORD")
     ingestion_poll_interval_seconds: int = Field(default=10, validation_alias="INGESTION_POLL_INTERVAL_SECONDS")
+    ingestion_running_job_timeout_seconds: int = Field(default=21_600, validation_alias="INGESTION_RUNNING_JOB_TIMEOUT_SECONDS")
+    ingestion_document_retry_count: int = Field(default=0, validation_alias="INGESTION_DOCUMENT_RETRY_COUNT")
     database_connect_timeout_seconds: int = Field(default=10, validation_alias="DATABASE_CONNECT_TIMEOUT_SECONDS")
     database_statement_timeout_ms: int = Field(default=30_000, validation_alias="DATABASE_STATEMENT_TIMEOUT_MS")
     chunk_size_min: int = Field(default=500, validation_alias="CHUNK_SIZE_MIN")
@@ -129,6 +131,7 @@ class WorkerSettings(BaseSettings):
 
     @field_validator(
         "ingestion_poll_interval_seconds",
+        "ingestion_running_job_timeout_seconds",
         "database_connect_timeout_seconds",
         "database_statement_timeout_ms",
         "chunk_size_min",
@@ -139,6 +142,13 @@ class WorkerSettings(BaseSettings):
     def positive_integer(cls, value: int) -> int:
         if value <= 0:
             raise ValueError("poll interval, database timeouts, and chunk sizes must be positive")
+        return value
+
+    @field_validator("ingestion_document_retry_count")
+    @classmethod
+    def non_negative_retry_count(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("INGESTION_DOCUMENT_RETRY_COUNT must be zero or greater")
         return value
 
     @field_validator("pdf_max_redirects")

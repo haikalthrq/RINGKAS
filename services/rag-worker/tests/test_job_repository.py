@@ -8,6 +8,7 @@ class FakeCursor:
     def __init__(self, rows: list[tuple | None]) -> None:
         self.rows = iter(rows)
         self.executed: list[tuple[str, tuple]] = []
+        self.rowcount = 0
 
     def __enter__(self):
         return self
@@ -17,6 +18,8 @@ class FakeCursor:
 
     def execute(self, query: str, params: tuple) -> None:
         self.executed.append((query, params))
+        if query.lstrip().startswith("UPDATE ingestion_jobs"):
+            self.rowcount = 1
 
     def fetchone(self):
         return next(self.rows)
@@ -38,12 +41,12 @@ class FakeConnection:
 
 def job_row(job_id):
     now = datetime.now(timezone.utc)
-    return (job_id, "user", "queued", "DKI Jakarta", 2022, 2026, 300, None, None, now, None)
+    return (job_id, "user", "queued", "DKI Jakarta", 2022, 2026, 300, None, None, None, now, None)
 
 
 def test_claim_uses_locking_query_and_returns_running_job() -> None:
     job_id = uuid4()
-    cursor = FakeCursor([job_row(job_id), (*job_row(job_id)[:2], "running", *job_row(job_id)[3:6], job_row(job_id)[6], datetime.now(timezone.utc), None, job_row(job_id)[9], None)])
+    cursor = FakeCursor([job_row(job_id), (*job_row(job_id)[:2], "running", *job_row(job_id)[3:6], job_row(job_id)[6], datetime.now(timezone.utc), datetime.now(timezone.utc), None, job_row(job_id)[10], None)])
     repository = IngestionJobRepository("unused", lambda: FakeConnection(cursor))
 
     claimed = repository.claim_next_job()
@@ -59,3 +62,13 @@ def test_claim_uses_locking_query_and_returns_running_job() -> None:
 def test_no_queued_job_returns_none() -> None:
     repository = IngestionJobRepository("unused", lambda: FakeConnection(FakeCursor([None])))
     assert repository.claim_next_job() is None
+
+
+def test_requeue_stale_jobs_resets_running_jobs() -> None:
+    cursor = FakeCursor([])
+    repository = IngestionJobRepository("unused", lambda: FakeConnection(cursor))
+
+    assert repository.requeue_stale_jobs(3600) == 1
+    query, params = cursor.executed[0]
+    assert "COALESCE(heartbeat_at, started_at) < CURRENT_TIMESTAMP" in query
+    assert params == ("queued", "running", 3600)

@@ -10,6 +10,7 @@ public sealed class IngestionJob
     public int ScopeYearEnd { get; set; }
     public int MaxDocuments { get; set; }
     public DateTime? StartedAt { get; set; }
+    public DateTime? HeartbeatAt { get; set; }
     public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? ErrorSummary { get; set; }

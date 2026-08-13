@@ -12,8 +12,12 @@ def valid_environment(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_settings_read_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     valid_environment(monkeypatch)
     monkeypatch.setenv("INGESTION_POLL_INTERVAL_SECONDS", "15")
+    monkeypatch.setenv("INGESTION_RUNNING_JOB_TIMEOUT_SECONDS", "120")
+    monkeypatch.setenv("INGESTION_DOCUMENT_RETRY_COUNT", "2")
     settings = WorkerSettings()
     assert settings.ingestion_poll_interval_seconds == 15
+    assert settings.ingestion_running_job_timeout_seconds == 120
+    assert settings.ingestion_document_retry_count == 2
     assert settings.database_url.get_secret_value().startswith("postgresql://")
 
 
@@ -21,6 +25,8 @@ def test_settings_read_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     "name,value",
     [
         ("INGESTION_POLL_INTERVAL_SECONDS", "0"),
+        ("INGESTION_RUNNING_JOB_TIMEOUT_SECONDS", "0"),
+        ("INGESTION_DOCUMENT_RETRY_COUNT", "-1"),
         ("DATABASE_CONNECT_TIMEOUT_SECONDS", "0"),
         ("DATABASE_STATEMENT_TIMEOUT_MS", "0"),
         ("CHUNK_SIZE_MIN", "0"),

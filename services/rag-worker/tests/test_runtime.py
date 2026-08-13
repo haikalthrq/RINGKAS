@@ -25,6 +25,7 @@ def settings():
         pdf_total_timeout_seconds=300.0,
         pdf_max_redirects=5,
         chunk_size_max=800,
+        ingestion_document_retry_count=0,
     )
 
 

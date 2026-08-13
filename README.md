@@ -122,6 +122,15 @@ The generation order is locked exactly as follows:
 4. `nvidia/nemotron-mini-4b-instruct`
 5. `@cf/meta/llama-4-scout-17b-16e-instruct`
 
+Google OAuth is implemented when `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` are configured. Email verification is intentionally not
+implemented for this deployment decision; email-password registration does not
+require a confirmed email.
+
+Register the exact public callback URI
+`https://<deployment-domain>/api/auth/google/provider-callback` in Google Cloud;
+the local callback is `http://localhost:3000/api/auth/google/provider-callback`.
+
 ## Local Startup
 
 Render and validate Compose before starting services:
@@ -153,6 +162,28 @@ docker compose --env-file .env -f infra/docker-compose.yml --profile ingestion u
 
 The public smoke base URL is `http://localhost:3000`. The web container rewrites
 `/api/*` to ASP.NET Core. `rag-query` has no host port and must remain private.
+
+## Production Overlay
+
+The base Compose file is a local topology. For a VPS, validate the production
+overlay with a real, untracked production `.env`:
+
+```bash
+docker compose --env-file .env -f infra/docker-compose.yml -f infra/docker-compose.production.yml config --quiet
+docker compose --env-file .env -f infra/docker-compose.yml -f infra/docker-compose.production.yml up -d --build
+```
+
+The overlay removes PostgreSQL and Qdrant host ports, binds the web service to
+loopback, forces the API environment to `Production`, and requires deployment
+secrets and safety boundaries. Put the TLS reverse proxy and domain outside
+Compose, then proxy only to `127.0.0.1:${WEB_PORT}`. Do not expose PostgreSQL,
+Qdrant, or `rag-query` publicly.
+
+Use `.env.production.example` only as a variable checklist. Replace every
+`<required...>` placeholder before starting a deployment.
+
+Back up PostgreSQL, Qdrant, and PDFs with `scripts/backup/backup.sh`; restore
+procedures are documented in `scripts/backup/README.md`.
 
 ## Admin Bootstrap
 

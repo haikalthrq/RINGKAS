@@ -37,7 +37,7 @@ class PollingWorker:
         if job is None:
             return False
         try:
-            self._handler(job)
+            self._run_handler_with_heartbeat(job)
         except ProcessorSystemicError:
             # IngestionProcessor terminalizes systemic failures before raising.
             logger.error("Ingestion job failed after terminalization")
@@ -48,6 +48,30 @@ class PollingWorker:
             except Exception:
                 logger.error("Ingestion job failure transition failed")
         return True
+
+    def _run_handler_with_heartbeat(self, job: IngestionJob) -> None:
+        heartbeat = getattr(self._repository, "heartbeat", None)
+        if not callable(heartbeat):
+            self._handler(job)
+            return
+
+        heartbeat_stop = threading.Event()
+        heartbeat_interval = min(max(self._settings.ingestion_poll_interval_seconds, 1), 30)
+
+        def keep_lease() -> None:
+            while not heartbeat_stop.wait(heartbeat_interval):
+                try:
+                    heartbeat(job.id)
+                except psycopg.Error:
+                    logger.warning("Ingestion job heartbeat failed; retrying on next interval")
+
+        heartbeat_thread = threading.Thread(target=keep_lease, name="ingestion-heartbeat", daemon=True)
+        heartbeat_thread.start()
+        try:
+            self._handler(job)
+        finally:
+            heartbeat_stop.set()
+            heartbeat_thread.join(timeout=heartbeat_interval + 1)
 
     def run(self, stop_event: threading.Event) -> None:
         retry_delay = min(max(self._settings.ingestion_poll_interval_seconds, 1), 60)

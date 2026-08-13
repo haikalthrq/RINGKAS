@@ -15,7 +15,8 @@ def settings(interval: int = 1):
 def job() -> IngestionJob:
     from datetime import datetime, timezone
 
-    return IngestionJob(uuid4(), "user", "running", "DKI Jakarta", 2022, 2026, 10, datetime.now(timezone.utc), None, datetime.now(timezone.utc), None)
+    now = datetime.now(timezone.utc)
+    return IngestionJob(uuid4(), "user", "running", "DKI Jakarta", 2022, 2026, 10, now, now, None, now, None)
 
 
 class Repository:

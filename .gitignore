@@ -21,6 +21,7 @@ Desktop.ini
 .env
 .env.*
 !.env.example
+!.env.production.example
 **/appsettings.Production.json
 **/appsettings.*.local.json
 **/appsettings.Local.json
@@ -59,6 +60,9 @@ Desktop.ini
 # Docker / local runtime
 docker-compose.override.yml
 data/
+backups/
+*.dump
+*.tar.gz
 **/*.sqlite
 **/*.db
 **/tmp/

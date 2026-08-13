@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
+from time import sleep
 from typing import Literal, Protocol, runtime_checkable
+from typing import TypeVar
 from uuid import UUID
 
 from ringkas_worker.bps.models import PublicationMetadata
@@ -16,6 +18,7 @@ from ringkas_worker.indexing import ChunkIndexer, IndexableChunk
 from ringkas_worker.parsers import PdfParser
 
 DocumentOutcome = Literal["indexed", "skipped", "unsupported", "failed"]
+T = TypeVar("T")
 
 
 class ProcessorSystemicError(Exception):
@@ -38,7 +41,8 @@ class IngestionProcessor:
     def __init__(self, *, publications: PublicationSource, downloader: PdfSource, parser: PdfParser,
                  cleaner: TextCleaner, chunker: TextChunker, indexer: ChunkIndexer,
                  jobs: IngestionJobRepository, documents: DocumentRepository, chunks: ChunkRepository,
-                 logs: IngestionLogRepository, approved_region_level: str = "province") -> None:
+                 logs: IngestionLogRepository, approved_region_level: str = "province",
+                 document_retry_count: int = 0) -> None:
         self.publications = publications
         self.downloader = downloader
         self.parser = parser
@@ -50,6 +54,9 @@ class IngestionProcessor:
         self.chunks = chunks
         self.logs = logs
         self.approved_region_level = approved_region_level.strip().casefold()
+        if isinstance(document_retry_count, bool) or not isinstance(document_retry_count, int) or document_retry_count < 0:
+            raise ValueError("document_retry_count must be a non-negative integer")
+        self.document_retry_count = document_retry_count
 
     def __call__(self, job: IngestionJob) -> None:
         self.process(job)
@@ -109,11 +116,11 @@ class IngestionProcessor:
     def _process_document(self, job: IngestionJob, publication: PublicationMetadata) -> DocumentOutcome:
         if publication.pdf_url is None:
             return self._document_log_outcome(job, "Document skipped: missing PDF URL", "document_download", None, "failed")
-        downloaded = None
-        try:
-            downloaded = self.downloader.download(publication)
-        except Exception:
-            pass
+        downloaded = self._retry_operation(
+            job,
+            lambda: self.downloader.download(publication),
+            document_id=None,
+        )
         if downloaded is None:
             return self._document_log_outcome(job, "Document download failed", "document_download", None, "failed")
         document = None
@@ -129,11 +136,11 @@ class IngestionProcessor:
                                               "duplicate_skip", document.document_id, "skipped")
         if not self._log(job, "info", "Document downloaded", "document_download", document.document_id):
             return self._failed_document(job, document.document_id, "required ingestion logging failed")
-        parsed = None
-        try:
-            parsed = self.parser.parse(Path(document.local_pdf_path))
-        except Exception:
-            pass
+        parsed = self._retry_operation(
+            job,
+            lambda: self.parser.parse(Path(document.local_pdf_path)),
+            document_id=document.document_id,
+        )
         if parsed is None:
             return self._failed_document(job, document.document_id, "document_processing_failed")
         if parsed.status == "unsupported_or_extraction_failed":
@@ -158,17 +165,7 @@ class IngestionProcessor:
             raise ProcessorSystemicError("document status update failed")
         if not marked_parsed:
             return self._failed_document(job, document.document_id, "document_status_update_failed")
-        stage_failed = False
-        try:
-            cleaned = self.cleaner.clean(parsed)
-            chunked = self.chunker.chunk(cleaned)
-            if not chunked.chunks:
-                stage_failed = True
-            else:
-                persisted = self.chunks.persist_for_document(document.document_id, chunked.chunks, str(publication.source_page_url))
-                self.indexer.index(tuple(self._to_indexable(publication, document, chunk) for chunk in persisted))
-        except Exception:
-            stage_failed = True
+        stage_failed = self._retry_stage(job, publication, document, parsed)
         if stage_failed:
             return self._failed_document(job, document.document_id, "document_processing_failed")
         marked_indexed = False
@@ -182,6 +179,37 @@ class IngestionProcessor:
         if not marked_indexed:
             return self._failed_document(job, document.document_id, "document_status_update_failed")
         return self._document_log_outcome(job, "Document indexed", "document_index", document.document_id, "indexed")
+
+    def _retry_stage(self, job: IngestionJob, publication: PublicationMetadata,
+                     document: PersistedDocument, parsed: object) -> bool:
+        for attempt in range(self.document_retry_count + 1):
+            try:
+                cleaned = self.cleaner.clean(parsed)
+                chunked = self.chunker.chunk(cleaned)
+                if not chunked.chunks:
+                    raise ValueError("document produced no chunks")
+                persisted = self.chunks.persist_for_document(
+                    document.document_id, chunked.chunks, str(publication.source_page_url)
+                )
+                self.indexer.index(tuple(self._to_indexable(publication, document, chunk) for chunk in persisted))
+                return False
+            except Exception:
+                if attempt == self.document_retry_count:
+                    return True
+                self._log(job, "warn", "Document processing retry scheduled", "document_retry", document.document_id)
+                sleep(_retry_delay(attempt))
+        return True
+
+    def _retry_operation(self, job: IngestionJob, operation: Callable[[], T], document_id: UUID | None) -> T | None:
+        for attempt in range(self.document_retry_count + 1):
+            try:
+                return operation()
+            except Exception:
+                if attempt == self.document_retry_count:
+                    return None
+                self._log(job, "warn", "Document processing retry scheduled", "document_retry", document_id)
+                sleep(_retry_delay(attempt))
+        return None
 
     def _failed_document(self, job: IngestionJob, document_id: UUID, message: str) -> DocumentOutcome:
         marked = False
@@ -233,3 +261,7 @@ class IngestionProcessor:
             self.jobs.mark_failed(job.id, "systemic ingestion failure")
         except Exception:
             pass
+
+
+def _retry_delay(attempt: int) -> float:
+    return min(0.25 * (2 ** attempt), 2.0)

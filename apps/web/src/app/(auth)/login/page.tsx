@@ -20,6 +20,7 @@ function LoginForm() {
   const { setCurrentUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const googleSignInHref = `/api/auth/google?returnUrl=${encodeURIComponent(resolveSafeRedirectPath(searchParams.get("from"), "/chat"))}`;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -39,9 +40,10 @@ function LoginForm() {
     <form className="auth-form" onSubmit={handleSubmit} noValidate>
       <AuthField label="Email" type="email" value={email} error={errors.email} disabled={isSubmitting} onChange={setEmail} autoComplete="email" />
       <AuthField label="Password" type="password" value={password} error={errors.password} disabled={isSubmitting} onChange={setPassword} autoComplete="current-password" />
+      {searchParams.get("error") ? <p className="form-error" role="alert">Google sign-in could not be completed. Use your existing password account if you already registered with this email.</p> : null}
       {errors.form ? <p className="form-error">{errors.form}</p> : null}
       <button className="primary-button" disabled={isSubmitting} type="submit">{isSubmitting ? "Signing in..." : "Sign in"}</button>
-    </form><p className="page-footnote">Need an account? <Link href="/register">Register</Link></p></section>;
+    </form><a className="secondary-button" href={googleSignInHref}>Continue with Google</a><p className="page-footnote">Need an account? <Link href="/register">Register</Link></p></section>;
 }
 
 function AuthField(props: { label: string; type: string; value: string; error?: string; disabled: boolean; autoComplete: string; onChange: (value: string) => void }) {

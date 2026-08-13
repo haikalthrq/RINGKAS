@@ -310,3 +310,25 @@ No commit or push is part of Phase 7.
 - The long-running local containers still require deployment-specific
   `RAG_INTERNAL_TOKEN` and `PDF_ALLOWED_HOSTS`; those values remain unresolved
   and were not invented.
+
+## P0 Execution Update
+
+Implementation work after this snapshot has completed the executable portion of
+the P0 hardening request, with email verification explicitly excluded:
+
+- Google OAuth now uses ASP.NET Core Identity external-login callbacks, verified
+  Google email claims, safe local redirects, and the existing cookie session.
+- Email-password registration remains usable without email confirmation; the
+  email-verification endpoints remain placeholders by decision.
+- The production Compose overlay removes database/vector host ports, binds web
+  to loopback, requires deployment secrets and safety boundaries, and persists
+  ASP.NET Data Protection keys.
+- Ingestion has configurable document retry/backoff, heartbeat leases, and
+  stale-job recovery. The heartbeat migration is `AddIngestionJobHeartbeat`.
+- PostgreSQL, Qdrant, and PDF backup/restore scripts are under
+  `scripts/backup/`; the release preflight is under `scripts/release/`.
+
+The following still require deployment-specific values or human/provider
+evidence before public production launch: domain/TLS reverse proxy, provider
+quota and cost decisions, tested restore on the target VPS, live RAGAS metrics,
+the 20-question manual audit, and any final corpus snapshot reconciliation.

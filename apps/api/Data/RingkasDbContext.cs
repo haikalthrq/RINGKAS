@@ -122,6 +122,7 @@ public sealed class RingkasDbContext(DbContextOptions<RingkasDbContext> options)
             entity.Property(job => job.ScopeYearEnd).HasColumnName("scope_year_end").IsRequired();
             entity.Property(job => job.MaxDocuments).HasColumnName("max_documents").IsRequired();
             entity.Property(job => job.StartedAt).HasColumnName("started_at").HasColumnType("timestamp with time zone");
+            entity.Property(job => job.HeartbeatAt).HasColumnName("heartbeat_at").HasColumnType("timestamp with time zone");
             entity.Property(job => job.CompletedAt).HasColumnName("completed_at").HasColumnType("timestamp with time zone");
             entity.Property(job => job.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP").IsRequired();
             entity.Property(job => job.ErrorSummary).HasColumnName("error_summary");

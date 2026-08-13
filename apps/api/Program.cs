@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -13,9 +17,18 @@ using System.Security.Claims;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+var googleOAuthSettings = GoogleOAuthSettings.FromConfiguration(builder.Configuration);
 
 builder.Services.AddDbContext<RingkasDbContext>(options =>
     options.UseNpgsql(GetPostgresConnectionString(builder.Configuration)));
+
+var dataProtectionKeysPath = builder.Configuration["DATA_PROTECTION_KEYS_PATH"];
+if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
+{
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
+        .SetApplicationName("RINGKAS");
+}
 
 builder.Services
     .AddIdentity<ApplicationUser, Microsoft.AspNetCore.Identity.IdentityRole>(options =>
@@ -25,11 +38,28 @@ builder.Services
     })
     .AddEntityFrameworkStores<RingkasDbContext>();
 
+if (googleOAuthSettings.IsConfigured)
+{
+    builder.Services
+        .AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = googleOAuthSettings.ClientId!;
+            options.ClientSecret = googleOAuthSettings.ClientSecret!;
+            options.CallbackPath = GoogleOAuthSettings.ProviderCallbackPath;
+            options.SignInScheme = IdentityConstants.ExternalScheme;
+            options.ClaimActions.MapJsonKey(GoogleOAuthSettings.EmailVerifiedClaimType, "email_verified");
+            options.ClaimActions.MapJsonKey(GoogleOAuthSettings.EmailVerifiedClaimType, "verified_email");
+        });
+}
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
     options.SlidingExpiration = true;
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
     options.Events.OnRedirectToLogin = context =>
@@ -64,7 +94,7 @@ builder.Services.AddRateLimiter(options =>
     ConfigureFixedWindowPolicy(options, builder.Configuration, RateLimitPolicies.AdminIngestion, "RateLimits:AdminIngestion", 3, 60);
 });
 builder.Services.AddScoped<IdentityRoleSeeder>();
-builder.Services.AddSingleton(GoogleOAuthSettings.FromConfiguration(builder.Configuration));
+builder.Services.AddSingleton(googleOAuthSettings);
 builder.Services.AddGenerationClients();
 builder.Services.AddInternalRetrieval();
 builder.Services.AddTransient<ChatService>();
