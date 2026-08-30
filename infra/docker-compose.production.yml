@@ -35,5 +35,5 @@ services:
       DATA_PROTECTION_KEYS_PATH: /data/ringkas/keys
 
   web:
-    ports:
+    ports: !override
       - "127.0.0.1:${WEB_PORT:-3000}:3000"

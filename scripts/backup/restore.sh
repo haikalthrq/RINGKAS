@@ -40,6 +40,7 @@ for _ in {1..30}; do
     break
   fi
   sleep 2
+done
 
 cat "$BACKUP_DIR/postgres.dump" | "${compose[@]}" exec -T postgres sh -c 'pg_restore --clean --if-exists --no-owner --no-privileges -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 echo "Restore completed. Start the remaining services and verify health before accepting traffic."

@@ -21,7 +21,7 @@ for service in postgres qdrant rag-query api web; do
 done
 
 "${compose[@]}" exec -T postgres sh -c 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"' >/dev/null
-"${compose[@]}" exec -T qdrant sh -c 'wget -qO- http://127.0.0.1:6333/healthz' >/dev/null
+"${compose[@]}" exec -T rag-query python -c 'import urllib.request; urllib.request.urlopen("http://qdrant:6333/healthz", timeout=5)' >/dev/null
 
 query='psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atc "SELECT count(*) FROM ingestion_jobs WHERE status IN ('\''queued'\'','\''running'\'');"'
 active_jobs=$("${compose[@]}" exec -T postgres sh -c "$query")
