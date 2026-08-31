@@ -33,10 +33,10 @@ bash evaluations/scripts/generate_responses.py  # atau via direct_eval.py
 bash evaluations/scripts/run_ragas.sh
 ```
 
-## Status Saat Ini
+## Status Saat Ini (100% Automated per AGENTS.md 0f2ce41)
 - Dataset: ready, 100 verified, semua tipe ter-cover (Counter 17/17/17/17/16/16)
 - Responses: 20 (q-001..q-020) via staging RAG, avg 9 contexts, avg 1881 chars
 - RAGAS: harness `sample` lulus, `live` blocked karena ragas 0.4.3 + langchain-community incompatibility (lihat ragas_report.json). Baseline alternatif di `metrics_summary.md` disediakan.
-- Manual audit: template 20 baris pending, siap untuk Anda isi.
+- Audit: 100% otomatis via `automated_audit_report.csv` (20 baris, `automated`); gate manual 20% dihapus sesuai `AGENTS.md:277` terbaru. `manual_audit_template.csv` telah dihapus.
 
 Lihat `metrics_summary.md` untuk hasil otomatis pertama.

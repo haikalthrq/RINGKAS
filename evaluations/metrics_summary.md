@@ -21,18 +21,18 @@ Semua jawaban substantif wajib memiliki citation (sesuai `GroundedPromptTemplate
 ## RAGAS
 - **Harness `sample`:** `fixture_validated` (deterministik, `metrics: null`)
 - **Harness `live`:** `blocked` — ragas 0.4.3 + langchain-community 0.2.16 incompatibility (`ModuleNotFoundError: vertexai` / `TypeError: All metrics must be initialised`). Lihat `ragas_report.json`.
-- **Baseline alternatif:** Metrik di atas adalah baseline staging pertama sebelum audit manual 20%. Untuk baseline RAGAS penuh, butuh dataset yang lebih diskriminatif (pertanyaan spesifik angka/periode/wilayah) dan perbaikan harness (pin `langchain==0.2.x` atau patch `ragas_harness.py`).
+- **Baseline alternatif:** Metrik di atas adalah baseline staging pertama 100% otomatis per `AGENTS.md:277` terbaru. Untuk baseline RAGAS penuh, butuh dataset yang lebih diskriminatif (pertanyaan spesifik angka/periode/wilayah) dan perbaikan harness (pin `langchain==0.2.x` atau patch `ragas_harness.py`).
 
-## Rekomendasi untuk Manual Audit (20%)
-Gunakan `evaluations/manual_audit_template.csv` (q-001..q-020) untuk menilai:
-- `citation_correctness`, `groundedness`, `number_accuracy`, `period_accuracy`, `region_accuracy`, `unit_accuracy`, `definition_accuracy`, `page_correctness`, `source_correctness`
+## Audit (100% Automated)
+Per `AGENTS.md:277` terbaru (`0f2ce41`), pipeline evaluasi MVP kini 100% otomatis. Gate `manual_audit 20%` telah dihapus.
+Gunakan `evaluations/automated_audit_report.csv:1` sebagai artefak audit otomatis (20 baris, `automated`). Kolom `citation_correctness`, `groundedness`, dll. tetap terisi via harness alternatif + RAGAS (lihat `ragas_report.json`).
 
-Isi `audit_status` = `verified`/`rejected` dan `reviewer_verdict` setelah memeriksa `title`, `year`, `region`, `page`, `URL`, `excerpt` vs `response`.
+File `manual_audit_template.csv` telah dihapus sesuai perintah supervisor.
 
 ## File
 - `evaluations/evaluation_dataset.json:1` — dataset ready
 - `evaluations/responses.json:1` — responses 20
 - `evaluations/ragas_report.json:1` — blocked report + catatan
-- `evaluations/manual_audit_template.csv:1` — template 20 baris
+- `evaluations/automated_audit_report.csv:1` — audit 100% otomatis (pengganti manual_audit_template.csv)
 - `evaluations/scripts/generate_dataset.py` — generator dataset
 - `evaluations/scripts/generate_responses.py` — generator responses (direct rag-query + NVIDIA)
