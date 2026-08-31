@@ -1,0 +1,42 @@
+{
+  "ragas_live": {
+    "status": "empty"
+  },
+  "alternative_baseline": {
+    "evaluation_label": "staging baseline (alternative, ragas blocked)",
+    "status": "alternative_completed",
+    "ragas_harness_status": {
+      "status": "empty"
+    },
+    "dataset": "evaluations/evaluation_dataset.json (100 ready)",
+    "responses": "evaluations/responses.json (20, q-001..q-020, avg 9 contexts, avg 1881 chars)",
+    "retrieval": {
+      "evaluated": 20,
+      "hit_at_k": "2/20 (10.0%) via excerpt substring",
+      "avg_contexts": 9.1,
+      "note": "Generic questions kurang diskriminatif; retrieval mengembalikan 9-10 konteks serupa untuk semua Q. Perlu pertanyaan spesifik angka/periode untuk hit lebih tinggi."
+    },
+    "generation": {
+      "substantive": "19/20",
+      "refusal_partial": "1/20",
+      "avg_length": 1881,
+      "provider": "nvidia/nemotron-3-nano-30b-a3b via direct rag-query + grounded prompt",
+      "note": "Semua jawaban substantif memiliki citation; 1 refusal adalah expected untuk Q generik."
+    },
+    "ragas_expected": {
+      "metrics": [
+        "faithfulness",
+        "context_precision",
+        "context_recall"
+      ],
+      "blocked_reason": "ModuleNotFoundError / TypeError due to ragas 0.4.3 + langchain-community version mismatch. Sudah dicoba langchain-community==0.2.16, tetap TypeError pada evaluate().",
+      "workaround": "Gunakan metrics_summary.md sebagai baseline staging. Untuk RAGAS penuh, perbaiki harness atau pin ragas==0.1.13 atau patch evaluate() signature."
+    }
+  },
+  "files": {
+    "dataset": "evaluations/evaluation_dataset.json:1",
+    "responses": "evaluations/responses.json:1",
+    "manual_audit": "evaluations/manual_audit_template.csv:1",
+    "metrics_summary": "evaluations/metrics_summary.md:1"
+  }
+}

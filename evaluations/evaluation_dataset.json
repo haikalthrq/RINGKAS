@@ -1,0 +1,2007 @@
+{
+  "schema_version": "1.0",
+  "dataset_status": "ready",
+  "capacity": 100,
+  "records": [
+    {
+      "question_id": "q-001",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Produk Domestik Regional Bruto Provinsi DKI Jakarta Menurut Lapangan Usaha 2019- 2023\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Alat Angkutan/ Manufacture of Transport Equipment 6,26 5,21 5,91 6,20 6,07 15. Industri Furnitur/ Manufacture of Furniture 0,15 0,15 0,14 0,14 0,13 16.",
+      "evidence": {
+        "document_id": "53141b20-5aeb-4294-9ebb-c7cde371627b",
+        "chunk_id": "d455a3b3-5f20-47f6-96af-d82687b90b28",
+        "document_title": "Produk Domestik Regional Bruto Provinsi DKI Jakarta Menurut Lapangan Usaha 2019- 2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 108,
+        "page_end": 108,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Alat Angkutan/ Manufacture of Transport Equipment 6,26 5,21 5,91 6,20 6,07 15. Industri Furnitur/ Manufacture of Furniture 0,15 0,15 0,14 0,14 0,13 16. Industri Pengolahan Lainnya; Jasa Reparasi dan Pemasangan Mesin dan Peralatan/ Other Manufacturing, Repair and Installation of Machinery and Equipment 0,15 0,16 0,18 0,17 0,17 D 0,32 0,29 0,24 0,22 0,19 1. Ketenagalistrikan/ Electricity 0,10 0,10 0,10 0,10 0,10 2. Pengadaan Gas dan Produksi Es/ Manufacture of Gas and Production of Ice 0,22 0,19 0,14 0,12 0,09 E 0,04 0,04 0,04 0,04 0,04 F 11,97 11,58 11,19 10,81 10,56 G 15,86 15,11 15,39 15,75 15,69 1. Perdagangan Mobil, Sepeda Motor dan Reparasinya/ Wholesale and Retail Trade and Repair of Motor Vehicles and Motorcycles 2,23 1,84 2,09 2,13 2,14 2. Perdagangan Besar dan Eceran, Bukan Mobil"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-002",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Statistik Hortikultura Provinsi DKI Jakarta 2021\" tahun 2022 pada halaman 93?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Statistics of Horticulture of DKI Jakarta Province 2021 78 Tabel 14 Produksi sayur-sayuran menurut jenis di Jakarta Barat (Ton), 2017-2021 Production of vegetables by its kind in Jakarta Barat (Ton), 2017-2021 JENIS SAYURAN Kind of Vegetables Tahun/Year 2017 2018 2019 2020 2021 (1) (2) (3) (4) (5) (6) 1. Bayam/Spinach 772 758 582 1 231 612,55 2.",
+      "evidence": {
+        "document_id": "b13c2f47-46b8-463d-8a3a-39239d5662c7",
+        "chunk_id": "babcfdc9-cdcb-42e8-b47c-33cd490a5de7",
+        "document_title": "Statistik Hortikultura Provinsi DKI Jakarta 2021",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 93,
+        "page_end": 93,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Statistics of Horticulture of DKI Jakarta Province 2021 78 Tabel 14 Produksi sayur-sayuran menurut jenis di Jakarta Barat (Ton), 2017-2021 Production of vegetables by its kind in Jakarta Barat (Ton), 2017-2021 JENIS SAYURAN Kind of Vegetables Tahun/Year 2017 2018 2019 2020 2021 (1) (2) (3) (4) (5) (6) 1. Bayam/Spinach 772 758 582 1 231 612,55 2. Kangkung/Kangkong 1 101 1 019 620 1 197 959,70 3. Ketimun/Cucumber 1 - - - - 4. Sawi/Cheese Cabbage 687 617 377 786 533,65 5. Terung/Eggplant - - - - - Table"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-003",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Indeks Harga Konsumen dan Inflasi Provinsi DKI Jakarta 2023\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "itu, penghitungan IHK pada tahun dasar 2022=100 pada dasarnya sama dengan tahun dasar 2018=100, namun terdapat penyempurnaan dengan mengakomodasi bobot jenis pasar dalam penghitungan rata-rata harga di setiap komoditasnya. Pada tahun dasar 2022=100, dalam penghitungan harga rata-rata setiap komoditas tidak hanya menggunakan bobot pada level pasar dan level kualitas, tetapi juga menggunakan bobot pada level jenis pasar yang meliputi 3 jenis pasar yaitu pasar modern, pasar tradisional dan pasar online.",
+      "evidence": {
+        "document_id": "d9792efd-22ce-4d97-91bf-fbc4709c867c",
+        "chunk_id": "2c689d6a-e193-4294-b351-62fce6c5dc4d",
+        "document_title": "Indeks Harga Konsumen dan Inflasi Provinsi DKI Jakarta 2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 27,
+        "page_end": 27,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "itu, penghitungan IHK pada tahun dasar 2022=100 pada dasarnya sama dengan tahun dasar 2018=100, namun terdapat penyempurnaan dengan mengakomodasi bobot jenis pasar dalam penghitungan rata-rata harga di setiap komoditasnya. Pada tahun dasar 2022=100, dalam penghitungan harga rata-rata setiap komoditas tidak hanya menggunakan bobot pada level pasar dan level kualitas, tetapi juga menggunakan bobot pada level jenis pasar yang meliputi 3 jenis pasar yaitu pasar modern, pasar tradisional dan pasar online. Perbedaan lainnya adalah pada penghitungan nilai konsumsi yang digunakan. Nilai konsumsi itu sendiri adalah gambaran jumlah pengeluaran konsumsi rumah tangga per bulan di suatu kota. Nilai Konsumsi yang digunakan dalam Diagram Timbang tahun dasar"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-004",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Usaha Pertanian Perorangan (UTP) Peternakan Provinsi DKI Jakarta\" tahun 2024?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Kerbau Potong yang Diusahakan Number of Beef Buffalo Cultivated 1-2 3-4 5-9 10-19 20-49 50-99 ≥ 100 (1) (2) (3) (4) (5) (6) (7) (8) Kepulauan Seribu - - - - - - - Jakarta Selatan - - - - - - - Jakarta Timur - - 1 2 - - - Jakarta Pusat - - - - - - - Jakarta Barat 1 - 1 - - - - Jakarta Utara - 1 - - - - - DKI Jakarta 1 1 2 2 - - -",
+      "evidence": {
+        "document_id": "ca10f4e3-3ef9-4a60-8a8a-055bd55cb54b",
+        "chunk_id": "b8bfff3d-dd8f-4103-b827-11cf7f9c690d",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Usaha Pertanian Perorangan (UTP) Peternakan Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 544,
+        "page_end": 544,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Kerbau Potong yang Diusahakan Number of Beef Buffalo Cultivated 1-2 3-4 5-9 10-19 20-49 50-99 ≥ 100 (1) (2) (3) (4) (5) (6) (7) (8) Kepulauan Seribu - - - - - - - Jakarta Selatan - - - - - - - Jakarta Timur - - 1 2 - - - Jakarta Pusat - - - - - - - Jakarta Barat 1 - 1 - - - - Jakarta Utara - 1 - - - - - DKI Jakarta 1 1 2 2 - - -"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-005",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "LT 2, JL RAYA JATINEGARA BARAT NO 195 R.3A RT. 001/RW.",
+      "evidence": {
+        "document_id": "fc76347e-3fa8-4e29-bbb3-3578082e5a62",
+        "chunk_id": "c4edb0e0-fd1c-459c-b0c5-35b71e073c21",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 173,
+        "page_end": 173,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "LT 2, JL RAYA JATINEGARA BARAT NO 195 R.3A RT. 001/RW. 003, BALI MESTER, KEC. JATINEGARA, KOTA JAKARTA TIMUR, KODE POS 13310 ARMACO, CV Kecil Skala Usaha JL DATOK TONGGARA RT. 007/RW. 007, KRAMAT JATI, KEC. KRAMAT JATI, KOTA JAKARTA TIMUR, KODE POS 13510 ARMADIAN PEKASA, PT Menengah Skala Usaha JL HAJI TEN RAYA RT. 001/RW. 001, RAWAMANGUN, KEC. PULO GADUNG, KOTA JAKARTA TIMUR, KODE POS 13220 ARMAS ARGERICINAL, CV Kecil Skala Usaha JL PAUS NO 94, JATI, KEC. PULO GADUNG, KOTA JAKARTA TIMUR, KODE POS 13220 ARMYNDO JAYA KONSTRUKSI, PT Kecil Skala Usaha RUKO GRAHA MEGAH INDAH BLOK B/10 LT 4, JL BALAI PUSAKA NO 39 RT. 004/RW. 004, RAWAMANGUN, KEC. PULO GADUNG, KOTA JAKARTA TIMUR, KODE POS 13220 ARNESINDO GLOBAL SOLUSI, PT Menengah Skala Usaha JL JATINEGARA KAUM NO 08 RT. 002/RW. 002, JATINEGARA"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-006",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2024?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "240 Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II Usaha Pertanian Perorangan (UTP) Tanaman Pangan Provinsi DKI Jakarta Complete Enumeration Results of the 2023 Census of Agriculture - Edition 2 Food Crops Individual Agricultural Holdings DKI Jakarta Province Kabupaten/Kota Regency/Municipality Kelompok Luas Lahan Kandang Ternak dan Bangunan Pertanian Lainnya yang Dikuasai (Ha) Classifi",
+      "evidence": {
+        "document_id": "c40a6c00-4c4a-4e09-bb0f-2772267dbf3b",
+        "chunk_id": "6da19c02-82e6-4bd6-9ca1-497ebf7596b7",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Tanaman Pangan Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 292,
+        "page_end": 292,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "240 Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II Usaha Pertanian Perorangan (UTP) Tanaman Pangan Provinsi DKI Jakarta Complete Enumeration Results of the 2023 Census of Agriculture - Edition 2 Food Crops Individual Agricultural Holdings DKI Jakarta Province Kabupaten/Kota Regency/Municipality Kelompok Luas Lahan Kandang Ternak dan Bangunan Pertanian Lainnya yang Dikuasai (Ha) Classification of Livestock Pens and Other Agricultural Buildings Land Utilized (Ha) 5-9,99 10-19,99 20-49,99 50-99 (1) (11) (12) (13) (14) Kepulauan Seribu - - - - Jakarta Selatan - - - - Jakarta Timur - - - - Jakarta Pusat - - - - Jakarta Barat - - - - Jakarta Utara - - - - DKI Jakarta - - - - Lanjutan Tabel/Continued Table 4.23"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-007",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Statistik Pendidikan Prasekolah Provinsi DKI Jakarta 2023\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "41 Statistik Pendidikan Prasekolah Provinsi DKI Jakarta 2023 tangga dan latar pendidikan orang tua sebagaimana diulas pada bab sebelumnya. Dilihat menurut status ekonomi, persentase anak yang pernah/sedang mengikuti pendidikan prasekolah berbanding lurus dengan status ekonominya.",
+      "evidence": {
+        "document_id": "acf5878e-48ee-4a73-a19f-577fda2784e8",
+        "chunk_id": "40040156-ac7c-47e6-9709-13f7fedb70a2",
+        "document_title": "Statistik Pendidikan Prasekolah Provinsi DKI Jakarta 2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 60,
+        "page_end": 60,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "41 Statistik Pendidikan Prasekolah Provinsi DKI Jakarta 2023 tangga dan latar pendidikan orang tua sebagaimana diulas pada bab sebelumnya. Dilihat menurut status ekonomi, persentase anak yang pernah/sedang mengikuti pendidikan prasekolah berbanding lurus dengan status ekonominya. Pada status ekonomi 40 persen terbawah persentasenya hanya mencapai 25,07 persen, pada 40 persen menengah sebesar 31,77 persen dan pada 20 persen teratas mencapai 35,43 persen. Sumber: Badan Pusat Statistik, Susenas Maret 2023 Gambar 3.2 Persentase Anak Usia 0-6 Tahun yang Pernah/Sedang Mengikuti Pendidikan Prasekolah menurut Karakteristik, 2023 Selain itu, dilihat menurut pendidikan KRT yang merupakan gambaran latar belakang pendidikan orang tua, partisipasi pendidikan prasekolah anak usia dini pada orang tua"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-008",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Provinsi DKI Jakarta Dalam Angka 2025\" tahun 2025 pada halaman 641?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "567 Manufacturing Industry Industri Manufaktur Kode Code Klasifikasi Industri Industrial Classification Bahan Bakar Fuel Sewa Gedung, Mesin dan Alat–alat Rent of Building Machinery and Equipment (1) (2) (5) (6) 10 Makanan/Food Products – 42.991.518 11 Minuman/Beverages – 2.306.944 12 Pengolahan Tembakau/Tobacco Processing NA NA 13 Tekstil/Textiles – 7.933.981 14 Pakaian Jadi/Wearing Appareal – 69.",
+      "evidence": {
+        "document_id": "e21915ec-e970-4bb0-9039-f52c83f1c655",
+        "chunk_id": "04a7e923-45b4-4017-b239-92e3073bc9cb",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 641,
+        "page_end": 641,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "567 Manufacturing Industry Industri Manufaktur Kode Code Klasifikasi Industri Industrial Classification Bahan Bakar Fuel Sewa Gedung, Mesin dan Alat–alat Rent of Building Machinery and Equipment (1) (2) (5) (6) 10 Makanan/Food Products – 42.991.518 11 Minuman/Beverages – 2.306.944 12 Pengolahan Tembakau/Tobacco Processing NA NA 13 Tekstil/Textiles – 7.933.981 14 Pakaian Jadi/Wearing Appareal – 69.995.411 15 Kulit dan Barang dari Kulit dan Alas Kaki Tanning and Dressing of Leather – 2.773.905 16 Kayu Barang dari Kayu dan Gabus (Tidak termasuk Furnitur) dan Barang–Barang Anyaman dari Bambu Rotan dan Sejenisnya Wood and Products of Wood Corck Except Furniture and Goods Matting of Bamboo Rattan and The Like – 3.401.542 17 Kertas dan Barang dari Kertas Paper and Paper Products – 2.276.659 18"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-009",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Profil Industri Mikro Kecil Provinsi DKI Jakarta 2020\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "10 10 742 7 823 18 565 9 304 18 288 27 592 11 1 549 333 1 882 1 423 1 037 2 460 12 5 5 13 8 061 2 860 10 921 1 669 809 2 478 14 37 963 21 370 59 333 11 278 5 745 17 023 15 3 407 1 024 4 431 711 306 1 017 16 3 928 20 3 948 1 506 574 2 080 17 459 85 544 178 349 527 18 7 814 1 209 9 023 2 346 726 3 072 20 295 115 410 80 22 102 21 9 9 12 33 45 22 1 050 336 1 386 568 232 800 23 646 91 737 257 31 288 24",
+      "evidence": {
+        "document_id": "f79a3fa5-f65b-4de5-9b10-39625b7a9eca",
+        "chunk_id": "0b8f515e-787d-4dac-a330-cc6ca7a47523",
+        "document_title": "Profil Industri Mikro Kecil Provinsi DKI Jakarta 2020",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 133,
+        "page_end": 133,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "10 10 742 7 823 18 565 9 304 18 288 27 592 11 1 549 333 1 882 1 423 1 037 2 460 12 5 5 13 8 061 2 860 10 921 1 669 809 2 478 14 37 963 21 370 59 333 11 278 5 745 17 023 15 3 407 1 024 4 431 711 306 1 017 16 3 928 20 3 948 1 506 574 2 080 17 459 85 544 178 349 527 18 7 814 1 209 9 023 2 346 726 3 072 20 295 115 410 80 22 102 21 9 9 12 33 45 22 1 050 336 1 386 568 232 800 23 646 91 737 257 31 288 24 148 29 177 32 32 25 4 218 118 4 336 1 455 304 1 759 26 27 40 3 43 18 13 31 28 179 16 195 110 5 115 29 57 40 97 30 7 37 30 84 84 40 40 31 9 227 203 9 430 2 604 639 3 243 32 3 453 632 4 085 1 432 589 2 021 33 220 7 227 103 13 116 Jumlah/Total 93 549 36 314 129 863 35 161 29 722 64 883"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-010",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Direktori Perusahaan Konstruksi Provinsi DKI Jakarta Tahun 2022\" tahun 2022?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "POWER, PT Kecil Skala Usaha WWW.PTCS.CO.ID 021-7807881, 021-0217807879 BELTWAY OFFICE PARK GD A LT 2, JL AMPERA RAYA NO 9-10, RAGUNAN, KEC. PASAR MINGGU, KOTA JAKARTA SELATAN, KODE POS 12550 CONTROL SYSTEMS ARENA PARA NUSA, PT Besar Skala Usaha 021-83785227 JL CASABLANCA RAYA RT.",
+      "evidence": {
+        "document_id": "058c8a2a-046f-467f-bc7e-d0668afb68ec",
+        "chunk_id": "efc3562c-be44-41fb-9bda-80f55dc6fb28",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta Tahun 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 87,
+        "page_end": 87,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "POWER, PT Kecil Skala Usaha WWW.PTCS.CO.ID 021-7807881, 021-0217807879 BELTWAY OFFICE PARK GD A LT 2, JL AMPERA RAYA NO 9-10, RAGUNAN, KEC. PASAR MINGGU, KOTA JAKARTA SELATAN, KODE POS 12550 CONTROL SYSTEMS ARENA PARA NUSA, PT Besar Skala Usaha 021-83785227 JL CASABLANCA RAYA RT. 17/RW. 17, MENTENG DALAM, KEC. TEBET, KOTA JAKARTA SELATAN, KODE POS 12870 CONTUR MULTI INFOMA, PT Menengah Skala Usaha 021-7824067 JL NANGKA NO 16A RT. 7/RW. 7, TANJUNG BARAT, KEC. JAGAKARSA, KOTA JAKARTA SELATAN, KODE POS 12530 COSMA MITRA ANDALAN, PT Menengah Skala Usaha 021-7990735 JL RAYA CILANDAK KKO NO 2 BLOK A/6 RT. 4/RW. 4, RAGUNAN, KEC. PASAR MINGGU, KOTA JAKARTA SELATAN CRIS MENARA SANDHY, PT Menengah Skala Usaha www.ctci.com 021-5270201, 021-5270208 claudiangunarsa@ctci.com GD MENARA GLOBAL LT 10, JL"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-011",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Statistik Politik Provinsi DKI Jakarta 2021\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "terjadi peningkatan partisipasi masyarakat menjadi 77 persen. Menurut data KPUD DKI, pada putaran pertama Pilgub DKI 2012, angka partisipasi pemilih hanya 64,6 persen.",
+      "evidence": {
+        "document_id": "5c1a4f82-b3bc-4959-8544-d4d4c82b1eed",
+        "chunk_id": "a9270581-1f1e-48a5-8056-ac294f5010eb",
+        "document_title": "Statistik Politik Provinsi DKI Jakarta 2021",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 43,
+        "page_end": 43,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "terjadi peningkatan partisipasi masyarakat menjadi 77 persen. Menurut data KPUD DKI, pada putaran pertama Pilgub DKI 2012, angka partisipasi pemilih hanya 64,6 persen. Angka itu naik menjadi 66,8 persen pada putaran kedua. Angka ini naik lagi menjadi 78 persen pada Pilkada 2017."
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-012",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2022?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Share of Sub Category to the GVA of Electricity and Gas, (percent), 2017-2021 Tabel 4.3 Table Laju Pertumbuhan NTB Pengadaan Listrik dan Gas (persen)/ The Growth rate of the GVA of Electricity and Gas by Sub Category, (percent), 2017-2021 Gambar 4.4 Picture *Angka Sementara/Preliminary figures **Angka Sangat Sementara/Very Preliminary figures Lapangan Usaha/Industry 2017 2018 2019 2020* 2021** (1) (2) (3) (4) (5) (6) 1. Ketenagalistrikan/Electricity 33,98 29,49 27,55 29,61 36,42 2.",
+      "evidence": {
+        "document_id": "7fdd2248-b60b-4142-b7f1-3ab02fead004",
+        "chunk_id": "f43d32d8-9cf9-430f-bca2-ee6ca8a6f4c0",
+        "document_title": "Produk Domestik Regional Bruto Provinsi DKI Jakarta Menurut Lapangan Usaha 2017- 2021",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 83,
+        "page_end": 83,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Share of Sub Category to the GVA of Electricity and Gas, (percent), 2017-2021 Tabel 4.3 Table Laju Pertumbuhan NTB Pengadaan Listrik dan Gas (persen)/ The Growth rate of the GVA of Electricity and Gas by Sub Category, (percent), 2017-2021 Gambar 4.4 Picture *Angka Sementara/Preliminary figures **Angka Sangat Sementara/Very Preliminary figures Lapangan Usaha/Industry 2017 2018 2019 2020* 2021** (1) (2) (3) (4) (5) (6) 1. Ketenagalistrikan/Electricity 33,98 29,49 27,55 29,61 36,42 2. Pengadaan Gas dan Produksi Es/Manufacture of Gas and Production of Ice 66,02 70,51 72,45 70,39 63,58 Pengadaan Listrik dan Gas/Electricity & Gas 100,00 100,00 100,00 100,00 100,00"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-013",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Usaha Pertanian Perorangan (UTP) Tanaman Perkebunan Provinsi DKI Jakarta\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "394 5.8.1 Jumlah Usaha Pertanian Perorangan Tanaman Abaca/Manila Menurut Kabupaten/Kota dan Kondisi Utama Tanaman di Provinsi DKI Jakarta (Unit), 2023 Number of Abaca/Manila Individual Agricultural Holdings by Regency/ Municipality and Crop Condition in DKI Jakarta Province (Units), 2023.............. 395 5.8.2 Jumlah Usaha Pertanian Perorangan Tanaman Akar Wangi Menurut Kabupaten/Kota dan Kondisi Utama Tanaman di Provinsi DKI Jakarta (Unit), 2023 Number of Vetiver Individual Agricultural Holdings by Regency/Municipality and Crop Condition in DKI Jakarta Province (Units), 2023.....................................",
+      "evidence": {
+        "document_id": "e1fdd603-0945-424c-9469-e70c8ebef5e0",
+        "chunk_id": "bba8dff7-92bf-4a08-9962-49ec728cd269",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Usaha Pertanian Perorangan (UTP) Tanaman Perkebunan Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 29,
+        "page_end": 29,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "394 5.8.1 Jumlah Usaha Pertanian Perorangan Tanaman Abaca/Manila Menurut Kabupaten/Kota dan Kondisi Utama Tanaman di Provinsi DKI Jakarta (Unit), 2023 Number of Abaca/Manila Individual Agricultural Holdings by Regency/ Municipality and Crop Condition in DKI Jakarta Province (Units), 2023.............. 395 5.8.2 Jumlah Usaha Pertanian Perorangan Tanaman Akar Wangi Menurut Kabupaten/Kota dan Kondisi Utama Tanaman di Provinsi DKI Jakarta (Unit), 2023 Number of Vetiver Individual Agricultural Holdings by Regency/Municipality and Crop Condition in DKI Jakarta Province (Units), 2023..................................... 396 5.8.3 Jumlah Usaha Pertanian Perorangan Tanaman Jute Menurut Kabupaten/ Kota dan Kondisi Utama Tanaman di Provinsi DKI Jakarta (Unit), 2023 Number of Hemp Individual"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-014",
+      "question_text": "Berapa angka atau statistik terkait Kesehatan yang tercatat dalam dokumen \"Profil Kesehatan Provinsi DKI Jakarta 2022\" tahun 2023 pada halaman 68?",
+      "question_type": "number",
+      "topic": "Kesehatan",
+      "reference_answer": "51 Profil Kesehatan Provinsi DKI Jakarta 2022 e. Imunoglobulin masih rendah Hal ini mengakibatkan bayi BBLR mudah terkena infeksi; f.",
+      "evidence": {
+        "document_id": "67ac6b01-2228-4909-8dce-76971c2fa1c9",
+        "chunk_id": "9885da7f-2854-4962-a8e9-2e8ba287a10f",
+        "document_title": "Profil Kesehatan Provinsi DKI Jakarta 2022",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 68,
+        "page_end": 68,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "51 Profil Kesehatan Provinsi DKI Jakarta 2022 e. Imunoglobulin masih rendah Hal ini mengakibatkan bayi BBLR mudah terkena infeksi; f. Ginjal belum berfungsi sempuna Filtrasi gromerulus belum sempurna sehingga mudah mengalami keracunan obat dan menderita asidosis (metabolik). BBLR sampai saat ini masih menjadi masalah kesehatan masyarakat di banyak negara berkembang termasuk Indonesia. Di Jakarta sendiri sebagai ibukota, persentase ibu yang melahirkan anak lahir hidup dalam 2 (dua) tahun terakhir dimana anak lahir hidup terakhir dilahirkan dengan berat badan kurang dari 2,5 kg mencapai 11,35 persen. Jika di lihat menurut kabupaten/kota yang ada di DKI Jakarta, persentase terbesar ibu yang melahirkan anak lahir hidup dengan berat badan rendah berada di Jakarta Pusat (21,08 persen), Jakarta"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-015",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Indikator Kesejahteraan Rakyat DKI Jakarta 2022\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "gambaran informasi yang terkait dengan topik bahasan pada bab yang bersangkutan. Tabel yang disajikan memuat beragam indikator, baik dalam bentuk jumlah, persentase maupun rasio.",
+      "evidence": {
+        "document_id": "c83a390d-35c9-4edf-8c93-c72677184cd5",
+        "chunk_id": "fe695d80-accf-4ddd-a2e2-6732969cb8f5",
+        "document_title": "Indikator Kesejahteraan Rakyat DKI Jakarta 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 13,
+        "page_end": 13,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "gambaran informasi yang terkait dengan topik bahasan pada bab yang bersangkutan. Tabel yang disajikan memuat beragam indikator, baik dalam bentuk jumlah, persentase maupun rasio. Sumber data utama penulisan ini berasal dari hasil Survei Sosial Ekonomi Nasional (Susenas), Survei Angkatan Kerja Nasional (Sakernas), Sensus Penduduk ditambah data penunjang lainnya yang berasal dari survei dan sumber data lainnya. a. Survei Sosial Ekonomi Nasional (Susenas) Kegiatan Susenas secara nasional dilakukan setiap tahun. Survei ini mengumpulkan data yang mencakup berbagai aspek sosial dan ekonomi, seperti kependudukan, kesehatan, fertilitas, pengeluaran rumah tangga, kriminalitas dan perumahan serta lingkungan. Karakteristik penting kependudukan seperti umur, jenis kelamin, status perkawinan, hubungan"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-016",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Provinsi DKI Jakarta Dalam Angka 2025\" tahun 2025?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "bunganya, sering digunakan untuk penghias pekarangan dan lain sebagainya. 11.",
+      "evidence": {
+        "document_id": "e21915ec-e970-4bb0-9039-f52c83f1c655",
+        "chunk_id": "958acfd1-c57d-46ba-8fec-361b8d7ac9b0",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 497,
+        "page_end": 497,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "bunganya, sering digunakan untuk penghias pekarangan dan lain sebagainya. 11. Data yang dikumpulkan dalam SPH mencakup: data tentang luas penanaman, luas panen (untuk buah–buahan tahunan adalah banyaknya tanaman yang menghasilkan), produksi, luas rusak, luas tanaman akhir dan harga jual petani. 12. Luas panen adalah luas tanaman sayuran, buah buahan, biofarmaka dan tanaman hias b. Annual vegetable plants are plants which are the sources of vitamin, contained mineral salt,etc, consumed from the part of the plant in the form of vegetable and more than one year of age. 9. Medicinal plants Medicinal plants are plants which are usefull for medicine It is consumed from parts of the plants such as leaf, flower, fruit, tubber and root. 10. Ornamental plants Ornamental plants are plants which have"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-017",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Tanaman Pangan Provinsi DKI Jakarta\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Tanaman Pangan Food Crops 559 5.19.9 Jumlah Rumah Tangga Usaha Tanaman Kedelai Menurut Kabupaten/Kota dan Pemanfaatan Produksi di Provinsi DKI Jakarta (rumah tangga), 2023 Number of Soybean Households by Regency/Municipality and Production Utilization in DKI Jakarta Province (households), 2023 Kabupaten/Kota Regency/Municipality Pemanfaatan Produksi Production Utilization Seluruhnya Dijual Sold En",
+      "evidence": {
+        "document_id": "c40a6c00-4c4a-4e09-bb0f-2772267dbf3b",
+        "chunk_id": "34721ab8-859f-480c-9f8a-04f58110cd3a",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Tanaman Pangan Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 611,
+        "page_end": 611,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Tanaman Pangan Food Crops 559 5.19.9 Jumlah Rumah Tangga Usaha Tanaman Kedelai Menurut Kabupaten/Kota dan Pemanfaatan Produksi di Provinsi DKI Jakarta (rumah tangga), 2023 Number of Soybean Households by Regency/Municipality and Production Utilization in DKI Jakarta Province (households), 2023 Kabupaten/Kota Regency/Municipality Pemanfaatan Produksi Production Utilization Seluruhnya Dijual Sold Entirely Sebagian Besar Dijual Mainly for Sale Sebagian Besar Dikonsumsi Sendiri Mainly for Own Consumption Seluruhnya Dikonsumsi Sendiri Consumed Entirely Belum Dijual Not Yet Being Sold (1) (2) (3) (4) (5) (6) Kepulauan Seribu - - - - - Jakarta Selatan 1 - - - - Jakarta Timur 1 - - - - Jakarta Pusat - - - - - Jakarta Barat - - - - - Jakarta Utara - - - - - DKI Jakarta 2 - - - - Tabel Table"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-018",
+      "question_text": "Dokumen apa yang membahas topik Berita Resmi Statistik untuk wilayah DKI Jakarta tahun 2025?",
+      "question_type": "document_search",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "14 BRS No. 45/10/31/Th. XXVII, 1 Oktober 2025 Perkembangan Ekspor dan Impor Provinsi DKI Jakarta Agustus 2025 Tabel 9 Ringkasan Perkembangan Impor Jakarta, 2024—2025 Tahun-Bulan Nilai CIF (juta US$) Perubahan (%) Kumulatif s.d bulan ini Terhadap bulan yang sama tahun lalu Terhadap bulan lalu Nilai C",
+      "evidence": {
+        "document_id": "06f8d43a-3c89-4774-b9f8-ef831f965b26",
+        "chunk_id": "176cbe19-bfee-4fd6-931a-50ba954e8ad4",
+        "document_title": "Berita Resmi Statistik Provinsi DKI Jakarta Oktober 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 40,
+        "page_end": 40,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "14 BRS No. 45/10/31/Th. XXVII, 1 Oktober 2025 Perkembangan Ekspor dan Impor Provinsi DKI Jakarta Agustus 2025 Tabel 9 Ringkasan Perkembangan Impor Jakarta, 2024—2025 Tahun-Bulan Nilai CIF (juta US$) Perubahan (%) Kumulatif s.d bulan ini Terhadap bulan yang sama tahun lalu Terhadap bulan lalu Nilai CIF (juta US$) Perubahan terhadap periode yang sama (%) (1) (2) (3) (4) (5) (6) 2024 Januari 6.052,59 -4,07 1,24 6.052,59 -4,07 Februari 5.744,56 3,51 -5,09 11.797,15 -0,53 Maret 5.440,87 -24,89 -5,29 17.238,02 -9,76 April 4.846,44 -0,61 -10,93 22.084,46 -7,90 Mei 6.401,12 -14,35 32,08 28.485,58 -9,43 Juni 6.051,69 -2,38 -5,46 34.537,27 -8,27 Juli 7.251,29 6,57 19,82 41.788,56 -6,00 Agustus 7.468,17 9,95 2,99 49.256,73 -3,89 September 6.693,12 17,42 -10,38 55.949,85 -1,75 Oktober 7.084,62 14,09"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-019",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Indeks Pembangunan Manusia Provinsi DKI Jakarta 2023\" tahun 2023?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "75,91 pada tahun 2023. Fasilitas sarana dan prasarana untuk pendidikan dan kesehatan juga penunjang kegiatan perekonomian di Kabupaten Kepulauan Seribu mesti lebih ditingkatkan, baik dari sisi jumlah maupun kualitasnya.",
+      "evidence": {
+        "document_id": "86b01cb5-0493-4fd0-b560-6d94b60b8ce7",
+        "chunk_id": "ebd095e6-b89e-455e-b286-fcdb301a0192",
+        "document_title": "Indeks Pembangunan Manusia Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 30,
+        "page_end": 30,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "75,91 pada tahun 2023. Fasilitas sarana dan prasarana untuk pendidikan dan kesehatan juga penunjang kegiatan perekonomian di Kabupaten Kepulauan Seribu mesti lebih ditingkatkan, baik dari sisi jumlah maupun kualitasnya. Diharapkan, kedepannya fasilitas yang ada dapat setara dengan apa yang tersedia di wilayah kota/daratan. Demikian pula dengan faktor geografis, yang berupa kepulauan, menjadi tantangan tersendiri bagi Pemerintah Provinsi DKI Jakarta bagaimana agar tingkat IPM Kabupaten Kepulauan Seribu dapat terus tumbuh dengan baik. Dengan demikian, secara umum, perkembangan pembangunan manusia selama periode 2020-2023 di seluruh kabupaten/kota di Provinsi DKI Jakarta dapat dikatakan cukup memuaskan. Karena lima dari enam wilayah di Provinsi DKI Jakarta berstatus sangat tinggi. Namun"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-020",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Indeks Pembangunan Manusia Provinsi DKI Jakarta 2024\" tahun 2024 pada halaman 22?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "manusia di tingkat kabupaten/kota di DKI Jakarta cukup bervariasi. IPM pada level kabupaten/kota berkisar antara 76,69 untuk Kabupaten Kepulauan Seribu hingga 87,57 untuk Kota Jakarta Selatan.",
+      "evidence": {
+        "document_id": "bee9e710-59dd-42fe-bace-23118a7ae782",
+        "chunk_id": "289689ca-bf32-4deb-b6f5-f9341185273e",
+        "document_title": "Indeks Pembangunan Manusia Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 22,
+        "page_end": 22,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "manusia di tingkat kabupaten/kota di DKI Jakarta cukup bervariasi. IPM pada level kabupaten/kota berkisar antara 76,69 untuk Kabupaten Kepulauan Seribu hingga 87,57 untuk Kota Jakarta Selatan. Disparitas keduanya sebesar 10,88 poin. Tercatat, hanya Kabupaten Kepulauan Seribu yang tergolong relatif cukup tertinggal dibanding lima kota lainnya. Pada tahun 2024, IPM tertinggi adalah Jakarta Selatan dan terendah adalah Kabupaten Kepulauan Seribu. Berdasarkan Tabel 1 (lampiran), terlihat bahwa tiga besar IPM di Provinsi DKI Jakarta masing-masing adalah Kota Jakarta Selatan, dengan capaian IPM sebesar 87,57; kemudian diikuti Kota Jakarta Timur dengan IPM 84,76 dan yang ketiga Kota Jakarta Barat sebesar 84,40. Sumber: Badan Pusat Statistik Provinsi DKI Jakarta Gambar 2.1 Indeks Pembangunan"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-021",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Produk Domestik Regional Bruto Provinsi DKI Jakarta Menurut Lapangan Usaha 2021-2025\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Gross Regional Domestic Product DKI Jakarta Province by Industry | 2021-2025 64 PDRB Provinsi DKI Jakarta menurut Lapangan Usaha | 2021-2025 Sementara itu, kontribusi subkategori Angkutan Laut cukup berfluktuasi. Pada tahun 2021, kontribusinya mencapai 8,13 persen terhadap total Transportasi dan Pergudangan, lalu terus menurun sampai tahun 2023, naik kembali pada tahun 2024 menjadi 7,73 persen, dan kembali menurun pada tahun 2025 menjadi 7,40 persen.",
+      "evidence": {
+        "document_id": "a364d055-aaec-4c7f-858b-4391d2eb66ee",
+        "chunk_id": "4d26828c-f683-4608-8db0-3ed180ee48d1",
+        "document_title": "Produk Domestik Regional Bruto Provinsi DKI Jakarta Menurut Lapangan Usaha 2021-2025",
+        "publication_year": 2026,
+        "region": "DKI Jakarta",
+        "page_start": 86,
+        "page_end": 86,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Gross Regional Domestic Product DKI Jakarta Province by Industry | 2021-2025 64 PDRB Provinsi DKI Jakarta menurut Lapangan Usaha | 2021-2025 Sementara itu, kontribusi subkategori Angkutan Laut cukup berfluktuasi. Pada tahun 2021, kontribusinya mencapai 8,13 persen terhadap total Transportasi dan Pergudangan, lalu terus menurun sampai tahun 2023, naik kembali pada tahun 2024 menjadi 7,73 persen, dan kembali menurun pada tahun 2025 menjadi 7,40 persen. Meanwhile, the contribution of Sea Transport subcategory was quite fluctuated. In 2021, the contribution reached 8.13 percent of total Transportation and Storage, then declined steadily until 2023, rising to 7.73 percent in 2024, and then declining again in 2025 to 7.40 percent. Peranan PDRB Subkategori terhadap Kategori Transportasi dan"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-022",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Direktori Perusahaan Kontruksi Provinsi DKI Jakarta 2023\" tahun 2023?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Usaha 021-62311523 mail@visionandalanteknologi.co.id RUKAN MANGGA DUA SQUARE BLOK G NO 32- 33, JL GUNUNG SAHARI RAYA NO 1, ANCOL, KEC. PADEMANGAN, KOTA JAKARTA UTARA, KODE POS 14430 VISIO ANDALAN TEKNOLOGI, PT Menengah Skala Usaha 021-45850791 JL BOULEVARD ARTHA GADING BLOK F NO 12, KELAPA GADING BARAT, KEC.",
+      "evidence": {
+        "document_id": "6e50f47c-5507-44f0-ba3e-9b2dad28bf40",
+        "chunk_id": "e3288a74-01c8-451b-a2fc-bbe0f4c8cff9",
+        "document_title": "Direktori Perusahaan Kontruksi Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 563,
+        "page_end": 563,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Usaha 021-62311523 mail@visionandalanteknologi.co.id RUKAN MANGGA DUA SQUARE BLOK G NO 32- 33, JL GUNUNG SAHARI RAYA NO 1, ANCOL, KEC. PADEMANGAN, KOTA JAKARTA UTARA, KODE POS 14430 VISIO ANDALAN TEKNOLOGI, PT Menengah Skala Usaha 021-45850791 JL BOULEVARD ARTHA GADING BLOK F NO 12, KELAPA GADING BARAT, KEC. KELAPA GADING, KOTA JAKARTA UTARA VISTA BANGUN MULTI GUNA, PT Menengah Skala Usaha 021-6412181 info@visualindo.com RUKAN MULTIGUNA KEMAYORAN BLOK 2A, JL RAJAWALI SELATAN RAYA KAV C-5 NO 2, PADEMANGAN TIMUR, KEC. PADEMANGAN, KOTA JAKARTA UTARA, KODE POS 14410 VISUALINDO PRESENTAPRIMA, PT Menengah Skala Usaha 021-45843756 ecproyek.waj@gmail.com WISMA GADING PERMAI RUKAN NO 15 LT 3 MENARA B, JL BOULEVARD RAYA, KELAPA GADING TIMUR, KEC. KELAPA GADING, KOTA JAKARTA UTARA, KODE POS 14240"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-023",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Hortikultura Provinsi DKI Jakarta\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Barat - - - - Jakarta Utara - - - - DKI Jakarta 1 - - - 5.9.16 Jumlah Rumah Tangga Usaha Tanaman Krisan Menurut Kabupaten/Kota dan Kondisi Utama Tanaman di Provinsi DKI Jakarta (rumah tangga), 2023 Number of Chrysanthemum Households by Regency/Municipality and Main Condition of Crops in DKI Jakarta Province (households), 2023 Tabel Table Catatan/Note: - Hanya mencakup RTUP budi daya / Only covers",
+      "evidence": {
+        "document_id": "b6a33def-237b-45b8-9961-4ab6dc5a5cdf",
+        "chunk_id": "11e21c59-5629-45cc-981e-05df6bda42ee",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Hortikultura Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 480,
+        "page_end": 480,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Barat - - - - Jakarta Utara - - - - DKI Jakarta 1 - - - 5.9.16 Jumlah Rumah Tangga Usaha Tanaman Krisan Menurut Kabupaten/Kota dan Kondisi Utama Tanaman di Provinsi DKI Jakarta (rumah tangga), 2023 Number of Chrysanthemum Households by Regency/Municipality and Main Condition of Crops in DKI Jakarta Province (households), 2023 Tabel Table Catatan/Note: - Hanya mencakup RTUP budi daya / Only covers cultivation Agricultural Households - Satu RTUP budi daya tanaman hortikultura dapat memiliki lebih dari satu kondisi utama tanaman / One Horticulture Cultivation Households can have more than one type of main condition of crops"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-024",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2026?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "POS 11150 FAJAR NUSA CONSULTANS, PT Menengah Skala Usaha PERTOKOAN GLODOK JAYA LT IV BLOK A NO 12 A, MANGGA BESAR, KEC. TAMAN SARI, KOTA JAKARTA BARAT, KODE POS 11180 FAJAR PRIMA SUKSES, PT Menengah Skala Usaha RUKO BOTANI CAL BLOK I10 NO 3, JL JOGLO RAYA RT.",
+      "evidence": {
+        "document_id": "f25bc10d-4bd5-4202-8498-a0e70758c744",
+        "chunk_id": "319209d6-e88c-4bf7-b533-421595ff2ae6",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2025",
+        "publication_year": 2026,
+        "region": "DKI Jakarta",
+        "page_start": 348,
+        "page_end": 348,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "POS 11150 FAJAR NUSA CONSULTANS, PT Menengah Skala Usaha PERTOKOAN GLODOK JAYA LT IV BLOK A NO 12 A, MANGGA BESAR, KEC. TAMAN SARI, KOTA JAKARTA BARAT, KODE POS 11180 FAJAR PRIMA SUKSES, PT Menengah Skala Usaha RUKO BOTANI CAL BLOK I10 NO 3, JL JOGLO RAYA RT. 007/RW. 007, JOGLO, KEC. KEMBANGAN, KOTA JAKARTA BARAT, KODE POS 11460 FAJAR SUMBER REJEKI, PT Kecil Skala Usaha RUKO SASTRA GRAHA, JL RAYA PEJUANGAN KAV 21 NO 24, KEBON JERUK, KEC. KEBON JERUK, KOTA JAKARTA BARAT, KODE POS 11530 FAJAR TEKNIK MANDIRI, PT Menengah Skala Usaha JL DURI KOSAMBI RT. 006/RW. 006, DURI KOSAMBI, KEC. CENGKARENG, KOTA JAKARTA BARAT, KODE POS 11750 FAMI RANTI JAYA, PT Menengah Skala Usaha JL TOMANG UTARA RAYA NO 49, TOMANG, KEC. GROGOL PETAMBURAN, KOTA JAKARTA BARAT, KODE POS 11440 FANDHATAMA MITRA PERKASA, PT"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-025",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Perusahaan Pertanian Berbadan Hukum (UPB) Provinsi DKI Jakarta\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Umum General 25 Kabupaten/Kota Regency/Municipality Penanaman Modal Dalam Negeri (PMDN) Domestic Investment Penanaman Modal Asing (PMA) Foreign Investment Jumlah Total (1) (2) (3) (4) Kepulauan Seribu 3 - 3 Jakarta Selatan 4 NA 5 Jakarta Timur 6 - 6 Jakarta Pusat 6 - 6 Jakarta Barat 4 - 4 Jakarta Utara 24 - 24 DKI Jakarta 47 NA 48 Catatan/Note: 1 Jumlah Perusahaan Pertanian Berbadan Hukum (UPB) mencakup Perusahaan Pertanian Berbadan Hukum yang berstatus aktif/tutup sementara/belum berproduksi/tidak bersedia diwawancara/baru/Number of Agricultural Corporations includes Agricultural Corporations which are active/temporarily closed/not yet in production/not willing to be interviewed/new. 1.9 Jumlah Jumlah Perusahaan Pertanian Berbadan Hukum (UPB)1 Menurut Kabupaten/Kota dan Status Penanaman",
+      "evidence": {
+        "document_id": "c63df698-b487-4955-8bde-021570da1a80",
+        "chunk_id": "6ffd52a8-fd2a-45e7-a709-d877d4820eac",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Perusahaan Pertanian Berbadan Hukum (UPB) Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 59,
+        "page_end": 59,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Umum General 25 Kabupaten/Kota Regency/Municipality Penanaman Modal Dalam Negeri (PMDN) Domestic Investment Penanaman Modal Asing (PMA) Foreign Investment Jumlah Total (1) (2) (3) (4) Kepulauan Seribu 3 - 3 Jakarta Selatan 4 NA 5 Jakarta Timur 6 - 6 Jakarta Pusat 6 - 6 Jakarta Barat 4 - 4 Jakarta Utara 24 - 24 DKI Jakarta 47 NA 48 Catatan/Note: 1 Jumlah Perusahaan Pertanian Berbadan Hukum (UPB) mencakup Perusahaan Pertanian Berbadan Hukum yang berstatus aktif/tutup sementara/belum berproduksi/tidak bersedia diwawancara/baru/Number of Agricultural Corporations includes Agricultural Corporations which are active/temporarily closed/not yet in production/not willing to be interviewed/new. 1.9 Jumlah Jumlah Perusahaan Pertanian Berbadan Hukum (UPB)1 Menurut Kabupaten/Kota dan Status Penanaman"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-026",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Direktori Perusahaan Kontruksi Provinsi DKI Jakarta 2023\" tahun 2023 pada halaman 347?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "021-7037985 GD SARANA PENGEMBANGAN USAHA LT 8, JL ANGKASA BLOK B-9 KAV B RT. 010/RW.",
+      "evidence": {
+        "document_id": "6e50f47c-5507-44f0-ba3e-9b2dad28bf40",
+        "chunk_id": "7eb0fd61-05c6-4bd5-9b45-ea027c4e8e2a",
+        "document_title": "Direktori Perusahaan Kontruksi Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 347,
+        "page_end": 347,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "021-7037985 GD SARANA PENGEMBANGAN USAHA LT 8, JL ANGKASA BLOK B-9 KAV B RT. 010/RW. 010, GUNUNG SAHARI SELATAN, KEC. KEMAYORAN, KOTA JAKARTA PUSAT, KODE POS 12440 BINA MARINA NUSANTARA, PT Menengah Skala Usaha 021-22580028 helpdesk@binamitra.com GD SENAYAN TRADE CENTER LT 2 RUANG 89, JL ASIA AFRIKA PINTU IX GELORA SENAYAN, GELORA, KEC. TANAH ABANG, KOTA JAKARTA PUSAT, KODE POS 10270 BINA MITRA SEHATI, PT Menengah Skala Usaha 021-5746331 ptbn11@yahoo.com GD MANGGALA WANABAKTI LANTAI 7 BLOK IV NO 730 RT. 001/RW. 001, GELORA, KEC. TANAH ABANG, KOTA JAKARTA PUSAT BINA NUSA LESTARI, PT Menengah Skala Usaha 021-4700233 JL PASEBAN RAYA NO 64, PASEBAN, KEC. SENEN, KOTA JAKARTA PUSAT, KODE POS 10440 BINA SARANA PROFESIONAL, CV Kecil Skala Usaha 021-5711063 JL ADMINISTRASI NEGARA I NO 12A,"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-027",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Berita Resmi Statistik Provinsi DKI Jakarta Mei 2025\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "5 Perkembangan Indeks Harga Konsumen Provinsi DKI Jakarta April 2025 BRS No. 19/05/31/Th.",
+      "evidence": {
+        "document_id": "dbfac944-ca06-4c08-aecc-dc43f41fcb53",
+        "chunk_id": "8db92d6b-5857-4765-a3a8-08a7b0ee7632",
+        "document_title": "Berita Resmi Statistik Provinsi DKI Jakarta Mei 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 19,
+        "page_end": 19,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "5 Perkembangan Indeks Harga Konsumen Provinsi DKI Jakarta April 2025 BRS No. 19/05/31/Th. XXVII, 2 Mei 2025 dari 110,40 pada April 2024 menjadi 112,96 pada April 2025. Subkelompok dengan inflasi y-on-y tertinggi, yaitu subkelompok minuman tidak beralkohol sebesar 3,58 persen dan terendah yaitu subkelompok makanan sebesar 2,05 persen. Kelompok ini pada April 2025 memberikan andil/sumbangan inflasi y-on-y sebesar 0,46 persen. Komoditas yang dominan memberikan andil/sumbangan inflasi y-on-y, diantaranya: bawang merah sebesar 0,12 persen; bawang putih dan cabai rawit masing-masing sebesar 0,07 persen; kopi bubuk sebesar 0,06 persen; sigaret kretek mesin (SKM) sebesar 0,05 persen; minyak goreng sebesar 0,04 persen; cabai merah dan tahu mentah masing-masing sebesar 0,03 persen; ikan kembung/ikan"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-028",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Ekspor dan Impor Provinsi DKI Jakarta 2023\" tahun 2024?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "value of US$ 12,788.62 million, comprising 12.67 percent of the total value of imports through Jakarta. The dominance of imports of intermediate goods and capital goods is a positive indicator, signaling that imports support increased added value for the domestic economy, particularly in the industrial sector.",
+      "evidence": {
+        "document_id": "88489b54-6a66-4b1b-9e23-6a13b9e52e57",
+        "chunk_id": "21ea6701-c616-4a56-aac5-53b1dc19d623",
+        "document_title": "Ekspor dan Impor Provinsi DKI Jakarta 2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 74,
+        "page_end": 74,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "value of US$ 12,788.62 million, comprising 12.67 percent of the total value of imports through Jakarta. The dominance of imports of intermediate goods and capital goods is a positive indicator, signaling that imports support increased added value for the domestic economy, particularly in the industrial sector."
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-029",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Berita Resmi Statistik Provinsi DKI Jakarta November 2022\"?",
+      "question_type": "methodology",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "was an increase in tutoring fees (0.031 percent), Senior High Schools (0.018 percent), and Elementary Schools (0.014 percent). Meanwhile, inflation in the health category was mainly due to an increase in dentist rates (0.018 percent), specialist doctors rates (0.012 percent), and prescription drugs (0.008 percent).",
+      "evidence": {
+        "document_id": "42ead03e-ab1f-4dc1-b2b3-18f5d3a1fa12",
+        "chunk_id": "133cba9a-365a-46a3-b840-fd54a03b1ef8",
+        "document_title": "Berita Resmi Statistik Provinsi DKI Jakarta November 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 12,
+        "page_end": 12,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "was an increase in tutoring fees (0.031 percent), Senior High Schools (0.018 percent), and Elementary Schools (0.014 percent). Meanwhile, inflation in the health category was mainly due to an increase in dentist rates (0.018 percent), specialist doctors rates (0.012 percent), and prescription drugs (0.008 percent). Finally, the mild inflation contribution came from the recreation, sports, and culture category, which was 0.07 percent. Inflation in this category was mainly triggered by the increase in prices of lined notebooks (0.028 percent), cinema tickets (0.011 percent), and swimming pools fees (0.007 percent). In contrast, the clothing and footwear category and the information, communication and financial services category experienced deflation with contributions of 0.07 percent and"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-030",
+      "question_text": "Dokumen apa yang membahas topik Berita Resmi Statistik untuk wilayah DKI Jakarta tahun 2026?",
+      "question_type": "document_search",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "pada November 2025 mencapai 44,90 persen, naik 1,55 persen poin (year-on-year). Jumlah penumpang MRT Jakarta, LRT Jakarta dan Transjakarta pada November 2025 masing-masing menca- pai 4.061.751 orang, 114.965 orang dan 37.769.186 orang.",
+      "evidence": {
+        "document_id": "a45a7349-0c93-46d2-9048-0215117368b0",
+        "chunk_id": "f60802f7-298c-452c-b3a1-4897bca987c2",
+        "document_title": "Berita Resmi Statistik Provinsi DKI Jakarta Januari 2026",
+        "publication_year": 2026,
+        "region": "DKI Jakarta",
+        "page_start": 1,
+        "page_end": 1,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "pada November 2025 mencapai 44,90 persen, naik 1,55 persen poin (year-on-year). Jumlah penumpang MRT Jakarta, LRT Jakarta dan Transjakarta pada November 2025 masing-masing menca- pai 4.061.751 orang, 114.965 orang dan 37.769.186 orang. Jumlah penumpang yang berangkat dari Pelabuhan Tanjung Priok tercatat 14.958 orang dan terdapat 3,66 juta ton barang yang dimuat selama November 2025. Jumlah penumpang yang berangkat dari Bandara Halim Perdanakusuma tercatat 92.786 orang dan terdapat 3,11 ribu ton barang yang dimuat selama November 2025 Provinsi DKI Jakarta Volume 6 Edisi 1, 2026"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-031",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "KOTA JAKARTA TIMUR, KODE POS 13330 WARNA BANGUN JAYA, PT Kecil Skala Usaha JL TAMAN MALAKA SELATAN NO 1 RT. 008/RW.",
+      "evidence": {
+        "document_id": "fc76347e-3fa8-4e29-bbb3-3578082e5a62",
+        "chunk_id": "a1eb65e3-2d2d-4afc-bb9a-2985e70c5b56",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 270,
+        "page_end": 270,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "KOTA JAKARTA TIMUR, KODE POS 13330 WARNA BANGUN JAYA, PT Kecil Skala Usaha JL TAMAN MALAKA SELATAN NO 1 RT. 008/RW. 008, PONDOK KELAPA, KEC. DUREN SAWIT, KOTA JAKARTA TIMUR, KODE POS 13450 WARNA SARI, CV Kecil Skala Usaha GRAHA MAKMUR JL JENGKI UTAMA NO 1, KEBON PALA, KEC. MAKASAR, KOTA JAKARTA TIMUR WARNA SARI, PT Menengah Skala Usaha RUKO DUREN SAWIT CENTER NO 8 S, JL RAYA DUREN SAWIT, DUREN SAWIT, KEC. DUREN SAWIT, KOTA JAKARTA TIMUR, KODE POS 13440 WARUWU YULIA LAURU, PT Kecil Skala Usaha www.wasamitra.co.id JL RAYA CAKUNG CILINCING KM 1 NO 11 RT. 011/RW. 011, CAKUNG BARAT, KEC. CAKUNG, KOTA JAKARTA TIMUR, KODE POS 13910 WASA MITRA ENGINEERING, PT Besar Skala Usaha JL RADEN INTEN II NO 53 D RT. 007/RW. 007, DUREN SAWIT, KEC. DUREN SAWIT, KOTA JAKARTA TIMUR, KODE POS 13440 WASILAH"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-032",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Statistik Potensi Kelurahan Provinsi DKI Jakarta 2024\" tahun 2024 pada halaman 19?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "DKI Jakarta menunjukkan potensi ekonomi yang dimiliki kelurahan, terdapat 94 kelurahan yang memiliki produk barang unggulan dan sebanyak 16 kelurahan yang mengekspor produk unggulannya ke negara lain. Dalam mendukung bergeraknya perekonomian tidak hanya ditunjang oleh sarana fisik, namun dukungan fasilitas perkreditan dan fasilitas jaringan telekomunikasi menjadi penting di masa kini agar geliat pertumbuhan ekonomi lebih cepat.",
+      "evidence": {
+        "document_id": "9b9c52ee-fcca-432d-a7bb-4baf261e3446",
+        "chunk_id": "4e471cbb-e9c0-4b7d-b712-2b5f31996f7f",
+        "document_title": "Statistik Potensi Kelurahan Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 19,
+        "page_end": 19,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "DKI Jakarta menunjukkan potensi ekonomi yang dimiliki kelurahan, terdapat 94 kelurahan yang memiliki produk barang unggulan dan sebanyak 16 kelurahan yang mengekspor produk unggulannya ke negara lain. Dalam mendukung bergeraknya perekonomian tidak hanya ditunjang oleh sarana fisik, namun dukungan fasilitas perkreditan dan fasilitas jaringan telekomunikasi menjadi penting di masa kini agar geliat pertumbuhan ekonomi lebih cepat. Hasil Podes 2024 di Provinsi DKI Jakarta menunjukkan terdapat 153 kelurahan memiliki Kredit Usaha Rakyat (KUR), ada 53 kelurahan memiliki Kredit Usaha Bersama (KUBE), https://jakarta.bps.go.id"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-033",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Statistik Kesejahteraan Rakyat Provinsi DKI Jakarta 2023\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "0,00 0,00 100,00 4. JAKARTA PUSAT 70,24 25,09 4,60 0,00 0,07 100,00 5.",
+      "evidence": {
+        "document_id": "79e63f70-2621-4c3e-80d0-9df56393b491",
+        "chunk_id": "6053abdb-cf59-4604-b9fa-07d8c1be3b69",
+        "document_title": "Statistik Kesejahteraan Rakyat Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 136,
+        "page_end": 136,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "0,00 0,00 100,00 4. JAKARTA PUSAT 70,24 25,09 4,60 0,00 0,07 100,00 5. JAKARTA BARAT 89,96 8,36 1,22 0,00 0,46 100,00 6. JAKARTA UTARA 87,22 9,55 3,15 0,00 0,09 100,00 88,50 9,55 1,82 0,00 0,13 100,00 Sumber/Source: Badan Pusat Statistik, Survei Sosial Ekonomi Nasional (Susenas) Maret/BPS-Statistics Indonesia, The March National Socio-Economic Survey (Susenas) Total Jumlah Ada Fasilitas/Have Facilities No Facility Tidak Ada Fasilitas (1) DKI JAKARTA Regency/Municipality Tabel 6.8 Table Kabupaten/Kota"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-034",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024\" tahun 2024?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "MADA NO 10 A LT 3, PETOJO UTARA, KEC. GAMBIR, KOTA JAKARTA PUSAT HIRA JASA UTAMA, PT Menengah Skala Usaha MENARA BCA 38TH FLOOR, SUITE #3804 & #3805, JL MH THAMRIN NO 1, KOTA JAKARTA PUSAT, KODE POS 10310 HITACHI ASIA, LTD.",
+      "evidence": {
+        "document_id": "fc76347e-3fa8-4e29-bbb3-3578082e5a62",
+        "chunk_id": "4c36d2d9-8fa1-4f57-a848-221667b975b1",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 297,
+        "page_end": 297,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "MADA NO 10 A LT 3, PETOJO UTARA, KEC. GAMBIR, KOTA JAKARTA PUSAT HIRA JASA UTAMA, PT Menengah Skala Usaha MENARA BCA 38TH FLOOR, SUITE #3804 & #3805, JL MH THAMRIN NO 1, KOTA JAKARTA PUSAT, KODE POS 10310 HITACHI ASIA, LTD. Besar Skala Usaha JL RP SOEROSO NO 30, CIKINI, KEC. MENTENG, KOTA JAKARTA PUSAT HOBASHITA ASA MANDIRI, PT Menengah Skala Usaha KOMP MELAWAN, JL PANGERAN JAYAKARTA 123 RT. 026/RW. 026, MANGGA DUA SELATAN, KEC. SAWAH BESAR, KOTA JAKARTA PUSAT, KODE POS 10740 HOBI OKTA PRIMA, PT Menengah"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-035",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Statistik Pendidikan Prasekolah Provinsi DKI Jakarta 2023\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "kelompok 40 persen menengah lebih tinggi dibandingkan dengan kelompok 40 persen bawah (94,10 persen berbanding 91,45 persen), namun menurun pada status ekonomi 20 persen teratas (91,78 persen). Dari hal ini bisa dilihat bahwa kecenderungan orang tua lebih memilih kursus daripada pendidikan prasekolah pada saat anak 6 tahun terjadi pada kelompok ekonomi atas.",
+      "evidence": {
+        "document_id": "acf5878e-48ee-4a73-a19f-577fda2784e8",
+        "chunk_id": "3d25a217-d980-440f-8f28-e0ade0f84e35",
+        "document_title": "Statistik Pendidikan Prasekolah Provinsi DKI Jakarta 2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 76,
+        "page_end": 76,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "kelompok 40 persen menengah lebih tinggi dibandingkan dengan kelompok 40 persen bawah (94,10 persen berbanding 91,45 persen), namun menurun pada status ekonomi 20 persen teratas (91,78 persen). Dari hal ini bisa dilihat bahwa kecenderungan orang tua lebih memilih kursus daripada pendidikan prasekolah pada saat anak 6 tahun terjadi pada kelompok ekonomi atas. Selanjutnya dilihat menurut pendidikan KRT, tingkat partisipasi paling tinggi ada pada kelompok KRT dengan pendidikan SD ke bawah (94,47 persen), menurun pada kelompok SMP"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-036",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2026?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "PT Besar Skala Usaha JL BUARAN RAYA BLOK NO 12A RT. 008/RW.",
+      "evidence": {
+        "document_id": "f25bc10d-4bd5-4202-8498-a0e70758c744",
+        "chunk_id": "8b07c7fd-9a20-4a5e-9f08-30e1ff3c047e",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2025",
+        "publication_year": 2026,
+        "region": "DKI Jakarta",
+        "page_start": 232,
+        "page_end": 232,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "PT Besar Skala Usaha JL BUARAN RAYA BLOK NO 12A RT. 008/RW. 008, DUREN SAWIT, KEC. DUREN SAWIT, KOTA JAKARTA TIMUR, KODE POS 13440 PHILIPS BUANA SEJAHTERA, PT Menengah Skala Usaha JL RAHAYU I NO 5-A, TENGAH, KEC. KRAMAT JATI, KOTA JAKARTA TIMUR, KODE POS 13510 PHUN BROWO ABADI, PT Kecil Skala Usaha JL RAYA MABES HANKAM NO 19 A RT. 007/RW. 007, BAMBU APUS, KEC. CIPAYUNG, KOTA JAKARTA TIMUR, KODE POS 13890 PICSELINDO UTAMA SEJAHTERA, PT Menengah Skala Usaha JL RAYA MABES HANKAM NO 27/48 LT1, CEGER, KEC. CIPAYUNG, KOTA JAKARTA TIMUR, KODE POS 13820 PIJAR CEMERLANG KONSTRUKSI, PT Kecil Skala Usaha JL CIPINANG BARU BUNDER RT. 009/RW. 009, CIPINANG, KEC. PULO GADUNG, KOTA JAKARTA TIMUR, KODE POS 13240 PIJAR UTAMA, PT Menengah Skala Usaha JL RAYA CIPINANG INDAH NO 1 RT. 001/RW. 001, CIPINANG"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-037",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Produk Domestik Regional Bruto Provinsi DKI Jakarta Menurut Lapangan Usaha 2019- 2023\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Social Security, (15) Education, (16) Human Health and Social Work Activities, and (17) Other Services Activities. 4.",
+      "evidence": {
+        "document_id": "53141b20-5aeb-4294-9ebb-c7cde371627b",
+        "chunk_id": "938631ee-fa35-45f0-974e-7a29be6741a5",
+        "document_title": "Produk Domestik Regional Bruto Provinsi DKI Jakarta Menurut Lapangan Usaha 2019- 2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 22,
+        "page_end": 22,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Social Security, (15) Education, (16) Human Health and Social Work Activities, and (17) Other Services Activities. 4. GRDP and its aggregate derivatives are presented in two kinds of valuation, it based on “current price” and “constant price”. The current price is counted using the price in current year, while the constant price counted using the price in certain base year. This publication used prices in year 2010 as a basis for valuation. 5. Base year is a chosen year as the statistics reference, which are used as the basis for calculating the other years value. The base year provides a detailed series data of indicators referring to its change/growth. 6. Current price is the valuation for goods and services produced or consumed on current time. 7. Constant price is the valuation for"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-038",
+      "question_text": "Berapa angka atau statistik terkait Berita Resmi Statistik yang tercatat dalam dokumen \"BERITA RESMI STATISTIK PROVINSI DKI JAKARTA OKTOBER 2022\" tahun 2022 pada halaman 33?",
+      "question_type": "number",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "53,9 56,8 52,3 Februari/February 2022 41,2 48,7 47,0 45,8 44,1 46,1 Maret/March 2022 41,1 56,3 51,6 54,7 52,4 52,7 April/April 2022 44,6 52,0 42,9 46,1 46,9 45,8 Mei/May 2022 47,1 55,5 50,7 52,1 51,9 51,8 Juni/June 2022 45,0 61,1 53,6 56,1 51,1 54,3 Juli/July 2022 44,5 58,8 56,9 55,6 48,5 54,5 Agustus/August 2022 32,9 58,7 54,6 55,2 54,8 54,8",
+      "evidence": {
+        "document_id": "55d1d70a-b38c-4267-8ed6-d520595eb7d1",
+        "chunk_id": "9c3e2a04-bb7a-43ec-a740-f7a7d26d8e4b",
+        "document_title": "BERITA RESMI STATISTIK PROVINSI DKI JAKARTA OKTOBER 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 33,
+        "page_end": 33,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "53,9 56,8 52,3 Februari/February 2022 41,2 48,7 47,0 45,8 44,1 46,1 Maret/March 2022 41,1 56,3 51,6 54,7 52,4 52,7 April/April 2022 44,6 52,0 42,9 46,1 46,9 45,8 Mei/May 2022 47,1 55,5 50,7 52,1 51,9 51,8 Juni/June 2022 45,0 61,1 53,6 56,1 51,1 54,3 Juli/July 2022 44,5 58,8 56,9 55,6 48,5 54,5 Agustus/August 2022 32,9 58,7 54,6 55,2 54,8 54,8"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-039",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Berita Resmi Statistik Provinsi DKI Jakarta Juli 2026\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "BADAN PUSAT STATISTIK PROVINSI DKI JAKARTA Provinsi DKI Jakarta JULI 2026 Optimis Membangun Negeri Katalog : 1103002.31 ISSN 2797-0183 Pada Juni 2026 Provinsi DKI Jakarta mengalami inflasi year- onyear (y-on-y) sebesar 2,78 persen Ekspor Jakarta Mei 2026 senilai US$1.299,36 juta atau mengalami penurunan sebesar 7,61 persen dibanding Mei 2025 Impor Jakarta Mei 2026 senilai US$7.870,70 juta atau mengalami kenaikan sebesar 18,77 persen dibanding Mei 2025 Impor Jakarta April 2026 senilai US$7.947,86 juta atau men- galami kenaikan sebesar 22,66 persen dibanding April 2025 Tingkat Penghunian Kamar di hotel bintang di Jakarta pada Mei 2026 mencapai 53,85 persen, naik 2,54 persen poin (year-on-year). Tingkat Penghunian Kamar di hotel nonbintang dan akomodasi lainnya di Jakarta pada Mei 2026",
+      "evidence": {
+        "document_id": "44f6d372-e63d-4309-a9d1-09c7a3cb806b",
+        "chunk_id": "fc422637-7d95-4b49-9102-ad225a60c163",
+        "document_title": "Berita Resmi Statistik Provinsi DKI Jakarta Juli 2026",
+        "publication_year": 2026,
+        "region": "DKI Jakarta",
+        "page_start": 1,
+        "page_end": 1,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "BADAN PUSAT STATISTIK PROVINSI DKI JAKARTA Provinsi DKI Jakarta JULI 2026 Optimis Membangun Negeri Katalog : 1103002.31 ISSN 2797-0183 Pada Juni 2026 Provinsi DKI Jakarta mengalami inflasi year- onyear (y-on-y) sebesar 2,78 persen Ekspor Jakarta Mei 2026 senilai US$1.299,36 juta atau mengalami penurunan sebesar 7,61 persen dibanding Mei 2025 Impor Jakarta Mei 2026 senilai US$7.870,70 juta atau mengalami kenaikan sebesar 18,77 persen dibanding Mei 2025 Impor Jakarta April 2026 senilai US$7.947,86 juta atau men- galami kenaikan sebesar 22,66 persen dibanding April 2025 Tingkat Penghunian Kamar di hotel bintang di Jakarta pada Mei 2026 mencapai 53,85 persen, naik 2,54 persen poin (year-on-year). Tingkat Penghunian Kamar di hotel nonbintang dan akomodasi lainnya di Jakarta pada Mei 2026"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-040",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024\" tahun 2024?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "JL PLUIT KARANG TIMUR BLOK B8, PLUIT, KEC. PENJARINGAN, KOTA JAKARTA UTARA, KODE POS 14450 ADIARTHA SWABUANA, PT Menengah Skala Usaha JL BOULEVARD ARTHA GADING BLOK P NO 30, KELAPA GADING BARAT, KEC.",
+      "evidence": {
+        "document_id": "fc76347e-3fa8-4e29-bbb3-3578082e5a62",
+        "chunk_id": "cc164b15-9359-472f-9832-eeaa4b78ad32",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 412,
+        "page_end": 412,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "JL PLUIT KARANG TIMUR BLOK B8, PLUIT, KEC. PENJARINGAN, KOTA JAKARTA UTARA, KODE POS 14450 ADIARTHA SWABUANA, PT Menengah Skala Usaha JL BOULEVARD ARTHA GADING BLOK P NO 30, KELAPA GADING BARAT, KEC. KELAPA GADING, KOTA JAKARTA UTARA, KODE POS 14240 ADIBUANA SURYAPERKASA, PT Menengah Skala Usaha GRAHA INDOCHEM LT 8, JL PANTAI INDAH KAPUK BOULEVARD KAV SSB/E, KAMAL MUARA, KEC. PENJARINGAN, KOTA JAKARTA UTARA, KODE POS 14470 ADIGUNA CIPTA KONSTRUKSI, PT Kecil Skala Usaha JL SINDANG LAUT 100, TANJUNG PRIOK, KOTA JAKARTA UTARA ADIGUNA SE, PT Menengah Skala Usaha www.adikon.co.id BOULEVARD RAYA BLOK PA NO 7 RT. 003/RW. 003, PEGANGSAAN DUA, KEC. KELAPA GADING, KOTA JAKARTA UTARA, KODE POS 14250 ADIKON ARSI PRASADA, PT Kecil Skala Usaha RUKAN THE KENSINGTON COMMERCIAL BLOK TKC/C 15, KELAPA"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-041",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Pola Konsumsi Penduduk Provinsi DKI Jakarta 2024\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "tubuh. Protein adalah suatu zat organik yang membentuk utama sel dan jaringan.",
+      "evidence": {
+        "document_id": "254a1d50-00bb-49ea-8626-4cba40797a84",
+        "chunk_id": "cda54761-78f7-4128-b2c1-a118bc6cc51e",
+        "document_title": "Pola Konsumsi Penduduk Provinsi DKI Jakarta 2024",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 59,
+        "page_end": 59,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "tubuh. Protein adalah suatu zat organik yang membentuk utama sel dan jaringan. Tubuh tidak dapat menyimpan kelebihan protein. Kebutuhan energi berasal dari protein 13-15% dari total kalori per hari."
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-042",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2025?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Jarak Tanam Merawat dan Membersihkan Peralatan Semprot Setelah Digunakan Penyesuaian Waktu Tanam Mengikuti Petunjuk yang Tertera pada Label Penggunaan Pestisida",
+      "evidence": {
+        "document_id": "45cd7e9f-d997-4402-bdb3-ab5605ac4a99",
+        "chunk_id": "5f4b642a-2f69-46b5-9414-9a4a9c47d62f",
+        "document_title": "Analisis Isu Terkini Provinsi DKI Jakarta 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 42,
+        "page_end": 42,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Jarak Tanam Merawat dan Membersihkan Peralatan Semprot Setelah Digunakan Penyesuaian Waktu Tanam Mengikuti Petunjuk yang Tertera pada Label Penggunaan Pestisida"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-043",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Statistik Kesejahteraan Rakyat Provinsi DKI Jakarta 2023\" tahun 2023?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Standard Error (RSE) Percentage of Population Aged 5 Years and Over Who Used Internet during The Last 3 Months by Regency/Municipality and Places Using The Internet, 2023 Confidence Interval 95% Kabupaten/Kota Regency/Municipality Rumah Sendiri/Own Home Bukan Rumah Sendiri/Not Own Home Tempat Bekerja/Kantor/Office/Working Place Selang Kepercayaan 95% Selang Kepercayaan 95% Selang Kepercayaan 95% S",
+      "evidence": {
+        "document_id": "79e63f70-2621-4c3e-80d0-9df56393b491",
+        "chunk_id": "adc8068d-fce5-4d4e-875f-955ef25f8ef6",
+        "document_title": "Statistik Kesejahteraan Rakyat Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 206,
+        "page_end": 206,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Standard Error (RSE) Percentage of Population Aged 5 Years and Over Who Used Internet during The Last 3 Months by Regency/Municipality and Places Using The Internet, 2023 Confidence Interval 95% Kabupaten/Kota Regency/Municipality Rumah Sendiri/Own Home Bukan Rumah Sendiri/Not Own Home Tempat Bekerja/Kantor/Office/Working Place Selang Kepercayaan 95% Selang Kepercayaan 95% Selang Kepercayaan 95% Standard Error Relative Standard Error (%) Confidence Interval 95% Standard Error Relative Standard Error (%) Confidence Interval 95% Standard Error Relative Standard Error (%) (1) DKI JAKARTA"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-044",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Provinsi DKI Jakarta Dalam Angka 2026\" tahun 2026 pada halaman 800?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "173 843,33 168 202,33 162 981,07 172 487,71 11. Aktivitas Keuangan dan Asuransi 327 565,07 332 386,40 162 981,07 335 763,29 12.",
+      "evidence": {
+        "document_id": "8f6ddaae-642c-444d-ad43-62a41eef5fa9",
+        "chunk_id": "e156c41c-7130-478f-b57c-42af7aaffcdc",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2026",
+        "publication_year": 2026,
+        "region": "DKI Jakarta",
+        "page_start": 800,
+        "page_end": 800,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "173 843,33 168 202,33 162 981,07 172 487,71 11. Aktivitas Keuangan dan Asuransi 327 565,07 332 386,40 162 981,07 335 763,29 12. Real Estat 173 333,93 174 561,24 338 471,24 176 150,58 13. Aktivitas Profesional, Ilmiah dan Teknis 21 048,30 20 481,90 175 239,35 21 802,28 14. Aktivitas Penyewaan Dan Sewa Guna Usaha Tanpa Hal Opsi, Ketenagakerjaan, Agen Perjalanan dan Penunjang Usaha Lainnya 47 337,26 48 970,66 21 566,92 50 303,82 15. Administrasi Pemerintahan, Pertahanan dan Jaminan Sosial Wajib 19 194,80 18 470,61 50 564,02 18 390,75 16. Pendidikan 5 100,21 5 218,83 18 470,20 5 224,08 17. Aktivitas Kesehatan Manusia dan Aktivitas Sosial 16 904,71 17 051,53 5 204,40 17 226,89 18. Kesenian, Hiburan dan Rekreasi 4 900,27 4 899,36 16 777,89 6 456,70 19. Aktivitas Jasa Lainnya 67 826,73 68 098,42"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-045",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Hortikultura Provinsi DKI Jakarta\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "146 Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II Usaha Pertanian Perorangan (UTP) Hortikultura Provinsi DKI Jakarta Complete Enumeration Results of the 2023 Census of Agriculture - Edition 2 Horticulture Individual Agricultural Holdings DKI Jakarta Province tanaman tahunan (hortikultura dan perkebunan), lahan yang digunakan untuk kandang ternak dan bangunan pertanian lainnya (lumbung, penggilingan, dsb), lahan untuk kegiatan kehutanan, dan lahan untuk kegiatan budidaya perikanan (tidak termasuk lahan budi daya perikanan di laut atau perairan umum). 6.",
+      "evidence": {
+        "document_id": "b6a33def-237b-45b8-9961-4ab6dc5a5cdf",
+        "chunk_id": "a3d64d48-c63a-415b-a6e3-13ca6385a0a0",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Hortikultura Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 206,
+        "page_end": 206,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "146 Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II Usaha Pertanian Perorangan (UTP) Hortikultura Provinsi DKI Jakarta Complete Enumeration Results of the 2023 Census of Agriculture - Edition 2 Horticulture Individual Agricultural Holdings DKI Jakarta Province tanaman tahunan (hortikultura dan perkebunan), lahan yang digunakan untuk kandang ternak dan bangunan pertanian lainnya (lumbung, penggilingan, dsb), lahan untuk kegiatan kehutanan, dan lahan untuk kegiatan budidaya perikanan (tidak termasuk lahan budi daya perikanan di laut atau perairan umum). 6. Luas Lahan yang Dikuasai adalah total luas lahan milik sendiri ditambah lahan yang berasal dari pihak lain, dikurangi lahan yang berada di pihak lain. 7. Domisili Pengelola adalah tempat kediaman yang sah dari pengelola. 8. Lahan"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-046",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Direktori Perusahaan Pertanian (DPP) Provinsi DKI Jakarta 2022\" tahun 2022?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "DIREKTORI perUSAHAan PERTANIAN (DPP) PROVINSI DKI JAKARTA Katalog: 1305092.31 BADAN PUSAT STATISTIK PROVINSI DKI JAKARTA 2022",
+      "evidence": {
+        "document_id": "752449fc-cbbf-47ff-b01a-f3bcbdccee53",
+        "chunk_id": "3ca0116d-f63f-4962-bc15-a6221f6b79e2",
+        "document_title": "Direktori Perusahaan Pertanian (DPP) Provinsi DKI Jakarta 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 1,
+        "page_end": 1,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "DIREKTORI perUSAHAan PERTANIAN (DPP) PROVINSI DKI JAKARTA Katalog: 1305092.31 BADAN PUSAT STATISTIK PROVINSI DKI JAKARTA 2022"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-047",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Direktori Industri Manufaktur Provinsi DKI Jakarta 2023\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "dalam kemasan/ galon, minuman bersoda, dan minuman manis. 5.3 Industri Pengolahan Tembakau (KBLI 12) Industri ini mencakup usaha industri pengolahan tembakau atau produk pengganti tembakau.",
+      "evidence": {
+        "document_id": "40f38a74-adc5-4491-8db8-4b3ebfc960ff",
+        "chunk_id": "eda5e472-6d76-4e71-9634-ec66323206eb",
+        "document_title": "Direktori Industri Manufaktur Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 41,
+        "page_end": 41,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "dalam kemasan/ galon, minuman bersoda, dan minuman manis. 5.3 Industri Pengolahan Tembakau (KBLI 12) Industri ini mencakup usaha industri pengolahan tembakau atau produk pengganti tembakau. Sepanjang tahun 2023 ditemukan hanya terdapat satu usaha tembakau/rokok yang masih beroperasi di Jakarta Barat. The 2-digit Indonesian Standard Industrial Classification Codes (ISIC) describes medium-large scale manufacturing industries operating commercially in the DKI Jakarta Province area during 2023. The details of these industrial activities are as follows: 5.1 Manufacture of Food Product (KBLI 10) The manufacture of food products comprises the agricultural sector product processing industry, including those that produce ready-to-consume and semi-finished food, which does not directly become a"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-048",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2023?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "vii Statistik Daerah Provinsi DKI Jakarta 2023 KATA PENGANTAR iii DAFTAR ISI vii Statistik Kunci 1 1. Geografi dan Iklim 3 2.",
+      "evidence": {
+        "document_id": "30ba101c-4fba-4a25-9434-18077bf3645d",
+        "chunk_id": "f86f24f5-4a15-42a4-b25c-275949635da7",
+        "document_title": "Statistik Daerah Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 8,
+        "page_end": 8,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "vii Statistik Daerah Provinsi DKI Jakarta 2023 KATA PENGANTAR iii DAFTAR ISI vii Statistik Kunci 1 1. Geografi dan Iklim 3 2. Pemerintahan 4 3. Penduduk 6 4. Pembangunan Manusia 7 5. Ketenagakerjaan 6. Kesehatan 10 7. Pendidikan 12 8. Perumahan 14 9. Kemiskinan 15 10. Pertanian 16 11. Energi dan Air bersih 17 12. Industri Pengolahan 18 13. Konstruksi 19 14. Hotel dan Pariwisata 20 15. Transportasi dan Komunikasi 21 16. Perbankan dan Investasi 22 17. Harga-harga 23 18. Pengeluaran Penduduk 24 19. Perdagangan 25 20. Produk Domestik Regional Bruto 27 21. Perbandingan Regional 29 Daftar Isi"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-049",
+      "question_text": "Apa definisi atau penjelasan mengenai Berita Resmi Statistik yang terdapat dalam dokumen \"Berita Resmi Statistik Provinsi DKI Jakarta November 2025\" tahun 2025?",
+      "question_type": "definition",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "3 Perkembangan Indeks Harga Konsumen Provinsi DKI Jakarta Oktober 2025 BRS No. 48/11/31/Th.",
+      "evidence": {
+        "document_id": "903da4e8-431a-4b41-90b4-91dd84f93c01",
+        "chunk_id": "8e780820-0e9c-43d5-85c2-9556501cbb9e",
+        "document_title": "Berita Resmi Statistik Provinsi DKI Jakarta November 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 17,
+        "page_end": 17,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "3 Perkembangan Indeks Harga Konsumen Provinsi DKI Jakarta Oktober 2025 BRS No. 48/11/31/Th. XXVII, 3 November 2025 1. Indeks Harga Konsumen/Inflasi Menurut Kelompok Perkembangan harga berbagai komoditas pada Oktober 2025 secara umum menunjukkan adanya peningkatan. Berdasarkan hasil pemantauan kabupaten/kota IHK di Provinsi DKI Jakarta, pada Oktober 2025 terjadi inflasi y-on-y sebesar 2,69 persen, atau terjadi kenaikan Indeks Harga Konsumen (IHK) dari 105,00 pada Oktober 2024 menjadi 107,82 pada Oktober 2025. Sementara tingkat inflasi m-to-m sebesar 0,31 persen dan tingkat inflasi y-to-d sebesar 2,02 persen. Tabel 1 IHK dan Tingkat Inflasi Month to Month (m-to-m), Year to Date (y-to-d), dan Year on Year (y-on-y) Provinsi DKI Jakarta Menurut Kelompok Pengeluaran (2022=100), Oktober 2025"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-050",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Profil Industri Mikro dan Kecil Provinsi DKI Jakarta 2023\" tahun 2024 pada halaman 55?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "25 Overview of Micro and Small-Scale Manufacturing Industry in DKI Jakarta Gambaran Umum Industri Mikro dan Kecil di DKI Jakarta 29), industri alat angkutan lainnya (KBLI 30), industri mesin dan perlengkapan ytdl (KBLI 28), industri komputer, barang elektronik dan optik (KBLI 26), dan indsutri pengolahan tembakau (KBLI 12) merupakan kelompok industri dengan jumlah usaha terkecil yaitu kurang dari 100 unit usaha IMK. (Gambar 3.2) Jika dilihat menurut kategori/skala usaha, pada tahun 2023 usaha IMK DKI Jakarta mayoritas merupakan industri mikro yaitu sebanyak 76.567 usaha (95,72 persen).",
+      "evidence": {
+        "document_id": "bfa53ece-d05b-4f45-b648-d9b011f8d6d9",
+        "chunk_id": "e3342635-3a4b-4487-a2b9-7c500191cac8",
+        "document_title": "Profil Industri Mikro dan Kecil Provinsi DKI Jakarta 2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 55,
+        "page_end": 55,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "25 Overview of Micro and Small-Scale Manufacturing Industry in DKI Jakarta Gambaran Umum Industri Mikro dan Kecil di DKI Jakarta 29), industri alat angkutan lainnya (KBLI 30), industri mesin dan perlengkapan ytdl (KBLI 28), industri komputer, barang elektronik dan optik (KBLI 26), dan indsutri pengolahan tembakau (KBLI 12) merupakan kelompok industri dengan jumlah usaha terkecil yaitu kurang dari 100 unit usaha IMK. (Gambar 3.2) Jika dilihat menurut kategori/skala usaha, pada tahun 2023 usaha IMK DKI Jakarta mayoritas merupakan industri mikro yaitu sebanyak 76.567 usaha (95,72 persen). Sementara sisanya sebanyak 3.425 usaha (4,28 persen) merupakan industri dengan skala kecil. Usaha IMK skala mikro paling banyak terdapat di Jakarta Barat yaitu sebanyak 18.308 usaha (23,91 persen), kemudian"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-051",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Indeks Pembangunan Manusia Provinsi DKI Jakarta 2023\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "sebesar 73,37 tahun dan pada tahun 2023 meningkat menjadi menjadi 75,81 tahun. Upaya pemerintah selama ini untuk memperbaiki kualitas fasilitas kesehatan, memudahkan akses penduduk untuk menjangkaunya, dan meningkatkan mutu pelayanan tenaga kesehatan di fasilitas kesehatan yang tersedia serta pemberian jaminan kesehatan daerah seperti Program Kartu Jakarta Sehat khususnya bagi POTRET DIMENSI DASAR PEMBANGUNAN MANUSIA",
+      "evidence": {
+        "document_id": "86b01cb5-0493-4fd0-b560-6d94b60b8ce7",
+        "chunk_id": "983288a2-a37f-423d-85c4-a512f45422ad",
+        "document_title": "Indeks Pembangunan Manusia Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 33,
+        "page_end": 33,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "sebesar 73,37 tahun dan pada tahun 2023 meningkat menjadi menjadi 75,81 tahun. Upaya pemerintah selama ini untuk memperbaiki kualitas fasilitas kesehatan, memudahkan akses penduduk untuk menjangkaunya, dan meningkatkan mutu pelayanan tenaga kesehatan di fasilitas kesehatan yang tersedia serta pemberian jaminan kesehatan daerah seperti Program Kartu Jakarta Sehat khususnya bagi POTRET DIMENSI DASAR PEMBANGUNAN MANUSIA"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-052",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Direktori Perusahaan Kontruksi Provinsi DKI Jakarta 2023\" tahun 2023?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "021-80881237 JL MASJID ALKHAIRAT RT. 005/RW. 005, BATU AMPAR, KEC. KRAMAT JATI, KOTA JAKARTA TIMUR DIAN GEDANG SEJAHTERA, PT Menengah Skala Usaha 021-4614226 WISMA DIAN GRAHA KAWASAN INDUSTRI PULOGA, JL RAWA GELAM III NO 8, JATINEGARA, KEC. CAKUNG, KOTA JAKARTA TIMUR, KODE POS 13930 DIAN GRAHA ELEKT",
+      "evidence": {
+        "document_id": "6e50f47c-5507-44f0-ba3e-9b2dad28bf40",
+        "chunk_id": "ebb2bab3-7099-4578-a95e-136dd145a800",
+        "document_title": "Direktori Perusahaan Kontruksi Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 235,
+        "page_end": 235,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "021-80881237 JL MASJID ALKHAIRAT RT. 005/RW. 005, BATU AMPAR, KEC. KRAMAT JATI, KOTA JAKARTA TIMUR DIAN GEDANG SEJAHTERA, PT Menengah Skala Usaha 021-4614226 WISMA DIAN GRAHA KAWASAN INDUSTRI PULOGA, JL RAWA GELAM III NO 8, JATINEGARA, KEC. CAKUNG, KOTA JAKARTA TIMUR, KODE POS 13930 DIAN GRAHA ELEKTRIKA, PT Menengah Skala Usaha 021-8606591 cvdiankaryaabadi@yahoo.co.id JL RADEN INTEN II NO 150-C RT. 008/RW. 008, DUREN SAWIT, KEC. DUREN SAWIT, KOTA JAKARTA TIMUR, KODE POS 13430 DIAN KARYA ABADI, CV Kecil Skala Usaha 021-29049748 JL BULAK RAYA NO 32 RT. 009/RW. 009, KLENDER, KEC. DUREN SAWIT, KOTA JAKARTA TIMUR, KODE POS 13470 DIAN KARYA, PT Besar Skala Usaha 021-47862658 JL SODONG RAYA / 3, CIPINANG, KEC. PULO GADUNG, KOTA JAKARTA TIMUR, KODE POS 13240 DIAN TEKNIK, CV Kecil Skala Usaha"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-053",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Statistik Hotel dan Tingkat  Penghunian Kamar Hotel Provinsi DKI Jakarta 2021\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "WISATA ALAM ANGKE KAPUK JALAN KAMAL MUARA PANTAI INDAH KAPUK ATT HOTEL JL. TMN PERMATA INDAH II NO.",
+      "evidence": {
+        "document_id": "b140198c-1a02-49d8-97cc-03df71748f1a",
+        "chunk_id": "6e5cd0aa-a07e-4063-8072-369f9bdf7ea5",
+        "document_title": "Statistik Hotel dan Tingkat  Penghunian Kamar Hotel Provinsi DKI Jakarta 2021",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 76,
+        "page_end": 76,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "WISATA ALAM ANGKE KAPUK JALAN KAMAL MUARA PANTAI INDAH KAPUK ATT HOTEL JL. TMN PERMATA INDAH II NO. 1 TCL 1 WISMA JL TERUSAN BANDENGAN UTARA NO 89 L PONDOK KENCANA INDAH HOTEL JL TERUSAN BANDENGAN UTARA NO 93 JAKUT HOTEL PERMATA INDAH JL KAMPUNG GUSTI RAYA KOMPLEK TAMAN PERMATA INDAH 2 BLOK L NO 1 GREEN PRO APARTEMEN GREEN BAY PLUIT TOWER C GC 39 WIN PROPERTY APARTEMEN GREEN BAY PLUIT TOWER C GC 32 EXECUTIVE BI HOTEL JL RE MARTADINATA NO. 2 PONDOK IMPIAN HOTEL JL RE MARTADINATA NO 2 SUNTER INDAH PONDOK JL GAYA MOTOR III 17 SUNTER PODODMORO KAI HOTEL SUNTER Jl. Danau Sunter Utara Blok B36-A No.2, RT.2/RW.10, Sunter Jaya, Tanjung Priok KHARISMA PENGINAPAN JL BUGIS GANG REMAJA NO. 70 RT 016/RW 16 HOTEL AYUDA KEBON BAWANG 7 NO 8 JALAN HOTEL PERMAI KEBON BAWANG KEBON BAWANG 7 NO 13 JALAN"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-054",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2023?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Indeks Harga Perdagangan Besar (IHPB) menggunakan tahun dasar 2010 (2010=100) yang mencakup 317 jenis komoditas dan 184 Subkelompok Barang yang belum dirinci dalam komoditi/ jenis barang. sedangkan periode sebelumnya menggunakan tahun dasar 2005 (2005=100).",
+      "evidence": {
+        "document_id": "c98a15f4-d8f1-4a6e-a18f-27b1e68db4e8",
+        "chunk_id": "2902c59b-8d46-463d-bc78-e1e751625e87",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 736,
+        "page_end": 736,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Indeks Harga Perdagangan Besar (IHPB) menggunakan tahun dasar 2010 (2010=100) yang mencakup 317 jenis komoditas dan 184 Subkelompok Barang yang belum dirinci dalam komoditi/ jenis barang. sedangkan periode sebelumnya menggunakan tahun dasar 2005 (2005=100). IHPB 2010 dikelompokkan berdasarkan 3 digit Klasifikasi Baku Lapangan usaha Indonesia (KBLI) 2009, yang terdiri dari 3 katagori yaitu: Katagori Pertanian, Kehutanan dan Perikanan, Katagori Pertambangan dan Penggalian, Katagori Industri Pengolahan. Sedangkan Kelompok Barang early CPI is calculated by using the point-to-point method, but before April 1998 the monthly cumulative method is used. 7. The Wholesale Price Index (WPI) is calculated based on data of wholesale price survey in 34 Provinces in Indonesia. The sampling method is"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-055",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Statistik Potensi Kelurahan Provinsi DKI Jakarta 2025\" tahun 2025?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Menurut Kabupaten/Kota dan Inisiator Penyelesaiannya, 2025 Number of Subdistricts with Incidents of Mass Fight by Regency/Municipality and Initiator of the Resolution, 2025 8.7 Tabel Table",
+      "evidence": {
+        "document_id": "5a2c0388-2803-4182-abc1-d37f8d70d8d7",
+        "chunk_id": "6bf90ab6-08a2-409d-b24a-e9364d984c87",
+        "document_title": "Statistik Potensi Kelurahan Provinsi DKI Jakarta 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 134,
+        "page_end": 134,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Menurut Kabupaten/Kota dan Inisiator Penyelesaiannya, 2025 Number of Subdistricts with Incidents of Mass Fight by Regency/Municipality and Initiator of the Resolution, 2025 8.7 Tabel Table"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-056",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Keadaan Angkatan Kerja Provinsi DKI Jakarta 2023\" tahun 2024 pada halaman 88?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Dibantu Buruh Tetap/Buruh Dibayar 7. Pekerja Keluarga/Tidak Dibayar 4.",
+      "evidence": {
+        "document_id": "5da2f70e-edd5-4b20-8e98-b6f7fc5fecc5",
+        "chunk_id": "e3ecbd91-416a-4c28-9c60-0ce72026e8a1",
+        "document_title": "Keadaan Angkatan Kerja Provinsi DKI Jakarta 2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 88,
+        "page_end": 88,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Dibantu Buruh Tetap/Buruh Dibayar 7. Pekerja Keluarga/Tidak Dibayar 4. Buruh/Karyawan/Pegawai Sumber : Sakernas Agustus 2023, BPS Provinsi DKI Jakarta Diploma I/II/III SMK SMA Status Pekerjaan Utama *) Tidak/Belum Tamat SD Total SD Universitas Tabel 15.2 Penduduk Berumur 15 Tahun ke Atas yang Bekerja Menurut Status Pekerjaan Utama dan Pendidikan Tertinggi yang Ditamatkan, DKI Jakarta 2023 Pendidikan Tertinggi yang Ditamatkan SMP 66 Keadaan Angkatan Kerja Provinsi DKI Jakarta 2023"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-057",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Provinsi DKI Jakarta Dalam Angka 2024\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "684 DKI Jakarta Province in Figures 2024 Provinsi DKI Jakarta Dalam Angka 2024 Lanjutan Tabel/Continued Table 9.1.17 Ruas Induk Toll Gate Golonngan Tarif Kendaraan/ Classification of Vehicles Jumlah Total IV V (1) (5) (6) (7) 1. Jagorawi 554.387 499.016 151.468.376 2.",
+      "evidence": {
+        "document_id": "8e58529e-d665-436d-ad81-a8d7f17dd044",
+        "chunk_id": "e1ee78ad-bd58-4463-a8c3-9992de936478",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 762,
+        "page_end": 762,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "684 DKI Jakarta Province in Figures 2024 Provinsi DKI Jakarta Dalam Angka 2024 Lanjutan Tabel/Continued Table 9.1.17 Ruas Induk Toll Gate Golonngan Tarif Kendaraan/ Classification of Vehicles Jumlah Total IV V (1) (5) (6) (7) 1. Jagorawi 554.387 499.016 151.468.376 2. Jakarta - Cikampek - - - 3. Jakarta - Tangerang 1.636.272 1.104.999 142.875.595 4. Camareng - - - 4.1 Dalam Kota Jakarta - - - 4.1.1 Cawang - Tomang - Pluit 618.248 382.932 112.393.895 4.1.2 Cawang - Tj. Priok - Pluit - - - 4.2 Sedyatmo 768.542 418.107 79.285.407 5. Jln Tol Lingkar Luar Jkt - - - 5.1 Seksi W2 - - - 5.2 Seksi S - - - 5.3 Seksi E1 E2 E3 1.579.672 891.897 54.867.555 5.4 Ulujami - Pondok Aren 30.009 17.751 35.192.099 Sumber/Source: PT Jasa Marga Divisi Man Pul Tol/Indonesia Highway Corp, Man Pul Tol Division"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-058",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Provinsi DKI Jakarta Dalam Angka 2023\" tahun 2023?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "156 4.1.4 Jumlah Sekolah, Guru, dan Murid Madrasah Ibtidaiyah (MI) di Bawah Kementerian Agama Menurut Kabupaten/Kota Menurut Kabupaten/Kota di Provinsi DKI Jakarta, 2022/2023 ............................... 159",
+      "evidence": {
+        "document_id": "c98a15f4-d8f1-4a6e-a18f-27b1e68db4e8",
+        "chunk_id": "9e9e687e-d8fd-4f37-9f9b-338c5c0b0e9b",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 24,
+        "page_end": 24,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "156 4.1.4 Jumlah Sekolah, Guru, dan Murid Madrasah Ibtidaiyah (MI) di Bawah Kementerian Agama Menurut Kabupaten/Kota Menurut Kabupaten/Kota di Provinsi DKI Jakarta, 2022/2023 ............................... 159"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-059",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Berita Resmi Statistik Provinsi DKI Jakarta Januari 2023\"?",
+      "question_type": "methodology",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "BADAN PUSAT STATISTIK PROVINSI DKI JAKARTA BPS-STATISTICS OF DKI JAKARTA PROVINCE JANUARI 2023/ JANUARY 2023 Optimis Membangun Negeri Katalog /Catalog: 1103002.31 Akhir Tahun 2022, Inflasi Jakarta Kembali Meningkat/Jakarta Inflation Accelerates Again In The End of The Year 2022 Menjelang Akhir Tahun Jumlah Kunjungan Wisman ke Jakarta Kembali Naik/Towards The End of The Year, Jakarta Foreign Touris",
+      "evidence": {
+        "document_id": "1bf0b927-268b-4cd1-aea5-5c95ee8ba871",
+        "chunk_id": "e9d97897-ab7a-4be2-bc04-c99edad81a0c",
+        "document_title": "Berita Resmi Statistik Provinsi DKI Jakarta Januari 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 1,
+        "page_end": 1,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "BADAN PUSAT STATISTIK PROVINSI DKI JAKARTA BPS-STATISTICS OF DKI JAKARTA PROVINCE JANUARI 2023/ JANUARY 2023 Optimis Membangun Negeri Katalog /Catalog: 1103002.31 Akhir Tahun 2022, Inflasi Jakarta Kembali Meningkat/Jakarta Inflation Accelerates Again In The End of The Year 2022 Menjelang Akhir Tahun Jumlah Kunjungan Wisman ke Jakarta Kembali Naik/Towards The End of The Year, Jakarta Foreign Tourists Rise Jelang Akhir Tahun, TPK Hotel Bintang Jakarta Kembali Meningkat/Jakarta Star Hotel Occupancy Rate Continues to Rise, Towards the End of 2022 Ekspor Naik Tipis di Tengah Ketidakpastian Pasar Global/Amid Global Market Uncertainty, Exports Slightly Increase Impor Jakarta Tumbuh Positif Jelang Tutup Tahun/ Import Jakarta Grow Positively Toward the End of the Year Pertama Kali Sejak Pandemi"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-060",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2025?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Modal Dalam Negeri dan Asing Menurut Bidang Usaha di Provinsi DKI Jakarta (Ribu rupiah), 2024.............................................................. 760 Domestic and Foreign Investment by Industrial Origin in DKI Jakarta Province (Thousand rupiahs), 2024..................................................................",
+      "evidence": {
+        "document_id": "e21915ec-e970-4bb0-9039-f52c83f1c655",
+        "chunk_id": "84d86cf0-02eb-40f5-b27e-f92ad4276ea6",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 59,
+        "page_end": 59,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Modal Dalam Negeri dan Asing Menurut Bidang Usaha di Provinsi DKI Jakarta (Ribu rupiah), 2024.............................................................. 760 Domestic and Foreign Investment by Industrial Origin in DKI Jakarta Province (Thousand rupiahs), 2024.................................................................. 760 10.3 DISTRIBUSI BERAS/RICE DISTRIBUTION....................................... 763 10.3.1 Realisasi Penyaluran Stabilitas Pasokan dan Harga Pangan (SPHP) Beras, 2024............................................................................................................... 763 Realization of Distribution of Food Supply and Price Stabilization (SPHP) Rice, 2024..................................................................................................."
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-061",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Lainnya (UTL) Provinsi DKI Jakarta\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "crop cultivation activities with a planting pattern of one type of crop planted in one plot of land in one planting period/season (monoculture). 16.",
+      "evidence": {
+        "document_id": "644c8267-ced8-4f5f-92ef-2be081856e21",
+        "chunk_id": "f1ce819d-65c4-42e1-97f2-2b69949b70f7",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Lainnya (UTL) Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 260,
+        "page_end": 260,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "crop cultivation activities with a planting pattern of one type of crop planted in one plot of land in one planting period/season (monoculture). 16. Number of Other Agricultural Holding Estate Crop Households with Mixed Cropping Patterns is number of households carrying out Other Agricultural Holding estate crop cultivation activities with a pattern of planting two or more types of cropss in a plot of land in an irregular manner (without regular spacing and rows). 17. Number of Other Agricultural Holding Estate Crop with Inter-planted Cropping Patterns is number of households carrying out Other Agricultural Holding estate crop cultivation activities by planting two or more types of crops of the same age with regular spacing and rowing, one of the crops is the staple crop, planting and"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-062",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Direktori Perusahaan Kontruksi Provinsi DKI Jakarta 2023\" tahun 2023 pada halaman 233?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Skala Usaha 021-84307430 JL DELCO RAYA KAMPUNG KRAMAT RT. 006/RW.",
+      "evidence": {
+        "document_id": "6e50f47c-5507-44f0-ba3e-9b2dad28bf40",
+        "chunk_id": "eb51f38d-b381-449f-a473-ff3735d6904f",
+        "document_title": "Direktori Perusahaan Kontruksi Provinsi DKI Jakarta 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 233,
+        "page_end": 233,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Skala Usaha 021-84307430 JL DELCO RAYA KAMPUNG KRAMAT RT. 006/RW. 006, SETU, KEC. CIPAYUNG, KOTA JAKARTA TIMUR, KODE POS 13880 DELCO, PT Menengah Skala Usaha 021-86617002 cvdelisputri@gmail.com RUKO SIMPANG KLENDER NO 44E LT 2, JL I GUSTI NGURAH RAI RT. 003/RW. 003, KLENDER, KEC. DUREN SAWIT, KOTA JAKARTA TIMUR, KODE POS 13470 DELISA PUTRI SEJATI, CV Kecil Skala Usaha 021-4891950 JL KAYU PUTIH TENGAH III BLOK C NO 1, KAYU PUTIH, KEC. PULO GADUNG, KOTA JAKARTA TIMUR DELITANI DUA INDAH, PT Kecil Skala Usaha JL KEMUNING DALAM III/ 36 C RT. 008/RW. 008, UTAN KAYU UTARA, KEC. MATRAMAN, KOTA JAKARTA TIMUR DELTA ABADI, PT Menengah Skala Usaha 021-86906219 KOMP RUKAN MEDICAL CENTRE BLOK E NO 8, JL RAYA PONDOK KELAPA, PONDOK KELAPA, KEC. DUREN SAWIT, KOTA JAKARTA TIMUR, KODE POS 13450 DELTA KARYA"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-063",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Indikator Kesejahteraan Rakyat DKI Jakarta 2022\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Tingkat Pengangguran Terbuka (TPT) di DKI Jakarta pada Agustus 2021 turun mencapai 8,50 persen atau turun 2,45 persen poin dibandingkan Agustus 2020. Pandemi COVID-19 yang sudah mulai mereda menjadi salah satu faktor utama turunnya TPT.",
+      "evidence": {
+        "document_id": "c83a390d-35c9-4edf-8c93-c72677184cd5",
+        "chunk_id": "4ea91cc2-554a-45cf-b6f7-7a1ffb3dd8da",
+        "document_title": "Indikator Kesejahteraan Rakyat DKI Jakarta 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 66,
+        "page_end": 66,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Tingkat Pengangguran Terbuka (TPT) di DKI Jakarta pada Agustus 2021 turun mencapai 8,50 persen atau turun 2,45 persen poin dibandingkan Agustus 2020. Pandemi COVID-19 yang sudah mulai mereda menjadi salah satu faktor utama turunnya TPT. Sejalan dengan proses pemulihan ekonomi, pada Agustus 2022 ini kembali menurun menjadi 7,18 persen atau turun minus 1,32 persen poin. Gambar 4.9 Tingkat Pengangguran Terbuka menurut Jenis Kelamin di DKI Jakarta, Agustus 2020 - Agustus 2022 (Persen) 11,06 8,73 7,50 10,76 8,12 6,65 10,95 8,50 7,18 Agustus 2020 Agustus 2021 Agustus 2022 Laki-laki Perempuan Total Sumber : Sakernas Agustus, 2020-2022"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-064",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Statistik Hortikultura Provinsi DKI Jakarta 2022\" tahun 2023?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "1.831,05 kuintal atau 51,79 persen bila dibandingkan tahun 2021 yang sebesar 3.535,50 kuintal. Kepulauan Seribu Selatan merupakan wilayah dengan produksi jambu air terbesar di Kepulauan Seribu.",
+      "evidence": {
+        "document_id": "6ceb3b4f-5e64-4573-957a-6cc688fc461f",
+        "chunk_id": "a7f06a87-07b8-4632-8b6a-704b6a461097",
+        "document_title": "Statistik Hortikultura Provinsi DKI Jakarta 2022",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 60,
+        "page_end": 60,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "1.831,05 kuintal atau 51,79 persen bila dibandingkan tahun 2021 yang sebesar 3.535,50 kuintal. Kepulauan Seribu Selatan merupakan wilayah dengan produksi jambu air terbesar di Kepulauan Seribu. Nilai produksi jambu air di wilayah ini sebesar 1.102,95 kuintal dengan kontribusi sebesar 64,71 persen dari total produksi jambu air di Kepulauan Seribu. Breadfruit was the fruit plant with the highest production in the Kepulauan Seribu in 2022. Breadfruit production in 2022 was recorded at 4,758.84 quintals produced from 2,328 trees. The production value of breadfruit contributes 47.39 percent of all fruit production in the Kepulauan Seribu. Kepulauan Seribu Selatan District still had the highest breadfruit production in the Kepulauan Seribu, with a production value of 3,968.34 quintals. In 2022,"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-065",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Profil Industri Mikro dan Kecil Provinsi DKI Jakarta 2021\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Selatan 11 108 1 486 9 622 Jakarta Timur 15 791 1 821 13 970 Jakarta Pusat 7 658 591 7 067 Jakarta Barat 17 036 2 613 14 423 Jakarta Utara 10 035 1 905 8 130 DKI JAKARTA 62 108 8 499 53 609 Lanjutan Tabel/Continued Table 18.2 Kabupaten/Kota Regency/ Municipality Jenis Kesulitan/Types of Difficulties Bahan Baku Raw Materials Pemodalan Capital Pemasaran Marketing Persaingan Competition BBM/ Energi F",
+      "evidence": {
+        "document_id": "b0a3cfb0-9839-48b1-844b-f49c36660660",
+        "chunk_id": "2536d107-56d5-42ef-ad09-1ecbd88c28de",
+        "document_title": "Profil Industri Mikro dan Kecil Provinsi DKI Jakarta 2021",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 144,
+        "page_end": 144,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Selatan 11 108 1 486 9 622 Jakarta Timur 15 791 1 821 13 970 Jakarta Pusat 7 658 591 7 067 Jakarta Barat 17 036 2 613 14 423 Jakarta Utara 10 035 1 905 8 130 DKI JAKARTA 62 108 8 499 53 609 Lanjutan Tabel/Continued Table 18.2 Kabupaten/Kota Regency/ Municipality Jenis Kesulitan/Types of Difficulties Bahan Baku Raw Materials Pemodalan Capital Pemasaran Marketing Persaingan Competition BBM/ Energi Fuel/ Energy Infrastruktur Infrastructure Tenaga Kerja Workers Cuaca Weather Lainnya Others (1) (5) (6) (7) (8) (9) (10) (11) (12) (13) Kepulauan Seribu 287 285 51 130 - - 30 - 3 Jakarta Selatan 2 794 6 464 6 282 967 202 916 222 780 1 294 Jakarta Timur 5 383 11 343 9 185 1 011 387 1 226 290 987 378 Jakarta Pusat 2 775 4 897 5 293 805 179 432 177 299 617 Jakarta Barat 4 253 9 147 7 888 1 720 679 2"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-066",
+      "question_text": "Dokumen apa yang membahas topik Berita Resmi Statistik untuk wilayah DKI Jakarta tahun 2022?",
+      "question_type": "document_search",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "and mechanical appliances and part thereof (84) 1 486,7 1 276,2 654,6 16,5 127,1 21,6 Mesin dan perlengkapan elektrik serta bagiannya/ Electrical machinery and equipment and parts thereof (85) 700,1 683,4 361,4 2,4 93,7 10,2 Plastik dan barang dari plastik/ Plastics and articles thereof (39) 553,3 477,0 237,7 16,0 132,8 8,0 Kendaraan dan bagiannya/ Vehicles and accessories thereof (87) 506,5 544,9",
+      "evidence": {
+        "document_id": "29ee35f0-75d3-497a-892d-8e0c90c26024",
+        "chunk_id": "74031e5a-32b8-468b-b145-d2ba51077aa8",
+        "document_title": "Berita Resmi Statistik Provinsi DKI Jakarta Februari 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 59,
+        "page_end": 59,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "and mechanical appliances and part thereof (84) 1 486,7 1 276,2 654,6 16,5 127,1 21,6 Mesin dan perlengkapan elektrik serta bagiannya/ Electrical machinery and equipment and parts thereof (85) 700,1 683,4 361,4 2,4 93,7 10,2 Plastik dan barang dari plastik/ Plastics and articles thereof (39) 553,3 477,0 237,7 16,0 132,8 8,0 Kendaraan dan bagiannya/ Vehicles and accessories thereof (87) 506,5 544,9 193,3 -7,0 162,0 7,4 Besi dan baja/ Iron and steel (72) 488,4 441,6 192,8 10,6 153,3 7,1 Bahan kimia organik/ Organic chemicals (29) 259,9 256,1 114,0 1,5 127,9 3,8 Aluminium dan barang daripadanya/ Aluminium and articles thereof (76) 161,0 142,6 60,1 12,9 167,8 2,3 Berbagai produk kimia/ Miscellaneous chemical products (38) 159,3 147,1 75,7 8,3 110,3 2,3 Instrumen optik, fotografi,"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-067",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Direktori Perusahaan Konstruksi Provinsi DKI Jakarta Tahun 2022\" tahun 2022?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "LT 10 UNIT H, JL HR RASUNA SAID BLOK X-5 KAV 2-3, KUNINGAN TIMUR, KEC. SETIA BUDI, KOTA JAKARTA SELATAN, KODE POS 12950 NUANSA NIRMANA ARTISTIKA, PT Menengah Skala Usaha 021-7352955 BINTARO BUSINESS CENTER, JL RC VETERAN NO 1-I, BINTARO, KEC.",
+      "evidence": {
+        "document_id": "058c8a2a-046f-467f-bc7e-d0668afb68ec",
+        "chunk_id": "564253d2-f167-44a1-aa6a-af5dd7fb3f04",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta Tahun 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 151,
+        "page_end": 151,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "LT 10 UNIT H, JL HR RASUNA SAID BLOK X-5 KAV 2-3, KUNINGAN TIMUR, KEC. SETIA BUDI, KOTA JAKARTA SELATAN, KODE POS 12950 NUANSA NIRMANA ARTISTIKA, PT Menengah Skala Usaha 021-7352955 BINTARO BUSINESS CENTER, JL RC VETERAN NO 1-I, BINTARO, KEC. PESANGGRAHAN, KOTA JAKARTA SELATAN, KODE POS 12330 NUANSA VANINDO, PT Menengah Skala Usaha Keterangan : Alamat Perusahaan Telepon Email Website 100"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-068",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Perkembangan Indikator Sosial Provinsi DKI Jakarta, 2023\" tahun 2023 pada halaman 55?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "32,69 Jakarta Utara 36,48 31,27 29,60 29,72 30,41 33,13 24,01 16,30 35,28 DKI Jakarta 33,39 30,45 27,05 28,83 29,28 33,80 25,98 16,76 30,45 Sumber: Survei Sosial Ekonomi Nasional (SUSENAS), BPS",
+      "evidence": {
+        "document_id": "c49ae8be-5f32-4e13-ba8d-4e68ad372f05",
+        "chunk_id": "c2577cae-d968-4bd8-bef3-af6b952a070d",
+        "document_title": "Perkembangan Indikator Sosial Provinsi DKI Jakarta, 2023",
+        "publication_year": 2023,
+        "region": "DKI Jakarta",
+        "page_start": 55,
+        "page_end": 55,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "32,69 Jakarta Utara 36,48 31,27 29,60 29,72 30,41 33,13 24,01 16,30 35,28 DKI Jakarta 33,39 30,45 27,05 28,83 29,28 33,80 25,98 16,76 30,45 Sumber: Survei Sosial Ekonomi Nasional (SUSENAS), BPS"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-069",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Hasil Survei Ekonomi Pertanian (SEP) 2024 Provinsi DKI Jakarta\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "26 Results of The 2024 Agricultural Economic Survey DKI Jakarta Province Hasil Survei Ekonomi Pertanian (SEP) 2024 Provinsi DKI Jakarta Kabupaten/Kota Regency/Municipality Kepemilikan atau Pemanfaatan Asuransi/Having Access or Using Insurance Memiliki Akses atau Menggunakan Asuransi Having Access or Using Insurance Tidak Memiliki Akses atau Menggunakan Asuransi Not Having Access or Using Insurance",
+      "evidence": {
+        "document_id": "5d3188ae-c7fb-411c-9f98-b9cd878a8c2b",
+        "chunk_id": "7af0a2fd-a522-4258-969f-e70ee2923371",
+        "document_title": "Hasil Survei Ekonomi Pertanian (SEP) 2024 Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 44,
+        "page_end": 44,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "26 Results of The 2024 Agricultural Economic Survey DKI Jakarta Province Hasil Survei Ekonomi Pertanian (SEP) 2024 Provinsi DKI Jakarta Kabupaten/Kota Regency/Municipality Kepemilikan atau Pemanfaatan Asuransi/Having Access or Using Insurance Memiliki Akses atau Menggunakan Asuransi Having Access or Using Insurance Tidak Memiliki Akses atau Menggunakan Asuransi Not Having Access or Using Insurance (1) (2) (3) Kepulauan Seribu — 100,00 Jakarta Selatan 2,67 97,33 Jakarta Timur 0,56 99,44 Jakarta Pusat — 100,00 Jakarta Barat 5,83 94,17 Jakarta Utara — 100,00 DKI Jakarta 1,33 98,67 Sumber/Source: Badan Pusat Statistik, Survei Ekonomi Pertanian 2024/BPS—Statistics Indonesia, The 2024 Agricultural Economic Survey Tabel Table 2.10 Persentase Usaha Pertanian Perorangan yang Memiliki atau"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-070",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Kehutanan Provinsi DKI Jakarta\" tahun 2024?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "2023 Number of Carpentry Wood Collection Individual Agricultural Holdings by Regency/Municipality and Product Utilization in DKI Jakarta Province (units), 2023................................................................................................................................ 636 Tabel Halaman Table Page",
+      "evidence": {
+        "document_id": "f32f5ce1-c132-431a-84bf-d8859ac76f65",
+        "chunk_id": "1c69f20d-8062-446f-8d7b-cf26b7c870af",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Kehutanan Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 54,
+        "page_end": 54,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "2023 Number of Carpentry Wood Collection Individual Agricultural Holdings by Regency/Municipality and Product Utilization in DKI Jakarta Province (units), 2023................................................................................................................................ 636 Tabel Halaman Table Page"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-071",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Statistik Hortikultura Provinsi DKI Jakarta 2021\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "nilai produksi masing-masing sebesar 39,6 Ton dan 21,58 Ton. 5.3.",
+      "evidence": {
+        "document_id": "b13c2f47-46b8-463d-8a3a-39239d5662c7",
+        "chunk_id": "40f181f3-4716-4715-bda9-a7ca557bce56",
+        "document_title": "Statistik Hortikultura Provinsi DKI Jakarta 2021",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 66,
+        "page_end": 66,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "nilai produksi masing-masing sebesar 39,6 Ton dan 21,58 Ton. 5.3. Kota Jakarta Timur Tanaman buah-buahan merupakan komoditas tanaman hortikultura unggulan di Jakarta Timur. Dalam kurun waktu 2017-2021 terdapat 17 (tujuh belas) jenis buah-buahan yang tercatat dibudidayakan di Jakarta Timur. Pada tahun 20021, dari 17 (tujuh belas) komoditas hanya ada 4 (empat) jenis tanaman buah-buahan yang mempunyai produksi relatif besar diatas 2.000 Ton. Buah-buahan tersebut adalah rambutan, mangga, belimbing dan pisang. Secara total, produksi tanaman buahbuahan di Jakarta Timur pada tahun 2021 tercatat sebesar 22.323 Ton dengan luas panen sebanyak 154.321 pohon yang menghasilkan. Produksi tanaman buahbuahan pada tahun 2021 mengalami peningkatan yang sangat tinggi yaitu 12.433,69 Ton atau 125,72 persen"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-072",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2022?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "ke-i xi = Jumlah orang-data menurut periode data ke-i y = Jumlah seluruh orang-data i = 1 (Sepuluh tahunan), 2 (Lima tahunan), 3 (Tiga tahunan), 4 (Tahunan), 5 (Semesteran), 6 (Triwulanan), 7 (Bulanan), 8 (Mingguan), 9 (Harian), 10 (Lainnya) Interpretasi : Semakin besar angka indikator, maka periode data tersebut semakin banyak dicari di wilayah PST BPS tertentu.",
+      "evidence": {
+        "document_id": "7c26894b-aed2-4dc6-95f9-fe5f1fa44aa9",
+        "chunk_id": "15843fe7-c55c-4053-ad54-1e7fa784c6ec",
+        "document_title": "Analisis Hasil Survei Kebutuhan Data BPS Provinsi DKI Jakarta 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 102,
+        "page_end": 102,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "ke-i xi = Jumlah orang-data menurut periode data ke-i y = Jumlah seluruh orang-data i = 1 (Sepuluh tahunan), 2 (Lima tahunan), 3 (Tiga tahunan), 4 (Tahunan), 5 (Semesteran), 6 (Triwulanan), 7 (Bulanan), 8 (Mingguan), 9 (Harian), 10 (Lainnya) Interpretasi : Semakin besar angka indikator, maka periode data tersebut semakin banyak dicari di wilayah PST BPS tertentu."
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-073",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Ringkasan Eksekutif Luas Panen dan Produksi Padi di Provinsi DKI Jakarta 2023 (Angka Tetap)\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Gambar Halaman Figure Page 8. Infografis Luas Panen dan Produksi Padi di Provinsi DKI Jakarta (Angka Tetap) Infographic of Paddy Harvested Area and Paddy Production in DKI Jakarta Province (Final Figures) ..............................................................................................",
+      "evidence": {
+        "document_id": "13bf2a8f-e69f-441c-8ffa-7452de170449",
+        "chunk_id": "5c2e1867-6b70-44ba-a130-5d2eeb7fc566",
+        "document_title": "Ringkasan Eksekutif Luas Panen dan Produksi Padi di Provinsi DKI Jakarta 2023 (Angka Tetap)",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 14,
+        "page_end": 14,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Gambar Halaman Figure Page 8. Infografis Luas Panen dan Produksi Padi di Provinsi DKI Jakarta (Angka Tetap) Infographic of Paddy Harvested Area and Paddy Production in DKI Jakarta Province (Final Figures) .............................................................................................. 37"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-074",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024\" tahun 2024 pada halaman 426?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "JL PANTAI INDAH SELATAN I BLOK G-A NO 6, KAPUK MUARA, KEC. PENJARINGAN, KOTA JAKARTA UTARA GLOBAL ANUGERAH UTAMA, PT Menengah Skala Usaha KIRANA II KELAPA GADING LEVEL 10 A, JL BOULEVARD TIMUR NO 88, KELAPA GADING TIMUR, KEC.",
+      "evidence": {
+        "document_id": "fc76347e-3fa8-4e29-bbb3-3578082e5a62",
+        "chunk_id": "f420ff30-19cb-409f-934e-a450b9527bc0",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 426,
+        "page_end": 426,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "JL PANTAI INDAH SELATAN I BLOK G-A NO 6, KAPUK MUARA, KEC. PENJARINGAN, KOTA JAKARTA UTARA GLOBAL ANUGERAH UTAMA, PT Menengah Skala Usaha KIRANA II KELAPA GADING LEVEL 10 A, JL BOULEVARD TIMUR NO 88, KELAPA GADING TIMUR, KEC. KELAPA GADING, KOTA JAKARTA UTARA, KODE POS 14240 GLOBAL DINAMIKA INFRASTRUKTUR, PT Menengah Skala Usaha KOMP GRAND ANCOL CENTER 1 B BLOK C 11- 12 A, JL RE MARTADINATA, ANCOL, KEC. PADEMANGAN, KOTA JAKARTA UTARA GLOBAL SIGNAL MANDIRI, PT Menengah Skala Usaha JL AMPERA VI NO 42, PADEMANGAN BARAT, KEC. PADEMANGAN, KOTA JAKARTA UTARA, KODE POS 14420 GOMPAR PALLUGA JAYA, PT Menengah Skala Usaha RUKAN MANGGA DUA SQUARE BLOK F NO 48, JL GUNUNG SAHARI RAYA NO 1, ANCOL, KEC. PADEMANGAN, KOTA JAKARTA UTARA, KODE POS 14430 GONG XIN ELECTRIC POWER CONSTRUCTION, PT Besar Skala"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-075",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Perusahaan Pertanian Berbadan Hukum (UPB) Provinsi DKI Jakarta\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "xxviii Dalam pelaksanaan ST2023, petugas akan bekerja di satuan wilayah kerja yang ditetapkan dalam Satuan Lingkungan Setempat (SLS). SLS yang digunakan adalah SLS hasil Sensus Penduduk 2020 yang mencakup muatan keluarga dari SP2020, termasuk wilayah non-SLS yang sudah terisi muatan.",
+      "evidence": {
+        "document_id": "c63df698-b487-4955-8bde-021570da1a80",
+        "chunk_id": "586d159d-6125-4c41-9ede-0c65122a3997",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Perusahaan Pertanian Berbadan Hukum (UPB) Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 30,
+        "page_end": 30,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "xxviii Dalam pelaksanaan ST2023, petugas akan bekerja di satuan wilayah kerja yang ditetapkan dalam Satuan Lingkungan Setempat (SLS). SLS yang digunakan adalah SLS hasil Sensus Penduduk 2020 yang mencakup muatan keluarga dari SP2020, termasuk wilayah non-SLS yang sudah terisi muatan. Untuk memastikan efektivitas dan efisiensi dalam mekanisme sensus, perlu dilakukan pembagian wilayah SLS sesuai dengan muatan yang ada di setiap SLS. Penetapan wilayah konsentrasi pertanian dalam SLS didasarkan pada data perkiraan muatan dari pembaruan Wilayah Kerja Statistik (Wilkerstat) tahun 2022 yang mencakup informasi jumlah keluarga/KK dan jumlah keluarga tani/KK tani di suatu wilayah SLS/Non-SLS. Pengaturan wilayah untuk pencacahan unit usaha pertanian perorangan (UTP) terdiri dari pembagian wilayah"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-076",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Indeks Pembangunan Manusia Provinsi DKI Jakarta 2025\" tahun 2026?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "karena selain sebagai ukuran kinerja Pemerintah, IPM juga digunakan sebagai salah satu alokator penentuan Dana Alokasi Umum (DAU). Mengingat pentingnya mengetahui IPM di suatu daerah, maka dalam publikasi ini diulas secara rinci IPM per kabupaten/kota dan Provinsi DKI Jakarta secara umum dari tahun 2021– 2025.",
+      "evidence": {
+        "document_id": "20b28dd6-04ef-4bc5-8358-350aad86a5f0",
+        "chunk_id": "dcfa9fca-64dd-437b-bdc6-b2bef3ad3844",
+        "document_title": "Indeks Pembangunan Manusia Provinsi DKI Jakarta 2025",
+        "publication_year": 2026,
+        "region": "DKI Jakarta",
+        "page_start": 17,
+        "page_end": 17,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "karena selain sebagai ukuran kinerja Pemerintah, IPM juga digunakan sebagai salah satu alokator penentuan Dana Alokasi Umum (DAU). Mengingat pentingnya mengetahui IPM di suatu daerah, maka dalam publikasi ini diulas secara rinci IPM per kabupaten/kota dan Provinsi DKI Jakarta secara umum dari tahun 2021– 2025. Selain itu, perkembangan masing-masing indikator yang digunakan untuk mengukur IPM juga akan dibahas. Adapun indikator-indikator IPM sesuai dengan metodologi yang telah diperbaharui adalah: Umur Harapan Hidup (UHH); Harapan Lama Sekolah (HRS); Rata-rata Lama Sekolah (RLS); dan Pengeluaran per Kapita per tahun. Publikasi ini terdiri dari beberapa bab yang diawali dengan Bab 1. Pendahuluan. Kemudian, dilanjutkan dengan Bab 2. Potret Pembangunan Manusia di DKI Jakarta secara umum. Pada"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-077",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Profil Industri Mikro Kecil Provinsi DKI Jakarta 2020\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "considering that small-scale industries are one of the longterm industrial development priorities as an effort to increase economic inclusiveness. The wider use of the internet, increasing knowledge, and government support for small and medium enterprises, have opened up more space for IMK to develop.",
+      "evidence": {
+        "document_id": "f79a3fa5-f65b-4de5-9b10-39625b7a9eca",
+        "chunk_id": "cde85e1e-4cec-43d1-8939-b03d2161192d",
+        "document_title": "Profil Industri Mikro Kecil Provinsi DKI Jakarta 2020",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 30,
+        "page_end": 30,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "considering that small-scale industries are one of the longterm industrial development priorities as an effort to increase economic inclusiveness. The wider use of the internet, increasing knowledge, and government support for small and medium enterprises, have opened up more space for IMK to develop. 1.1 Latar Belakang Peran sektor industri pengolahan sebagai salah satu penggerak ekonomi terbesar kedua, setelah sektor Perdagangan, bagi perekonomian Provinsi DKI Jakarta. Hal ini dapat dilihat dari kontribusinya terhadap penciptaan nilai tambah di perekonomian Jakarta. Pada tahun 2020 kontribusi sektor industri pengolahan terhadap perekonomian DKI Jakarta adalah 11,39 persen. Kontribusi ini lebih tinggi dibandingkan sektor Konstruksi, dan Jasa Keuangan yang masing-masing berkontribusi"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-078",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2022?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "70,48 9,52 99,43 97,88 70,48 Laki-Laki+Perempuan/Male+Female 9,52 99,25 97,95 72,03 9,52 99,44 97,95 72,10 Perdesaan/Rural Laki-Laki/Male - - - - - - - - - Perempuan/Female - - - - - - - - - Laki-Laki+Perempuan/Male+Female - - - - - - - - - Perkotaan+Perdesaan/Urban+Rural Laki-Laki/Male 9,51 99,13 98,02 73,60 9,51 99,45 98,02 73,73 Perempuan/Female 9,52 99,37 97,88 70,48 9,52 99,43 97,88 70,48 Laki-Laki+Perempuan/Male+Female 9,52 99,25 97,95 72,03 9,52 99,44 97,95 72,10 (1) Sumber/Source: Susenas Maret 2022/The March 2022 Susenas Tabel 3.5. Table Daerah Tempat Tinggal dan Jenis Kelamin APS Formal/Formal SER APS Formal+Non Formal/Formal+Non Formal SER Urban Rural Classification and Sex",
+      "evidence": {
+        "document_id": "39f8fa13-c4b7-410a-8c58-7597869791c7",
+        "chunk_id": "031fffea-41b4-4c89-8071-082cc3dc9d1f",
+        "document_title": "Statistik Kesejahteraan Rakyat Provinsi DKI Jakarta 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 78,
+        "page_end": 78,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "70,48 9,52 99,43 97,88 70,48 Laki-Laki+Perempuan/Male+Female 9,52 99,25 97,95 72,03 9,52 99,44 97,95 72,10 Perdesaan/Rural Laki-Laki/Male - - - - - - - - - Perempuan/Female - - - - - - - - - Laki-Laki+Perempuan/Male+Female - - - - - - - - - Perkotaan+Perdesaan/Urban+Rural Laki-Laki/Male 9,51 99,13 98,02 73,60 9,51 99,45 98,02 73,73 Perempuan/Female 9,52 99,37 97,88 70,48 9,52 99,43 97,88 70,48 Laki-Laki+Perempuan/Male+Female 9,52 99,25 97,95 72,03 9,52 99,44 97,95 72,10 (1) Sumber/Source: Susenas Maret 2022/The March 2022 Susenas Tabel 3.5. Table Daerah Tempat Tinggal dan Jenis Kelamin APS Formal/Formal SER APS Formal+Non Formal/Formal+Non Formal SER Urban Rural Classification and Sex"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-079",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Tanaman Pangan Provinsi DKI Jakarta\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Timur - - - - Jakarta Pusat - - - - Jakarta Barat - - - - Jakarta Utara 1 - - - DKI Jakarta 1 - - - Catatan/Note: - Hanya mencakup RTUP budidaya/Only covers cultivation Agricultural Households - Satu RTUP budi daya tanaman pangan dapat memiliki lebih dari satu penyebab utama luas panen lebih kecil dari luas tanam/One Food Crops Cultivation Household can have more than one type of main cause of the",
+      "evidence": {
+        "document_id": "c40a6c00-4c4a-4e09-bb0f-2772267dbf3b",
+        "chunk_id": "0b13a96b-0041-42ab-a4b1-e484633f4627",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Tanaman Pangan Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 562,
+        "page_end": 562,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Timur - - - - Jakarta Pusat - - - - Jakarta Barat - - - - Jakarta Utara 1 - - - DKI Jakarta 1 - - - Catatan/Note: - Hanya mencakup RTUP budidaya/Only covers cultivation Agricultural Households - Satu RTUP budi daya tanaman pangan dapat memiliki lebih dari satu penyebab utama luas panen lebih kecil dari luas tanam/One Food Crops Cultivation Household can have more than one type of main cause of the harvest area smaller than the planting area"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-080",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Provinsi DKI Jakarta Dalam Angka 2022\" tahun 2022 pada halaman 111?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "and Name of Regional Level of Data Collection. Kabupaten/Kota Regency/Municipality 2017 2018 2019 2020 2021 (1) (2) (3) (4) (5) (6) Kepulauan Seribu 2 2 2 2 2 Jakarta Selatan 10 10 10 10 10 Jakarta Timur 10 10 10 10 10 Jakarta Pusat 8 8 8 8 8 Jakarta Barat 8 8 8 8 8 Jakarta Utara 6 6 6 6 6 DKI Jakarta 44 44 44 44 44",
+      "evidence": {
+        "document_id": "c24fb710-60a5-4e71-b84e-b8e0742e4c2c",
+        "chunk_id": "0ab74f9f-c0ab-43d5-aba0-9042faf4bea2",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 111,
+        "page_end": 111,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "and Name of Regional Level of Data Collection. Kabupaten/Kota Regency/Municipality 2017 2018 2019 2020 2021 (1) (2) (3) (4) (5) (6) Kepulauan Seribu 2 2 2 2 2 Jakarta Selatan 10 10 10 10 10 Jakarta Timur 10 10 10 10 10 Jakarta Pusat 8 8 8 8 8 Jakarta Barat 8 8 8 8 8 Jakarta Utara 6 6 6 6 6 DKI Jakarta 44 44 44 44 44"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-081",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Direktori Industri Manufaktur Provinsi DKI Jakarta 2025\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "PT Jl. Rawa Gelam 3 No. 6021 Jatinegara Kec. Cakung Kota Jakarta Timur DKI Jakarta 13930 ERA ASTA MARIN NUSANTARA, PT Komplek PIK Blok G No.28-30 Penggilingan Kota Jakarta Timur DKI Jakarta ESEL KREASI INDONESIA Jl. Koi RT.001/005 Munjul Kec. Cipayung Kota Jakarta Timur DKI Jakarta 13860 ESTEE GOLD",
+      "evidence": {
+        "document_id": "ea427214-7155-4a0e-992f-c45be2367081",
+        "chunk_id": "54502ac0-b28e-442a-800a-e8a1420bb02b",
+        "document_title": "Direktori Industri Manufaktur Provinsi DKI Jakarta 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 100,
+        "page_end": 100,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "PT Jl. Rawa Gelam 3 No. 6021 Jatinegara Kec. Cakung Kota Jakarta Timur DKI Jakarta 13930 ERA ASTA MARIN NUSANTARA, PT Komplek PIK Blok G No.28-30 Penggilingan Kota Jakarta Timur DKI Jakarta ESEL KREASI INDONESIA Jl. Koi RT.001/005 Munjul Kec. Cipayung Kota Jakarta Timur DKI Jakarta 13860 ESTEE GOLD FEET, PT Kapuk Utara I/3 Kapuk Muara Kec. Penjaringan Kota Jakarta Utara DKI Jakarta 14460 EVER CHEMICAL INDONESIA Jakarta Industrial Estate Pulogadung Jl. Pulo Gadung No. 17 Rawa Terate Kec. Cakung Kota Jakarta Timur DKI Jakarta 13960 FINDECO JAYA, PT Jl. Raya Bekasi Km. 20 KIP Kec. Cakung Kota Jakarta Timur DKI Jakarta FOSECO INDONESIA, PT Jakarta Industrial Estate Pulogadung Jl. Rawagelam II No. 5 Jatinegara Kec. Cakung Kota Jakarta Timur DKI Jakarta 13930 FUCOLOR CHEMICAL INDUSTRY, PT Jl."
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-082",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Statistik Industri Manufaktur Bahan Baku Provinsi DKI Jakarta 2020\" tahun 2022?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Polypropylene resin * - 39.663 - 1.287.432 3479001001 Damar polypropylene Polypropylene resin KG 34.593 580.746 164.878 2.167.714 3633001000 Plastik lembaran dari polimer etilena KG 107.380 1.527.876 357.643 4.049.254 3639008000 Bentuk lainnya dari plastik lainnya KG 5.186 80.733 125.916 1.995.464 4834102999 Film fotografi lainnya dalam gulungan KG 802 19.700 51.039 1.163.950 3471002001 Damar poly",
+      "evidence": {
+        "document_id": "14380526-889b-41c9-81d5-deab9777b1c0",
+        "chunk_id": "491c6150-991b-4ade-badf-95b67bf4982b",
+        "document_title": "Statistik Industri Manufaktur Bahan Baku Provinsi DKI Jakarta 2020",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 147,
+        "page_end": 147,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Polypropylene resin * - 39.663 - 1.287.432 3479001001 Damar polypropylene Polypropylene resin KG 34.593 580.746 164.878 2.167.714 3633001000 Plastik lembaran dari polimer etilena KG 107.380 1.527.876 357.643 4.049.254 3639008000 Bentuk lainnya dari plastik lainnya KG 5.186 80.733 125.916 1.995.464 4834102999 Film fotografi lainnya dalam gulungan KG 802 19.700 51.039 1.163.950 3471002001 Damar polyethylene Polyethylene resin KG - - 526.590 10.452.550 3473001002 Pvc compound (polymers of vinil chloride) PVC compound KG - - 515.192 7.120.797 4112105000 Besi dan baja dasar bukan paduan BUAH 36.621 1.125.315 608.191 15.747.968 0321900007 Resin cannabis KG - - 10.530 160.309 138 Manufacturing Industrial Statistics DKI Jakarta 2020, Volume II"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-083",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Indikator Tujuan Pembangunan Berkelanjutan Provinsi DKI Jakarta 2021\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "TANPA KEMISKINAN Pelayanan dasar adalah pelayanan publik untuk memenuhi kebutuhan dasar warga negara. Urusan pemerintahan wajib yang berkaitan dengan pelayanan dasar sebagaimana dimaksud dalam Pasal 11 ayat (2) UU No.",
+      "evidence": {
+        "document_id": "39bc1375-c9d7-44a2-bb65-40bd8bd0b45b",
+        "chunk_id": "2934f65d-358d-401f-8924-f9d3f1888449",
+        "document_title": "Indikator Tujuan Pembangunan Berkelanjutan Provinsi DKI Jakarta 2021",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 32,
+        "page_end": 32,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "TANPA KEMISKINAN Pelayanan dasar adalah pelayanan publik untuk memenuhi kebutuhan dasar warga negara. Urusan pemerintahan wajib yang berkaitan dengan pelayanan dasar sebagaimana dimaksud dalam Pasal 11 ayat (2) UU No. 23 Tahun 2014 tentang Pemerintah Daerah meliputi: pendidikan; kesehatan; pekerjaan umum dan penataan ruang; perumahan rakyat dan kawasan permukiman; ketenteraman, ketertiban umum serta pelindungan masyarakat; dan sosial. Komponen penyusun indikator air minum yang dikelola secara aman (air layak, terletak di dalam kawasan rumah, tersedia setiap dibutuhkan (tidak kekurangan air dalam 24 jam), dan memenuhi syarat kualitas kualitas air minum (tidak keruh, berwarna, berbusa, dll)). Sedangkan air minum layak mencakup: Rumah tangga memiliki sumber air minum utama yang berupa leding,"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-084",
+      "question_text": "Dokumen apa yang membahas topik Berita Resmi Statistik untuk wilayah DKI Jakarta tahun 2025?",
+      "question_type": "document_search",
+      "topic": "Berita Resmi Statistik",
+      "reference_answer": "deflasi 0,03 persen. Komoditas yang dominan memberikan andil/sumbangan deflasi m-to-m yaitu bensin dengan andil/sumbangan 0,04 persen; angkutan antar kota dan angkutan udara masing-masing 0,02 persen; serta solar dan tarif jalan tol yang mengalami deflasi m-to-m sangat kecil, yaitu kurang dari 0,01 persen.",
+      "evidence": {
+        "document_id": "dbfac944-ca06-4c08-aecc-dc43f41fcb53",
+        "chunk_id": "875513b8-d4a4-46ec-89ba-ab331b8bbf03",
+        "document_title": "Berita Resmi Statistik Provinsi DKI Jakarta Mei 2025",
+        "publication_year": 2025,
+        "region": "DKI Jakarta",
+        "page_start": 21,
+        "page_end": 21,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "deflasi 0,03 persen. Komoditas yang dominan memberikan andil/sumbangan deflasi m-to-m yaitu bensin dengan andil/sumbangan 0,04 persen; angkutan antar kota dan angkutan udara masing-masing 0,02 persen; serta solar dan tarif jalan tol yang mengalami deflasi m-to-m sangat kecil, yaitu kurang dari 0,01 persen. 1.7 Informasi, Komunikasi, dan Jasa Keuangan Kelompok ini pada April 2025 di Provinsi DKI Jakarta mengalami deflasi y-on-y sebesar 0,60 persen atau terjadi penurunan indeks harga konsumen dari 100,08 pada April 2024 menjadi 99,48 pada April 2025. Dari 4 (empat) subkelompok pada kelompok ini, sebanyak 2 (dua) subkelompok yang mengalami deflasi y-on-y, sedangkan 2 (dua) subkelompok lainnya tidak mengalami perubahan indeks harga. Subkelompok yang mengalami deflasi y-on-y, yaitu subkelompok"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-085",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Direktori Industri Manufaktur Provinsi DKI Jakarta 2024\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Cengkareng Kota Jakarta Barat DKI Jakarta 33252 SELAMAT SEMPURNA, PT Kapuk Kamal No 88 Kamal Muara Penjaringan Kota Jakarta Utara DKI Jakarta 14470 SUKSES JAYA Jl. Raya Bekasi Km 20 No.1 Pegangsaan Dua Kelapa Gading Kota Jakarta Utara DKI Jakarta 14250 SUMBER BAHAGIA, PT Jl.",
+      "evidence": {
+        "document_id": "757f3c7b-ef39-4d33-9a91-0c1d167aed40",
+        "chunk_id": "913a1ab6-8149-40dc-ac77-12665c18c179",
+        "document_title": "Direktori Industri Manufaktur Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 130,
+        "page_end": 130,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Cengkareng Kota Jakarta Barat DKI Jakarta 33252 SELAMAT SEMPURNA, PT Kapuk Kamal No 88 Kamal Muara Penjaringan Kota Jakarta Utara DKI Jakarta 14470 SUKSES JAYA Jl. Raya Bekasi Km 20 No.1 Pegangsaan Dua Kelapa Gading Kota Jakarta Utara DKI Jakarta 14250 SUMBER BAHAGIA, PT Jl. Tanjung Pura No. 8 Rt09 Rw05 Pegadungan Kali Deres Kota Jakarta Barat DKI Jakarta 11830 SUMBER TEHNIK SERVICE, UD Jl. Kapuk Muara Blok A No.21- 24 Kapuk Muara Penjaringan Kota Jakarta Utara DKI Jakarta 14460 TJOKRO ASAHI CEMERLANG INDONESIA Jakarta Industrial Estate Pulogadung Jl. Pulogadung Nomor 24 Rawa Terate Cakung Kota Jakarta Timur DKI Jakarta 13930 TOYOTA MOTOR MANUFACTURING INDONESIA, PT Jl. Yos Sudarso Sunter II Sungai Bambu Tanjung Priok Kota Jakarta Utara DKI Jakarta 14330 TUFFINDO RAYA, PT Jl. Pramuka Kav"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-086",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Indikator Kesejahteraan Rakyat Provinsi DKI Jakarta 2024\" tahun 2024 pada halaman 99?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Pendapatan dan Pengeluaran Rumah Tangga 81 Pola konsumsi makanan juga berbeda menurut golongan pendapatan. Gambar 7.9 menunjukkan beberapa komoditas makanan yang dikonsumsi masyarakat Jakarta menurut kelompok pendapatan.",
+      "evidence": {
+        "document_id": "e419d2cf-262a-4096-9151-21ba89b4a38a",
+        "chunk_id": "b641e313-cd7b-42de-b260-f0dafa6936d2",
+        "document_title": "Indikator Kesejahteraan Rakyat Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 99,
+        "page_end": 99,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Pendapatan dan Pengeluaran Rumah Tangga 81 Pola konsumsi makanan juga berbeda menurut golongan pendapatan. Gambar 7.9 menunjukkan beberapa komoditas makanan yang dikonsumsi masyarakat Jakarta menurut kelompok pendapatan. Semakin tinggi golongan pendapatan penduduk, konsumsi padipadian (beras) dan sayur-sayuran mengalami penurunan, sedangkan konsumsi makanan dan minuman jadi, rokok dan tembakau, dan ikan jadi semakin tinggi. Sumber: Badan Pusat Statistik, Survei Sosial Ekonomi Nasional (Susenas) Gambar 7.8 Distribusi Rata-rata Pengeluaran per Kapita Sebula untuk Konsumsi Makanan dan Bukan Makanan Golongan Pengeluaran per Kapita, DKI Jakarta (persen), 2024 57,29 58,88 57,55 55,15 36,82 39,66 42,71 41,12 42,45 44,85 63,18 60,34 300.000-499.999 500.00-749.999 750.000-999.000"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-087",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Direktori Perusahaan Konstruksi Provinsi DKI Jakarta Tahun 2022\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "mitraestetika.adm@gmail.com JL PANTAI INDAH SELATAN RUKO ELANG LAUT BOULEVARD - PIK BLOK D NO 25-26 LT 3 RT. 3/RW.",
+      "evidence": {
+        "document_id": "058c8a2a-046f-467f-bc7e-d0668afb68ec",
+        "chunk_id": "c7abe11f-e189-4270-a08e-c7248578cafa",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta Tahun 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 560,
+        "page_end": 560,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "mitraestetika.adm@gmail.com JL PANTAI INDAH SELATAN RUKO ELANG LAUT BOULEVARD - PIK BLOK D NO 25-26 LT 3 RT. 3/RW. 3, KAMAL MUARA, KEC. PENJARINGAN, KOTA JAKARTA UTARA, KODE POS 14470 MITRA ESTETIKA, PT Menengah Skala Usaha 021-6925040, 021-6924870 admin.md@mingpromo.com KOMP LODAN CENTER BLOK E NO 5, JL LODAN RAYA NO 2, ANCOL, KEC. PADEMANGAN, KOTA JAKARTA UTARA, KODE POS 14430 MITRA INOVASI GEMILANG, PT Kecil Skala Usaha 021-45858960 ginting@promindomakmur.com KOMP GADING BUKIT INDAH BLOK RB KAV NO 23, JL BUKIT GADING RAYA, KELAPA GADING BARAT, KEC. KELAPA GADING, KOTA JAKARTA UTARA, KODE POS 14240 MITRA JAYA DINAMIS, PT Menengah Skala Usaha 021-43911873 JL MANGGA NO 26-B RT. 1/RW. 1, TUGU UTARA, KEC. KOJA, KOTA JAKARTA UTARA, KODE POS 14260 MITRA KARUNIA MANDIRI, PT Kecil Skala Usaha"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-088",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Tanaman Pangan Provinsi DKI Jakarta\" tahun 2024?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "secondary food crops products, including secondary food crops nursery, and not as farm laborers or family workers. 13.",
+      "evidence": {
+        "document_id": "c40a6c00-4c4a-4e09-bb0f-2772267dbf3b",
+        "chunk_id": "5fcc3df6-acd3-4644-9741-379ac3fa1002",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Tanaman Pangan Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 397,
+        "page_end": 397,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "secondary food crops products, including secondary food crops nursery, and not as farm laborers or family workers. 13. Number of Dryland Paddy Households is the number of households carrying out agricultural activities that produce dryland paddy crops products, including dryland paddy crops nursery, and not as farm laborers or family workers. 14. Number of Wetland Paddy Households is the number of households carrying out agricultural activities that produce wetland hybrid paddy and/or wetland inbred paddy crops products, including wetland hybrid paddy and/or wetland inbred paddy crops nursery, and not as farm laborers or family workers. 15. Number of Dryland Paddy Individual Agricultural Holdings is the number of individual holdings carrying out agricultural activities that produce"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-089",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Provinsi DKI Jakarta Dalam Angka 2024\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "dilengkapi dengan pelayanan pariwisata lainnya. Usaha penyediaan akomodasi dapat berupa hotel, vila, pondok wisata, bumi perkemahan, persinggahan karavan, dan akomodasi lainnya yang digunakan untuk tujuan pariwisata.",
+      "evidence": {
+        "document_id": "8e58529e-d665-436d-ad81-a8d7f17dd044",
+        "chunk_id": "73f729b2-8644-47d0-a88b-f4357c4eca07",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 708,
+        "page_end": 708,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "dilengkapi dengan pelayanan pariwisata lainnya. Usaha penyediaan akomodasi dapat berupa hotel, vila, pondok wisata, bumi perkemahan, persinggahan karavan, dan akomodasi lainnya yang digunakan untuk tujuan pariwisata. 5. Hotel berbintang yaitu hotel yang telah memenuhi syarat yang telah ditentukan seperti persyaratan fisik bentuk pelayanan yang di berikan. Kualifikasi tenaga kerja. jumlah kamar dan lainnya. hotel tidak berbintang yaitu hotel yang trade fairs and exhibitions, concerts, shows, etc b. “Excursionist” is any visitor according to the definition above, staying less than 24 hours in the place visited (including cruise passengers, i.e. any visitor arriving in a country by ship or train, not staying in an accommodation available in the country). 3. Averrage Length of stay is the"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-090",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2024?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "equipment with operators such as lorry crane, ready mix truck, bulldozers, concrete mixer, drilling machine, and others. Metode yang digunakan untuk memperkirakan ouput harga berlaku kategori konstruksi adalah metode ekstrapolasi dengan indeks konstruksi harga berlaku sebagai ekstrapolatornya.",
+      "evidence": {
+        "document_id": "53141b20-5aeb-4294-9ebb-c7cde371627b",
+        "chunk_id": "ea3c36bb-c4a1-4569-8736-a7a4e5a94b0c",
+        "document_title": "Produk Domestik Regional Bruto Provinsi DKI Jakarta Menurut Lapangan Usaha 2019- 2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 39,
+        "page_end": 39,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "equipment with operators such as lorry crane, ready mix truck, bulldozers, concrete mixer, drilling machine, and others. Metode yang digunakan untuk memperkirakan ouput harga berlaku kategori konstruksi adalah metode ekstrapolasi dengan indeks konstruksi harga berlaku sebagai ekstrapolatornya. Sementara itu, untuk mendapatkan output harga konstan, output harga berlaku dideflasi dengan menggunakan IHPB konstruksi sebagai deflator. Kategori ini meliputi kegiatan ekonomi/kategori di bidang perdagangan besar dan eceran (yaitu penjualan tanpa perubahan teknis) dari berbagai jenis barang dan memberikan imbalan jasa yang mengiringi penjualan barang-barang tersebut. Penjualan secara grosir (perdagangan besar) maupun eceran merupakan tahap akhir dalam pendistribusian barang dagangan. Kategori The"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-091",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Perkembangan Indikator Sosial Provinsi DKI Jakarta 2016-2025\" tahun 2026?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "17,63 2,82 0,00 0,00 0,00 DKI Jakarta 35,11 62,70 1,99 0,18 0,00 0,02 33,69 64,67 1,47 0,17 0,00 0,00 Sumber: Badan Pusat Statistik, Survei Sosial Ekonomi Nasional (SUSENAS) A: Leding B: Sumur Bor/Pompa C: Sumur Terlindung D: Sumur Tak Terlindung E: Air Hujan F: Lainnya",
+      "evidence": {
+        "document_id": "70050ee4-e026-4d00-95a4-fa83969546c2",
+        "chunk_id": "f6ad4e1a-4282-4d53-809f-c6125186657b",
+        "document_title": "Perkembangan Indikator Sosial Provinsi DKI Jakarta 2016-2025",
+        "publication_year": 2026,
+        "region": "DKI Jakarta",
+        "page_start": 88,
+        "page_end": 88,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "17,63 2,82 0,00 0,00 0,00 DKI Jakarta 35,11 62,70 1,99 0,18 0,00 0,02 33,69 64,67 1,47 0,17 0,00 0,00 Sumber: Badan Pusat Statistik, Survei Sosial Ekonomi Nasional (SUSENAS) A: Leding B: Sumur Bor/Pompa C: Sumur Terlindung D: Sumur Tak Terlindung E: Air Hujan F: Lainnya"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-092",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Hortikultura Provinsi DKI Jakarta\" tahun 2024 pada halaman 37?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Usaha Pertanian Perorangan Tanaman Krisan Menurut Kabupaten/ Kota dan Sistem Pemanenan di Provinsi DKI Jakarta (unit), 2023 Number of Chrysanthemum Individual Agricultural Holdings by Regency/ Municipality and Harvesting System in DKI Jakarta Province (units), 2023........ 468 5.13.1 Jumlah Rumah Tangga Usaha Tanaman Bawang Merah Menurut Kabupaten/Kota dan Penyebab Utama Luas Panen Lebih Kecil dari Luas Tanam di Provinsi DKI Jakarta (rumah tangga), 2023 Number of Shallot Iouseholds by Regency/Municipality and the Main Cause of the Harvest Area Smaller than the Planting Area in DKI Jakarta Province (households), 2023........................................................................................................",
+      "evidence": {
+        "document_id": "b6a33def-237b-45b8-9961-4ab6dc5a5cdf",
+        "chunk_id": "bb1f81fb-a4e7-4526-b2c2-cf4f02427c44",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Hortikultura Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 37,
+        "page_end": 37,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Usaha Pertanian Perorangan Tanaman Krisan Menurut Kabupaten/ Kota dan Sistem Pemanenan di Provinsi DKI Jakarta (unit), 2023 Number of Chrysanthemum Individual Agricultural Holdings by Regency/ Municipality and Harvesting System in DKI Jakarta Province (units), 2023........ 468 5.13.1 Jumlah Rumah Tangga Usaha Tanaman Bawang Merah Menurut Kabupaten/Kota dan Penyebab Utama Luas Panen Lebih Kecil dari Luas Tanam di Provinsi DKI Jakarta (rumah tangga), 2023 Number of Shallot Iouseholds by Regency/Municipality and the Main Cause of the Harvest Area Smaller than the Planting Area in DKI Jakarta Province (households), 2023........................................................................................................ 469 5.13.2 Jumlah Rumah Tangga Usaha Tanaman Bawang Putih Menurut"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-093",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Statistik Industri Manufaktur Bahan Baku Provinsi DKI Jakarta 2020\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "40 gr/m2 to 150 gr/m2 for writing/printing (HVS and HVO) RIM - - 2.908 208.050 3219100001 Kertas self-copy RIM - - 1.127 139.500 3214301002 Kertas cetak lainnya other printing paper RIM - - 1.784 143.643 3213300006 Kertas atau kertas karton kraft lainnya dengan berat 150 g/m2 atau kurang tidak dikelantang RIM - - 610 136.684 4154501001 Pelat seng Zinc plate LEMBAR - - 177 65.200 4834102999 Film fo",
+      "evidence": {
+        "document_id": "14380526-889b-41c9-81d5-deab9777b1c0",
+        "chunk_id": "344f09ba-646e-4c39-a965-01e7a736c00d",
+        "document_title": "Statistik Industri Manufaktur Bahan Baku Provinsi DKI Jakarta 2020",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 112,
+        "page_end": 112,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "40 gr/m2 to 150 gr/m2 for writing/printing (HVS and HVO) RIM - - 2.908 208.050 3219100001 Kertas self-copy RIM - - 1.127 139.500 3214301002 Kertas cetak lainnya other printing paper RIM - - 1.784 143.643 3213300006 Kertas atau kertas karton kraft lainnya dengan berat 150 g/m2 atau kurang tidak dikelantang RIM - - 610 136.684 4154501001 Pelat seng Zinc plate LEMBAR - - 177 65.200 4834102999 Film fotografi lainnya dalam gulungan BUAH - - 77 45.330 3423105017 Elemen kimia lainnya other chemical elements BOTOL - - 216 34.431 3513000999 Tinta cetak lainnya Printing ink KG - - 984 69.145 3513000999 Tinta cetak lainnya Printing ink KG - - 24.056 5.721.928 3214301002 Kertas cetak lainnya ROLL - - 585 3.160.726 3263000002 Gambar tempel lainnya ROLL - - 2.515 2.812.511 0196202009 Kertas paper RIM -"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-094",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Perusahaan Pertanian Berbadan Hukum (UPB) Provinsi DKI Jakarta\" tahun 2024?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "cultivation activities by planting two or more types of plants of the same age with regular spacing and rowing, one of which is staple plant. Planting and harvesting can be done simultaneously.",
+      "evidence": {
+        "document_id": "c63df698-b487-4955-8bde-021570da1a80",
+        "chunk_id": "1a3457ef-cd3f-4153-a241-6be7f0fb327e",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Perusahaan Pertanian Berbadan Hukum (UPB) Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 250,
+        "page_end": 250,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "cultivation activities by planting two or more types of plants of the same age with regular spacing and rowing, one of which is staple plant. Planting and harvesting can be done simultaneously. 30. Number of agricultural corporation conducting forestry plant cultivation with Seasonal and Annual Plant Association represents Number of agricultural corporation conducting forestry plant cultivation activities, where seasonal plants are planted amidst annual crops"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-095",
+      "question_text": "Bagaimana metodologi pengumpulan data yang dijelaskan dalam dokumen \"Perkembangan Indikator Sosial Provinsi DKI Jakarta 2015-2023\"?",
+      "question_type": "methodology",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "119 IPM, IPG, dan IDG Tabel 9.3 Indeks Pemberdayaan Gender (IDG) menurut Kabupaten/Kota di Provinsi DKI Jakarta, 2014 - 2022 Kabupaten/Kota Tahun 2014 2015 2016* 2017 2018 2019 2020 2021 2022 (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) Kepulauan Seribu 59,84 57,06 NA 61,08 59,98 63,03 63,41 64,15 64,21 Jakarta Selatan 71,89 72,27 NA 73,17 74,33 75,80 75,69 75,95 75,59 Jakarta Timur 69,21 70,04 NA 71,",
+      "evidence": {
+        "document_id": "8ba7a27d-1bcf-44c6-aa7d-6ca24ac6fb89",
+        "chunk_id": "0f2098bd-5044-4066-bf7b-af22c8a558b7",
+        "document_title": "Perkembangan Indikator Sosial Provinsi DKI Jakarta 2015-2023",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 135,
+        "page_end": 135,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "119 IPM, IPG, dan IDG Tabel 9.3 Indeks Pemberdayaan Gender (IDG) menurut Kabupaten/Kota di Provinsi DKI Jakarta, 2014 - 2022 Kabupaten/Kota Tahun 2014 2015 2016* 2017 2018 2019 2020 2021 2022 (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) Kepulauan Seribu 59,84 57,06 NA 61,08 59,98 63,03 63,41 64,15 64,21 Jakarta Selatan 71,89 72,27 NA 73,17 74,33 75,80 75,69 75,95 75,59 Jakarta Timur 69,21 70,04 NA 71,17 72,82 74,52 74,20 74,36 74,43 Jakarta Pusat 73,36 72,93 NA 74,71 75,72 77,42 77,17 77,57 77,75 Jakarta Barat 71,47 71,46 NA 71,66 73,32 75,20 74,93 74,87 74,92 Jakarta Utara 70,49 70,57 NA 72,12 73,36 74,79 75,15 75,34 75,61 DKI Jakarta 71,19 71,41 72,14 72,34 73,68 75,14 75,16 75,42 75,30 Sumber: Badan Pusat Statistik, Survei Sosial Ekonomi Nasional (SUSENAS) Catatan: *) Tidak menyajikan"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-096",
+      "question_text": "Dokumen apa yang membahas topik Statistik DKI Jakarta untuk wilayah DKI Jakarta tahun 2022?",
+      "question_type": "document_search",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "ABABI, PT Kecil Skala Usaha 021-4252354 JL LETJEND SUPRAPTO NO 29 F LT2 RT. 7/RW.",
+      "evidence": {
+        "document_id": "058c8a2a-046f-467f-bc7e-d0668afb68ec",
+        "chunk_id": "ec92dec6-bda3-4684-9759-4ea59171c49b",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta Tahun 2022",
+        "publication_year": 2022,
+        "region": "DKI Jakarta",
+        "page_start": 374,
+        "page_end": 374,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "ABABI, PT Kecil Skala Usaha 021-4252354 JL LETJEND SUPRAPTO NO 29 F LT2 RT. 7/RW. 7, HARAPAN MULYA, KEC. KEMAYORAN, KOTA JAKARTA PUSAT, KODE POS 10640 GEMAH LUMBUNG JAYA ABADI, PT Kecil Skala Usaha 021-8641317 gemalaridhopratama@gmail.com THE CITY TOWER LT 12 UNIT 1N, JL MH THAMRIN NO 81 RT. 13/RW. 13, MENTENG, KEC. MENTENG, KOTA JAKARTA PUSAT, KODE POS 10310 GEMALA RIDHO PRATAMA, PT Kecil Skala Usaha 021-6288085 JL PANGERAN JAYAKARTA 20 BLOK B NO 12, MANGGA DUA SELATAN, KEC. SAWAH BESAR, KOTA JAKARTA PUSAT GEMAPERDANA KREASINUSA, PT Menengah Skala Usaha 021-4246195 PERKANTORAN CEMPAKA PUTIH, JL LETJEND SUPRAPTO NO 160 BLOK A.16, CEMPAKA BARU, KEC. KEMAYORAN, KOTA JAKARTA PUSAT GEMILANG BAHAGIA, CV Kecil Skala Usaha 021-3811241 WISMA BISNIS INDONESIA 2 LT 3-07, JL IR H JUANDA III NO 32,"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-097",
+      "question_text": "Apa definisi atau penjelasan mengenai Statistik DKI Jakarta yang terdapat dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Usaha Pertanian Perorangan (UTP) Peternakan Provinsi DKI Jakarta\" tahun 2024?",
+      "question_type": "definition",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "Pusat - 2 1 1 1 - Jakarta Barat - 2 1 1 1 - Jakarta Utara - 22 - 22 1 - DKI Jakarta 2 30 6 24 6 - Catatan/Note: 1 Satu UPB dapat mengusahakan lebih dari satu subsektor/One Agricultural Corporation can engage in more than one subsector 2 Satu UPB Subsektor dapat mengusahakan lebih dari satu sub-subsektor/One Agricultural Corporation Subsector can engage in more than one sub-subsector",
+      "evidence": {
+        "document_id": "ca10f4e3-3ef9-4a60-8a8a-055bd55cb54b",
+        "chunk_id": "93643563-b927-40b4-9650-c6f214c45f09",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II: Usaha Pertanian Perorangan (UTP) Peternakan Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 78,
+        "page_end": 78,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "Pusat - 2 1 1 1 - Jakarta Barat - 2 1 1 1 - Jakarta Utara - 22 - 22 1 - DKI Jakarta 2 30 6 24 6 - Catatan/Note: 1 Satu UPB dapat mengusahakan lebih dari satu subsektor/One Agricultural Corporation can engage in more than one subsector 2 Satu UPB Subsektor dapat mengusahakan lebih dari satu sub-subsektor/One Agricultural Corporation Subsector can engage in more than one sub-subsector"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-098",
+      "question_text": "Berapa angka atau statistik terkait Statistik DKI Jakarta yang tercatat dalam dokumen \"Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Kehutanan Provinsi DKI Jakarta\" tahun 2024 pada halaman 119?",
+      "question_type": "number",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "activities that produce food crop products (paddy and secondary crops), including food crop nurseries, and not as farm laborers or family workers. 50.",
+      "evidence": {
+        "document_id": "f32f5ce1-c132-431a-84bf-d8859ac76f65",
+        "chunk_id": "61646939-e729-4d79-948e-1dbac23dc534",
+        "document_title": "Hasil Pencacahan Lengkap Sensus Pertanian 2023 - Tahap II:  Usaha Pertanian Perorangan (UTP) Kehutanan Provinsi DKI Jakarta",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 119,
+        "page_end": 119,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "activities that produce food crop products (paddy and secondary crops), including food crop nurseries, and not as farm laborers or family workers. 50. Number of Horticultural Individual Agricultural Holdings is the number of individual holdings carrying out horticultural cultivation activities that produce vegetables, fruit plants, ornamental plants, and medicinal plants, with the purpose of selling/exchanging some or all of the results at business risk. 51. Number of Estate Crop Individual Agricultural Holdings is the number of individual holdings carrying out estate crop cultivation activities, including estate crop nurseries, with the purpose of selling/ exchanging some or all of the results at the business risk. 52. Number of Livestock Individual Agricultural Holdings is the number of"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-099",
+      "question_text": "Pada periode tahun berapa data dalam dokumen \"Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024\" dikumpulkan dan dilaporkan?",
+      "question_type": "period",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "320 PROVINSI DKI JAKARTA DKI JAKARTA PROVINCE JL CIDENG BARAT NO.60 RT. 014/RW.",
+      "evidence": {
+        "document_id": "fc76347e-3fa8-4e29-bbb3-3578082e5a62",
+        "chunk_id": "c5c78359-2c8c-496b-b884-c2c2a2d74876",
+        "document_title": "Direktori Perusahaan Konstruksi Provinsi DKI Jakarta 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 334,
+        "page_end": 334,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "320 PROVINSI DKI JAKARTA DKI JAKARTA PROVINCE JL CIDENG BARAT NO.60 RT. 014/RW. 02, CIDENG, KEC. GAMBIR, KOTA JAKARTA PUSAT, KODE POS 10150 TUNG FENG CONSTRUCTION ENGINEERING, PT Besar Skala Usaha JL PANGERAN JAYAKARTA 101 BLOK C - 3, MANGGA DUA SELATAN, KEC. SAWAH BESAR, KOTA JAKARTA PUSAT, KODE POS 10730 TUNGGAL SURYAJAYA, PT Menengah Skala Usaha JL PERCETAKAN NEGARA NO 27 C, JOHAR BARU, KEC. JOHAR BARU, KOTA JAKARTA PUSAT, KODE POS 10560 TUNGKIR JAYA, PT Menengah Skala Usaha JL RUKO MEGA GROSIR CEMPAKA MAS BLOK P, SUMUR BATU, KEC. KEMAYORAN, KOTA JAKARTA PUSAT TURELOTO BATTU INDAH, PT Kecil Skala Usaha JL GARDU ASEM RT. 011/RW. 011, KEMAYORAN, KEC. KEMAYORAN, KOTA JAKARTA PUSAT, KODE POS 10620 U STRON, PT Menengah Skala Usaha JL NILAM II/5, SUMUR BATU, KEC. KEMAYORAN, KOTA JAKARTA"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    },
+    {
+      "question_id": "q-100",
+      "question_text": "Wilayah mana yang menjadi fokus utama dalam dokumen \"Provinsi DKI Jakarta Dalam Angka 2024\" tahun 2024?",
+      "question_type": "region",
+      "topic": "Statistik DKI Jakarta",
+      "reference_answer": "322 DKI Jakarta Province in Figures 2024 Provinsi DKI Jakarta Dalam Angka 2024 Sub Satuan Kerja Police Area Kelompok Umur (Tahun)/Age Group (Years) Jumlah Total 41 - 50 >=51 (1) (6) (7) (8) Subdit Bin Gakkum 208 177 989 Satlantas Will Jakarta Pusat 116 198 788 Satlantas Will Jakarta Utara 166 221 1.145 Satlantas Will Jakarta Barat 210 230 1182 Satlantas Will Jakarta Selatan 118 150 829 Satlantas W",
+      "evidence": {
+        "document_id": "8e58529e-d665-436d-ad81-a8d7f17dd044",
+        "chunk_id": "ef3004be-2202-40e3-9f1e-7ca4a6e39416",
+        "document_title": "Provinsi DKI Jakarta Dalam Angka 2024",
+        "publication_year": 2024,
+        "region": "DKI Jakarta",
+        "page_start": 400,
+        "page_end": 400,
+        "source_url": "https://webapi.bps.go.id/download.php",
+        "excerpt": "322 DKI Jakarta Province in Figures 2024 Provinsi DKI Jakarta Dalam Angka 2024 Sub Satuan Kerja Police Area Kelompok Umur (Tahun)/Age Group (Years) Jumlah Total 41 - 50 >=51 (1) (6) (7) (8) Subdit Bin Gakkum 208 177 989 Satlantas Will Jakarta Pusat 116 198 788 Satlantas Will Jakarta Utara 166 221 1.145 Satlantas Will Jakarta Barat 210 230 1182 Satlantas Will Jakarta Selatan 118 150 829 Satlantas Will Jakarta Timur 599 757 3.605 Satlantas Will Kepulauan Seribu - - - Jumlah/Total 1.417 1.733 8.538 Lanjutan Tabel/Continued Table 4.4.8 Sumber/Source: Ditlantas Polda Metro Jaya/Traffic Directorate of DKI Jakarta"
+      },
+      "verification_status": "verified",
+      "reviewer_notes": "auto-generated from corpus for staging evaluation; awaiting manual audit"
+    }
+  ]
+}
