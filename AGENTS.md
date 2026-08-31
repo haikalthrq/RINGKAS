@@ -196,13 +196,12 @@ Scope:
 - Evaluation dataset
 - RAGAS evaluation harness
 - LLM-as-judge evaluation support
-- Manual audit template 20%
+- Audit evaluasi 100% automated.
 - Retrieval metrics jika ground truth tersedia
 
 Tidak boleh:
 
-- Mengklaim sistem akurat menyeluruh dari automated metric saja.
-- Menghapus manual audit 20%.
+- Mengklaim sistem akurat menyeluruh dari 1 automated metric saja.
 - Mengabaikan citation accuracy.
 - Mengabaikan angka, periode, wilayah, satuan, dan definisi.
 
@@ -277,8 +276,8 @@ Tidak boleh:
 2. RAGAS digunakan sebagai evaluasi otomatis awal.
 3. LLM-as-judge boleh digunakan sebagai bantuan.
 4. Manual evaluation dibuat seminimal mungkin, tetapi tidak boleh dihapus.
-5. Manual audit minimal 20% dari dataset evaluasi awal.
-6. Dataset evaluasi awal berisi 100 pertanyaan.
+5. Audit 100% otomatis dari dataset evaluasi.
+6. Dataset evaluasi awal berisi 100 pertanyaan (expandable).
 7. Pertanyaan evaluasi dibuat dengan bantuan LLM dan diverifikasi manual.
 8. Evidence chunk/reference source wajib ditandai dari dokumen BPS.
 9. Hasil evaluasi disebut baseline awal MVP.
