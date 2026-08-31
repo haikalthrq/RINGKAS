@@ -10,6 +10,7 @@ from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, model_validator
 
 DATASET_PATH = Path(__file__).resolve().parents[1] / "evaluation_dataset.json"
 DATASET_CAPACITY = 100
+DATASET_CAPACITY_EXPANDED = 1000
 APPROVED_QUESTION_TYPES = frozenset(
     {"definition", "number", "period", "region", "methodology", "document_search"}
 )
@@ -35,7 +36,7 @@ class EvidenceReference(BaseModel):
 class EvaluationRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    question_id: str = Field(pattern=r"^q-[0-9]{3}$")
+    question_id: str = Field(pattern=r"^q-[0-9]{3,4}$")
     question_text: str = ""
     question_type: QuestionType = "pending"
     topic: str = ""
@@ -82,14 +83,17 @@ class EvaluationDataset(BaseModel):
 
     @model_validator(mode="after")
     def validate_capacity_and_ids(self) -> EvaluationDataset:
-        if self.capacity != DATASET_CAPACITY or len(self.records) != self.capacity:
-            raise ValueError(f"evaluation dataset must contain exactly {DATASET_CAPACITY} records")
+        allowed_capacities = {DATASET_CAPACITY, DATASET_CAPACITY_EXPANDED}
+        if self.capacity not in allowed_capacities or len(self.records) != self.capacity:
+            raise ValueError(f"evaluation dataset must contain exactly {self.capacity} records (allowed: {sorted(allowed_capacities)})")
+        width = 4 if self.capacity >= 1000 else 3
+        expected_ids = [f"q-{index:0{width}d}" for index in range(1, self.capacity + 1)]
         ids = [record.question_id for record in self.records]
-        if ids != [f"q-{index:03d}" for index in range(1, DATASET_CAPACITY + 1)]:
-            raise ValueError("evaluation question IDs must be stable and contiguous from q-001 to q-100")
+        if ids != expected_ids:
+            raise ValueError(f"evaluation question IDs must be stable and contiguous from {expected_ids[0]} to {expected_ids[-1]}")
         if self.dataset_status == "ready":
             if any(record.verification_status != "verified" for record in self.records):
-                raise ValueError("ready evaluation datasets require all 100 records to be verified")
+                raise ValueError(f"ready evaluation datasets require all {self.capacity} records to be verified")
             if not APPROVED_QUESTION_TYPES.issubset(record.question_type for record in self.records):
                 raise ValueError("ready evaluation datasets must cover every approved question type")
         return self
