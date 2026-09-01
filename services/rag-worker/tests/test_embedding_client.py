@@ -42,6 +42,18 @@ def cloudflare_settings_with_secondary() -> CloudflareWorkersAiEmbeddingSettings
     )
 
 
+def cloudflare_settings_with_tertiary() -> CloudflareWorkersAiEmbeddingSettings:
+    return CloudflareWorkersAiEmbeddingSettings(
+        "primary-account",
+        SecretStr("primary-token"),
+        "@cf/qwen/qwen3-embedding-0.6b",
+        secondary_account_id="secondary-account",
+        secondary_api_token=SecretStr("secondary-token"),
+        tertiary_account_id="tertiary-account",
+        tertiary_api_token=SecretStr("tertiary-token"),
+    )
+
+
 def json_handler(payload: object, seen: list[httpx.Request] | None = None):
     def handler(request: httpx.Request) -> httpx.Response:
         if seen is not None:
@@ -106,6 +118,23 @@ def test_cloudflare_same_model_secondary_account_handles_primary_rate_limit() ->
     assert "primary-account" in str(seen[0].url)
     assert "secondary-account" in str(seen[1].url)
     assert seen[1].headers["authorization"] == "Bearer secondary-token"
+
+
+def test_cloudflare_tertiary_account_handles_primary_and_secondary_rate_limits() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        if "tertiary-account" not in str(request.url):
+            return httpx.Response(429, request=request)
+        return httpx.Response(200, json={"success": True, "result": {"data": [[1.0]]}, "model": "@cf/qwen/qwen3-embedding-0.6b"}, request=request)
+
+    with CloudflareWorkersAiEmbeddingClient(cloudflare_settings_with_tertiary(), transport=httpx.MockTransport(handler)) as client:
+        result = client.embed(["text"])
+
+    assert result.dimension == 1
+    assert ["primary-account" in str(seen[0].url), "secondary-account" in str(seen[1].url), "tertiary-account" in str(seen[2].url)] == [True, True, True]
+    assert seen[2].headers["authorization"] == "Bearer tertiary-token"
 
 
 def test_cloudflare_internal_batching_preserves_order_and_indexes() -> None:

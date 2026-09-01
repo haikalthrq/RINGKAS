@@ -118,6 +118,8 @@ class CloudflareWorkersAiEmbeddingSettings:
     read_timeout_seconds: float = 60.0
     secondary_account_id: str | None = None
     secondary_api_token: SecretStr | None = field(default=None, repr=False)
+    tertiary_account_id: str | None = None
+    tertiary_api_token: SecretStr | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         _validate_account_id(self.account_id, "CLOUDFLARE_ACCOUNT_ID")
@@ -133,6 +135,14 @@ class CloudflareWorkersAiEmbeddingSettings:
                 raise_sanitized(EmbeddingConfigurationError("secondary Cloudflare account must differ from primary"))
             if not isinstance(self.secondary_api_token, SecretStr) or not self.secondary_api_token.get_secret_value().strip():
                 raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN is required"))
+        if (self.tertiary_account_id is None) != (self.tertiary_api_token is None):
+            raise_sanitized(EmbeddingConfigurationError("tertiary Cloudflare account configuration is incomplete"))
+        if self.tertiary_account_id is not None:
+            _validate_account_id(self.tertiary_account_id, "CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_ACCOUNT_ID")
+            if self.tertiary_account_id in {self.account_id, self.secondary_account_id}:
+                raise_sanitized(EmbeddingConfigurationError("tertiary Cloudflare account must differ from primary and secondary"))
+            if not isinstance(self.tertiary_api_token, SecretStr) or not self.tertiary_api_token.get_secret_value().strip():
+                raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_API_TOKEN is required"))
         object.__setattr__(self, "connect_timeout_seconds", _validated_timeout(self.connect_timeout_seconds, "connect timeout"))
         object.__setattr__(self, "read_timeout_seconds", _validated_timeout(self.read_timeout_seconds, "read timeout"))
 
@@ -147,6 +157,8 @@ class CloudflareWorkersAiEmbeddingSettings:
             read = float(os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_READ_TIMEOUT_SECONDS", "60"))
             secondary_account_id = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID") or None
             secondary_token = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN") or None
+            tertiary_account_id = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_ACCOUNT_ID") or None
+            tertiary_token = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_API_TOKEN") or None
         except (OverflowError, TypeError, ValueError):
             conversion_failed = True
             connect = read = 0.0
@@ -160,6 +172,8 @@ class CloudflareWorkersAiEmbeddingSettings:
             read,
             secondary_account_id,
             SecretStr(secondary_token) if secondary_token is not None else None,
+            tertiary_account_id,
+            SecretStr(tertiary_token) if tertiary_token is not None else None,
         )
 
     def secondary_settings(self) -> CloudflareWorkersAiEmbeddingSettings | None:
@@ -168,6 +182,17 @@ class CloudflareWorkersAiEmbeddingSettings:
         return type(self)(
             self.secondary_account_id,
             self.secondary_api_token,
+            self.model,
+            self.connect_timeout_seconds,
+            self.read_timeout_seconds,
+        )
+
+    def tertiary_settings(self) -> CloudflareWorkersAiEmbeddingSettings | None:
+        if self.tertiary_account_id is None or self.tertiary_api_token is None:
+            return None
+        return type(self)(
+            self.tertiary_account_id,
+            self.tertiary_api_token,
             self.model,
             self.connect_timeout_seconds,
             self.read_timeout_seconds,

@@ -88,21 +88,12 @@ def verify_live_dimension_from_environment() -> VerifiedEmbeddingDimension:
     expected_dimension = _expected_dimension_from_environment()
     try:
         configured = CloudflareWorkersAiEmbeddingSettings.from_environment()
-        primary_settings = CloudflareWorkersAiEmbeddingSettings(
-            configured.account_id,
-            configured.api_token,
-            configured.model,
-            configured.connect_timeout_seconds,
-            configured.read_timeout_seconds,
-        )
     except EmbeddingConfigurationError:
         _fail("Cloudflare embedding dimension verification is unavailable")
-    with CloudflareWorkersAiEmbeddingClient(primary_settings) as primary_client:
+    # Retain the same-model secondary account for primary verification failures,
+    # including a primary-account rate limit during resumable reindex startup.
+    with CloudflareWorkersAiEmbeddingClient(configured) as primary_client:
         verified = verify_embedding_dimension(primary_client, expected_dimension)
-    secondary_settings = configured.secondary_settings()
-    if secondary_settings is not None:
-        with CloudflareWorkersAiEmbeddingClient(secondary_settings) as secondary_client:
-            verify_embedding_dimension(secondary_client, verified.dimension)
     return verified
 
 

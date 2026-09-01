@@ -213,14 +213,23 @@ class CloudflareWorkersAiEmbeddingClient:
         self._endpoint = f"{self._API_ROOT}/{settings.account_id}/ai/run/{settings.model}"
         timeout = httpx.Timeout(settings.read_timeout_seconds, connect=settings.connect_timeout_seconds)
         self._client = httpx.Client(timeout=timeout, transport=transport)
+        self._embedding_targets = [(self._client, self._endpoint, settings.api_token)]
         secondary_settings = settings.secondary_settings()
-        self._secondary_client: httpx.Client | None = None
-        self._secondary_endpoint: str | None = None
-        self._secondary_api_token = None
         if secondary_settings is not None:
-            self._secondary_client = httpx.Client(timeout=timeout, transport=transport)
-            self._secondary_endpoint = f"{self._API_ROOT}/{secondary_settings.account_id}/ai/run/{secondary_settings.model}"
-            self._secondary_api_token = secondary_settings.api_token
+            secondary_client = httpx.Client(timeout=timeout, transport=transport)
+            self._embedding_targets.append((
+                secondary_client,
+                f"{self._API_ROOT}/{secondary_settings.account_id}/ai/run/{secondary_settings.model}",
+                secondary_settings.api_token,
+            ))
+        tertiary_settings = settings.tertiary_settings()
+        if tertiary_settings is not None:
+            tertiary_client = httpx.Client(timeout=timeout, transport=transport)
+            self._embedding_targets.append((
+                tertiary_client,
+                f"{self._API_ROOT}/{tertiary_settings.account_id}/ai/run/{tertiary_settings.model}",
+                tertiary_settings.api_token,
+            ))
         self._closed = False
 
     @classmethod
@@ -235,9 +244,8 @@ class CloudflareWorkersAiEmbeddingClient:
 
     def close(self) -> None:
         try:
-            self._client.close()
-            if self._secondary_client is not None:
-                self._secondary_client.close()
+            for client, _, _ in self._embedding_targets:
+                client.close()
         except Exception:
             raise_sanitized(EmbeddingTransportError("Cloudflare embedding client close failed"))
         self._closed = True
@@ -255,20 +263,23 @@ class CloudflareWorkersAiEmbeddingClient:
 
         vectors: list[EmbeddingVector] = []
         dimension: int | None = None
-        active_client = self._client
-        active_endpoint = self._endpoint
-        active_api_token = self._settings.api_token
+        active_target = 0
         for start in range(0, len(values), self.INTERNAL_BATCH_SIZE):
             batch = values[start : start + self.INTERNAL_BATCH_SIZE]
-            try:
-                result = self._embed_batch(batch, active_client, active_endpoint, active_api_token)
-            except self._FAILOVER_ERRORS:
-                if active_client is not self._client or self._secondary_client is None or self._secondary_endpoint is None:
-                    raise
-                active_client = self._secondary_client
-                active_endpoint = self._secondary_endpoint
-                active_api_token = self._secondary_api_token
-                result = self._embed_batch(batch, active_client, active_endpoint, active_api_token)
+            result = None
+            last_error = None
+            for target_index in range(active_target, len(self._embedding_targets)):
+                active_client, active_endpoint, active_api_token = self._embedding_targets[target_index]
+                try:
+                    result = self._embed_batch(batch, active_client, active_endpoint, active_api_token)
+                except self._FAILOVER_ERRORS as error:
+                    last_error = error
+                    continue
+                active_target = target_index
+                break
+            if result is None:
+                assert last_error is not None
+                raise last_error
             if dimension is None:
                 dimension = result.dimension
             elif result.dimension != dimension:
