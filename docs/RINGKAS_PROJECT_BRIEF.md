@@ -517,7 +517,7 @@ Generation:
 
 - primary: NVIDIA NIM;
 - fallback: Cloudflare Workers AI;
-- OpenCode Zen FREE (mis. DeepSeek V4 Flash Free): diperbolehkan hanya jika eksplisit diminta (on-request, on-demand), bukan primary atau fallback otomatis.
+- OpenCode Zen FREE (`mimo-v2.5-free` dan `muse-spark-1.2`, serta model FREE lain yang disetujui): diperbolehkan hanya jika eksplisit diminta (on-request, on-demand), bukan primary atau fallback otomatis.
 
 Embedding target yang disetujui:
 
@@ -545,7 +545,7 @@ Jika embedding provider gagal:
 
 Catatan:
 
-- Model generation MVP dikunci berurutan: NVIDIA `nvidia/nemotron-3-nano-30b-a3b` primary, Cloudflare `@cf/meta/llama-3.3-70b-instruct-fp8-fast` cross-provider fallback, NVIDIA `mistralai/mistral-small-4-119b-2603` dan `nvidia/nemotron-mini-4b-instruct` sebagai reserve fallback, serta Cloudflare `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai eksperimental. Model FREE dari OpenCode Zen (mis. DeepSeek V4 Flash Free) tidak termasuk urutan terkunci dan hanya diperbolehkan jika eksplisit diminta.
+- Model generation MVP dikunci berurutan: NVIDIA `nvidia/nemotron-3-nano-30b-a3b` primary, Cloudflare `@cf/meta/llama-3.3-70b-instruct-fp8-fast` cross-provider fallback, NVIDIA `mistralai/mistral-small-4-119b-2603` dan `nvidia/nemotron-mini-4b-instruct` sebagai reserve fallback, serta Cloudflare `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai eksperimental. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk urutan terkunci dan hanya diperbolehkan jika eksplisit diminta.
 - Dimensi output `1024` untuk model embedding Cloudflare yang disetujui telah diverifikasi live.
 - Rate limit, terms, dan availability provider tetap harus diverifikasi untuk deployment.
 

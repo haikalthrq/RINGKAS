@@ -13,7 +13,8 @@ public enum GenerationRole
 public enum GenerationProvider
 {
     NvidiaNim,
-    CloudflareWorkersAi
+    CloudflareWorkersAi,
+    OpenCodeZen
 }
 
 public sealed record GenerationMessage(GenerationRole Role, string Content)
@@ -110,6 +111,14 @@ public interface INvidiaNimGenerationClient : IGenerationClient;
 
 public interface ICloudflareWorkersAiGenerationClient : IGenerationClient;
 
+public interface IOpenCodeZenGenerationClient
+{
+    Task<GenerationResult> GenerateWithModelAsync(
+        GenerationRequest request,
+        string model,
+        CancellationToken cancellationToken = default);
+}
+
 public static class GenerationServiceCollectionExtensions
 {
     public static IServiceCollection AddGenerationClients(this IServiceCollection services)
@@ -117,6 +126,8 @@ public static class GenerationServiceCollectionExtensions
         services.AddHttpClient<INvidiaNimGenerationClient, NvidiaNimGenerationClient>(client =>
             client.Timeout = Timeout.InfiniteTimeSpan);
         services.AddHttpClient<ICloudflareWorkersAiGenerationClient, CloudflareWorkersAiGenerationClient>(client =>
+            client.Timeout = Timeout.InfiniteTimeSpan);
+        services.AddHttpClient<IOpenCodeZenGenerationClient, OpenCodeZenGenerationClient>(client =>
             client.Timeout = Timeout.InfiniteTimeSpan);
         services.AddTransient<IGenerationClient, FailoverGenerationClient>();
         return services;

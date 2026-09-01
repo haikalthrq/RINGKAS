@@ -233,7 +233,7 @@ public sealed class RingkasDbContext(DbContextOptions<RingkasDbContext> options)
                     "citations_json IS NULL OR jsonb_typeof(citations_json) = 'array'");
                 table.HasCheckConstraint(
                     "CK_chat_messages_provider",
-                    "provider IS NULL OR provider IN ('nvidia_nim', 'cloudflare_workers_ai')");
+                    "provider IS NULL OR provider IN ('nvidia_nim', 'cloudflare_workers_ai', 'opencode_zen')");
             });
 
             entity.HasKey(message => message.Id);

@@ -24,4 +24,5 @@ public static class ChatMessageProviders
 {
     public const string NvidiaNim = "nvidia_nim";
     public const string CloudflareWorkersAi = "cloudflare_workers_ai";
+    public const string OpenCodeZen = "opencode_zen";
 }

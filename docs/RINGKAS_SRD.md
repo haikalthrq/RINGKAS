@@ -476,11 +476,11 @@ Jika generation primary gagal, sistem boleh mencoba Cloudflare Workers AI sebaga
 
 #### FR-GEN-003 Experimental Provider
 
-Model FREE dari OpenCode Zen (termasuk DeepSeek V4 Flash Free) diperbolehkan sebagai opsi on-demand, hanya jika eksplisit diminta. Tidak menjadi primary atau fallback otomatis. Jika digunakan, tetap wajib melewati citation/grounding guard.
+Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` diperbolehkan sebagai opsi on-demand, hanya jika eksplisit diminta. Tidak menjadi primary atau fallback otomatis. Jika digunakan, tetap wajib melewati citation/grounding guard.
 
 #### FR-GEN-004 Locked MVP Models
 
-MVP mengunci urutan generation berikut: `nvidia/nemotron-3-nano-30b-a3b` sebagai primary, `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai cross-provider fallback, `mistralai/mistral-small-4-119b-2603` sebagai same-provider fallback, `nvidia/nemotron-mini-4b-instruct` sebagai fallback ringan, dan `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai kandidat eksperimental terakhir. Model FREE dari OpenCode Zen (mis. DeepSeek V4 Flash Free) tidak termasuk urutan terkunci dan hanya boleh dipakai jika eksplisit diminta. Semua model tetap harus melewati citation/grounding guard.
+MVP mengunci urutan generation berikut: `nvidia/nemotron-3-nano-30b-a3b` sebagai primary, `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai cross-provider fallback, `mistralai/mistral-small-4-119b-2603` sebagai same-provider fallback, `nvidia/nemotron-mini-4b-instruct` sebagai fallback ringan, dan `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai kandidat eksperimental terakhir. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk urutan terkunci dan hanya boleh dipakai jika eksplisit diminta. Semua model tetap harus melewati citation/grounding guard.
 
 #### FR-GEN-005 Context Bound
 
@@ -766,7 +766,7 @@ Digunakan untuk login OAuth pada MVP.
 
 ### EI-005 OpenCode Zen
 
-Model FREE dari OpenCode Zen (mis. DeepSeek V4 Flash Free) diperbolehkan hanya jika eksplisit diminta (on-request) sebagai opsi on-demand. Bukan provider primary dan bukan fallback otomatis. Jika digunakan, tetap tunduk pada citation/grounding guard.
+Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` diperbolehkan hanya jika eksplisit diminta (on-request) sebagai opsi on-demand. Bukan provider primary dan bukan fallback otomatis. Jika digunakan, tetap tunduk pada citation/grounding guard.
 
 ---
 

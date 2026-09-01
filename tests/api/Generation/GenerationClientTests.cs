@@ -55,6 +55,68 @@ public sealed class GenerationClientTests
         Assert.Equal(5, result.Usage!.TotalTokens);
     }
 
+    [Fact]
+    public async Task OpenCodeZenMiMoUsesChatCompletionsEndpoint()
+    {
+        HttpRequestMessage? captured = null;
+        string? capturedBody = null;
+        var client = new OpenCodeZenGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
+        {
+            captured = request;
+            capturedBody = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return Response(HttpStatusCode.OK, """{"choices":[{"message":{"content":"MiMo answer [1]."}}],"usage":{"prompt_tokens":2,"completion_tokens":3,"total_tokens":5}}""");
+        })), Configuration());
+
+        var result = await client.GenerateWithModelAsync(Request("grounded prompt"), OpenCodeZenModels.MiMoV25Free);
+
+        Assert.Equal("https://opencode.ai/zen/v1/chat/completions", captured!.RequestUri!.ToString());
+        Assert.Equal("zen-secret", captured.Headers.Authorization!.Parameter);
+        using var json = JsonDocument.Parse(capturedBody!);
+        Assert.Equal(OpenCodeZenModels.MiMoV25Free, json.RootElement.GetProperty("model").GetString());
+        Assert.Equal("user", json.RootElement.GetProperty("messages")[0].GetProperty("role").GetString());
+        Assert.Equal(GenerationProvider.OpenCodeZen, result.Provider);
+        Assert.Equal(5, result.Usage!.TotalTokens);
+    }
+
+    [Fact]
+    public async Task OpenCodeZenMuseUsesResponsesEndpointAndParsesOutput()
+    {
+        HttpRequestMessage? captured = null;
+        string? capturedBody = null;
+        var client = new OpenCodeZenGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
+        {
+            captured = request;
+            capturedBody = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return Response(HttpStatusCode.OK, """{"output":[{"type":"message","content":[{"type":"output_text","text":"Muse answer [1]."}]}],"usage":{"input_tokens":4,"output_tokens":6,"total_tokens":10}}""");
+        })), Configuration());
+
+        var result = await client.GenerateWithModelAsync(Request("grounded prompt"), OpenCodeZenModels.MuseSpark12);
+
+        Assert.Equal("https://opencode.ai/zen/v1/responses", captured!.RequestUri!.ToString());
+        using var json = JsonDocument.Parse(capturedBody!);
+        Assert.Equal(OpenCodeZenModels.MuseSpark12, json.RootElement.GetProperty("model").GetString());
+        Assert.Equal("user", json.RootElement.GetProperty("input")[0].GetProperty("role").GetString());
+        Assert.Equal("Muse answer [1].", result.Text);
+        Assert.Equal(GenerationProvider.OpenCodeZen, result.Provider);
+        Assert.Equal(10, result.Usage!.TotalTokens);
+    }
+
+    [Fact]
+    public async Task OpenCodeZenRejectsUnsupportedModelWithoutHttpInvocation()
+    {
+        var calls = 0;
+        var client = new OpenCodeZenGenerationClient(new HttpClient(new DelegateHandler((_, _) =>
+        {
+            calls++;
+            return Response(HttpStatusCode.OK, "{}");
+        })), Configuration());
+
+        var error = await Assert.ThrowsAsync<GenerationException>(() => client.GenerateWithModelAsync(Request(), "mimo-v2.5-free-other"));
+
+        Assert.Equal(GenerationFailureCategory.InvalidConfiguration, error.Category);
+        Assert.Equal(0, calls);
+    }
+
     [Theory]
     [InlineData(400, GenerationFailureCategory.ProviderRejection)]
     [InlineData(401, GenerationFailureCategory.AuthenticationOrAuthorization)]
@@ -490,7 +552,11 @@ public sealed class GenerationClientTests
             ["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"] = includeCloudflare ? cloudflareTimeout ?? "10" : null,
             ["NVIDIA_NIM_GENERATION_SECONDARY_MODEL"] = secondaryModel,
             ["NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL"] = lightweightModel,
-            ["CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL"] = experimentalModel
+            ["CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL"] = experimentalModel,
+            ["OPENCODE_ZEN_API_KEY"] = "zen-secret",
+            ["OPENCODE_ZEN_BASE_URL"] = "https://opencode.ai/zen/v1",
+            ["OPENCODE_ZEN_ALLOWED_HOSTS"] = "opencode.ai",
+            ["OPENCODE_ZEN_TIMEOUT_SECONDS"] = "10"
         }).Build();
 
     private static Task<HttpResponseMessage> Response(HttpStatusCode statusCode, string body) =>

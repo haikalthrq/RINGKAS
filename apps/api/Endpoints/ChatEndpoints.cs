@@ -69,7 +69,7 @@ public static partial class ChatEndpoints
         try
         {
             var question = request.Message.Trim();
-            var response = await chat.AnswerAsync(question, cancellationToken);
+            var response = await chat.AnswerAsync(question, request.GenerationModel, cancellationToken);
             if (userId is null)
             {
                 return Results.Ok(response);
@@ -229,13 +229,16 @@ public static partial class ChatEndpoints
     }
 
     internal static string? ApprovedProvider(string? provider) => provider is
-        ChatMessageProviders.NvidiaNim or ChatMessageProviders.CloudflareWorkersAi ? provider : null;
+        ChatMessageProviders.NvidiaNim or ChatMessageProviders.CloudflareWorkersAi or ChatMessageProviders.OpenCodeZen ? provider : null;
 
     [GeneratedRegex(@"\[([0-9]+)\]", RegexOptions.CultureInvariant)]
     internal static partial Regex CitationLabelPattern();
 }
 
-public sealed record ChatRequest(string Message, [property: JsonPropertyName("session_id")] Guid? SessionId)
+public sealed record ChatRequest(
+    string Message,
+    [property: JsonPropertyName("session_id")] Guid? SessionId,
+    [property: JsonPropertyName("generation_model")] string? GenerationModel = null)
 {
     public Dictionary<string, string[]> Validate()
     {
@@ -243,6 +246,10 @@ public sealed record ChatRequest(string Message, [property: JsonPropertyName("se
         if (string.IsNullOrWhiteSpace(Message) || Message.Length > 2_000)
         {
             errors["message"] = ["Message must be nonblank and no longer than 2000 characters."];
+        }
+        if (GenerationModel is not null && !OpenCodeZenModels.IsSupported(GenerationModel))
+        {
+            errors["generation_model"] = ["Generation model must be a supported on-demand OpenCode Zen FREE model."];
         }
         return errors;
     }
@@ -288,12 +295,18 @@ public sealed record ChatSessionDetail(
     [property: JsonPropertyName("updated_at")] DateTime UpdatedAt,
     IReadOnlyList<ChatHistoryMessage> Messages);
 
-public sealed class ChatService(IInternalRetrievalClient retrieval, IGenerationClient generation)
+public sealed class ChatService(
+    IInternalRetrievalClient retrieval,
+    IGenerationClient generation,
+    IOpenCodeZenGenerationClient? openCodeZen = null)
 {
     private const string Refusal = "Sumber yang tersedia belum cukup relevan untuk memberikan jawaban substantif. Silakan perjelas pertanyaan atau coba kembali setelah sumber yang sesuai tersedia.";
     private const string Limited = "Keterbatasan: bukti sumber yang ditemukan masih terbatas. ";
 
-    public async Task<ChatResponse> AnswerAsync(string question, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> AnswerAsync(
+        string question,
+        string? requestGenerationModel = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await retrieval.RetrieveAsync(question, cancellationToken);
         var citations = result.Citations.Select(citation => new ChatCitation(
@@ -304,13 +317,24 @@ public sealed class ChatService(IInternalRetrievalClient retrieval, IGenerationC
             return new ChatResponse(Refusal, citations, result.SourceSufficiency, null);
         }
 
-        var generated = await generation.GenerateAsync(GroundedPromptTemplate.Create(question, result.Citations.Select(citation => citation.Snippet)), cancellationToken);
+        var groundedRequest = GroundedPromptTemplate.Create(question, result.Citations.Select(citation => citation.Snippet));
+        var generated = requestGenerationModel is null
+            ? await generation.GenerateAsync(groundedRequest, cancellationToken)
+            : openCodeZen is null
+                ? throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "OpenCode Zen generation is not configured.")
+                : await openCodeZen.GenerateWithModelAsync(groundedRequest, requestGenerationModel, cancellationToken);
         if (!HasValidCitationsOnEveryLine(generated.Text, citations.Length))
         {
             return new ChatResponse(Refusal, citations, result.SourceSufficiency, null);
         }
         var answer = result.RequiresLimitation ? Limited + generated.Text.Trim() : generated.Text.Trim();
-        var provider = generated.Provider == GenerationProvider.NvidiaNim ? "nvidia_nim" : "cloudflare_workers_ai";
+        var provider = generated.Provider switch
+        {
+            GenerationProvider.NvidiaNim => ChatMessageProviders.NvidiaNim,
+            GenerationProvider.CloudflareWorkersAi => ChatMessageProviders.CloudflareWorkersAi,
+            GenerationProvider.OpenCodeZen => ChatMessageProviders.OpenCodeZen,
+            _ => null
+        };
         return new ChatResponse(answer, citations, result.SourceSufficiency, provider);
     }
 
