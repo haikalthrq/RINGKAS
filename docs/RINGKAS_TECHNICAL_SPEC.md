@@ -1017,7 +1017,7 @@ However, the system must still have a sufficiency rule:
 |---|---|
 | Primary generation | NVIDIA NIM |
 | Fallback generation | Cloudflare Workers AI |
-| Experimental only | OpenCode Zen / DeepSeek V4 Flash Free |
+| On-request only (FREE) | OpenCode Zen FREE models (mis. DeepSeek V4 Flash Free) — hanya jika eksplisit diminta, bukan fallback otomatis |
 
 The MVP locks generation attempts in this order:
 
@@ -1029,7 +1029,7 @@ The MVP locks generation attempts in this order:
 
 The first model is the NVIDIA NIM primary, the second is the Cloudflare
 cross-provider fallback, the next two are NVIDIA reserve models, and the last is
-an experimental Cloudflare reserve. All attempts remain subject to the grounding
+an experimental Cloudflare reserve. Model FREE dari OpenCode Zen tidak termasuk dalam urutan terkunci ini dan hanya boleh dipakai jika eksplisit diminta (on-request). All attempts remain subject to the grounding
 and citation guard.
 
 ### 20.2 Prompt Rules
