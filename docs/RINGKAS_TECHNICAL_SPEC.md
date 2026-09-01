@@ -893,8 +893,8 @@ Each chunk must include:
 
 - Provider: Cloudflare Workers AI only.
 - Model name: `@cf/qwen/qwen3-embedding-0.6b`.
-- Optional secondary Cloudflare account may be used for account-level failover.
-- Secondary account must use the exact same model ID and request/response
+- Optional secondary and tertiary Cloudflare accounts may be used for account-level failover.
+- Each failover account must use the exact same model ID and request/response
   contract as the primary account.
 - Each enabled account must pass independent live dimension verification.
 - No fallback to a different embedding model or provider.
@@ -1368,7 +1368,7 @@ Note:
 |---|---|---|
 | Domain and HTTPS | TBD | Caddy recommended if no preference |
 | NVIDIA NIM generation model | Locked | `nvidia/nemotron-3-nano-30b-a3b`; hosted preview availability verified |
-| Cloudflare Workers AI embedding secondary account | Approved contract, implementation TBD | Optional account-level failover using the exact same `@cf/qwen/qwen3-embedding-0.6b` model and independently verified contract/dimension |
+| Cloudflare Workers AI embedding secondary/tertiary accounts | Approved contract, implementation complete | Optional ordered account-level failover using the exact same `@cf/qwen/qwen3-embedding-0.6b` model and independently verified contract/dimension |
 | NVIDIA NIM secondary generation model | Locked reserve | `mistralai/mistral-small-4-119b-2603`; ordered after the Cloudflare fallback |
 | NVIDIA NIM lightweight generation model | Locked reserve | `nvidia/nemotron-mini-4b-instruct`; ordered after the NIM secondary model |
 | Cloudflare Workers AI embedding model | Approved and dimension-locked | `@cf/qwen/qwen3-embedding-0.6b`; live-verified vector dimension `1024` |
@@ -1394,7 +1394,7 @@ AI agents working on RINGKAS must obey:
 5. OCR must not be implemented in MVP.
 6. Docling must not be used as production parser in MVP.
 7. PyMuPDF is the MVP parser.
-8. Embedding provider is Cloudflare Workers AI only with the approved Qwen3 model; an explicitly configured second Cloudflare account may provide same-model account failover after independent verification.
+8. Embedding provider is Cloudflare Workers AI only with the approved Qwen3 model; explicitly configured secondary and tertiary Cloudflare accounts may provide ordered same-model account failover after independent verification.
 9. Do not add different-model/provider embedding fallback automatically; provider/model/dimension changes require a new collection and full reindex. Account changes with an identical verified model contract may reuse the collection.
 10. All substantive answers require citation.
 11. Do not expose retrieval score as answer accuracy.

@@ -93,8 +93,8 @@ REGISTERED_DAILY_QUOTA
 ```
 
 The accepted live embedding dimension is `1024` for the approved
-`@cf/qwen/qwen3-embedding-0.6b` model. A secondary Cloudflare account may be
-used only with the exact same model and independently verified contract; a
+`@cf/qwen/qwen3-embedding-0.6b` model. Secondary and tertiary Cloudflare accounts
+may be used only with the exact same model and independently verified contract; a
 different model requires a new collection and full reindex. BPS authentication
 uses the documented `key` query parameter; never record its value.
 

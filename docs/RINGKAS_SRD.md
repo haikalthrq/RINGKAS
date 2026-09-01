@@ -361,20 +361,20 @@ Setiap chunk wajib memiliki metadata:
 
 Embedding menggunakan Cloudflare Workers AI dengan model
 `@cf/qwen/qwen3-embedding-0.6b` pada target MVP. Sistem boleh memiliki satu
-akun Cloudflare utama dan satu akun Cloudflare sekunder opsional untuk
+akun Cloudflare utama serta akun secondary dan tertiary opsional untuk
 account-level failover.
 
 #### FR-EMB-002 No Different-Model Embedding Fallback
 
 Tidak ada fallback otomatis ke embedding model atau provider yang berbeda.
-Account-level failover ke akun Cloudflare kedua diperbolehkan hanya jika model
-ID, kontrak request, dan dimensi output sama serta sudah diverifikasi.
+Account-level failover ke akun Cloudflare secondary atau tertiary diperbolehkan
+hanya jika model ID, kontrak request, dan dimensi output sama serta sudah diverifikasi.
 
 #### FR-EMB-003 Embedding Failure
 
-Jika akun Cloudflare utama gagal, sistem boleh mencoba akun Cloudflare sekunder
-yang dikonfigurasi dan sudah diverifikasi. Jika kedua akun gagal, sistem
-menampilkan error dan tidak otomatis memakai embedding model/provider berbeda.
+Jika akun Cloudflare utama gagal, sistem boleh mencoba akun Cloudflare secondary
+dan lalu tertiary yang dikonfigurasi dan sudah diverifikasi. Jika semua akun
+gagal, sistem menampilkan error dan tidak otomatis memakai embedding model/provider berbeda.
 
 #### FR-EMB-005 Versioned Collection and Dimension Verification
 

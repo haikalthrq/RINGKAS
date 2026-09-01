@@ -191,7 +191,7 @@ Tidak boleh:
 
 - Menambahkan OCR ke MVP.
 - Menjadikan Docling parser production.
-- Menggunakan embedding provider/model berbeda sebagai fallback otomatis. Account-level failover ke akun Cloudflare Workers AI kedua diperbolehkan hanya jika model ID, kontrak request, dan dimensi output sama serta sudah diverifikasi; failover ini wajib eksplisit di config contract.
+- Menggunakan embedding provider/model berbeda sebagai fallback otomatis. Account-level failover ke akun Cloudflare Workers AI secondary atau tertiary diperbolehkan hanya jika model ID, kontrak request, dan dimensi output sama serta sudah diverifikasi; failover ini wajib eksplisit di config contract.
 - Mengubah corpus scope tanpa approval.
 - Membuat angka/statistik sendiri di output.
 
@@ -204,7 +204,7 @@ Scope:
 - Evaluation dataset
 - RAGAS evaluation harness
 - LLM-as-judge evaluation support
-- Manual audit template 20%
+- Audit evaluasi 100% automated.
 - Retrieval metrics jika ground truth tersedia
 
 Tidak boleh:
