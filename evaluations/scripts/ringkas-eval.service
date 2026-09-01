@@ -1,0 +1,15 @@
+[Unit]
+Description=RINGKAS Evaluation Pipeline Runner
+After=docker.service
+
+[Service]
+Type=oneshot
+User=haikalthoriqa
+WorkingDirectory=/home/haikalthoriqa/RINGKAS
+ExecStart=/usr/bin/bash /home/haikalthoriqa/RINGKAS/evaluations/scripts/run_all.sh
+StandardOutput=append:/home/haikalthoriqa/RINGKAS/evaluations/pipeline.log
+StandardError=append:/home/haikalthoriqa/RINGKAS/evaluations/pipeline.log
+Environment=HOME=/home/haikalthoriqa
+
+[Install]
+WantedBy=multi-user.target
