@@ -473,6 +473,9 @@ Generation primary menggunakan Cloudflare Workers AI dengan model
 Jika akun Cloudflare primary rate-limited atau gagal, sistem otomatis mencoba
 akun Cloudflare secondary lalu tertiary yang dikonfigurasi, memakai model dan
 kontrak request/response yang sama.
+Konfigurasi akun menggunakan nama canonical yang sama untuk embedding dan
+generation: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_SECONDARY_ACCOUNT_ID`, dan
+`CLOUDFLARE_TERTIARY_ACCOUNT_ID` beserta token pasangannya.
 
 #### FR-GEN-002 Fallback Provider
 

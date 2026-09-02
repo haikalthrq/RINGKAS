@@ -200,6 +200,7 @@ class CloudflareWorkersAiEmbeddingClient:
         EmbeddingAuthenticationError,
         EmbeddingProviderError,
         EmbeddingRateLimitError,
+        EmbeddingResponseError,
         EmbeddingTimeoutError,
         EmbeddingTransportError,
     )
@@ -210,26 +211,9 @@ class CloudflareWorkersAiEmbeddingClient:
         if settings.model != "@cf/qwen/qwen3-embedding-0.6b":
             raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL is invalid"))
         self._settings = settings
-        self._endpoint = f"{self._API_ROOT}/{settings.account_id}/ai/run/{settings.model}"
+        self._account_pool = settings.account_pool
         timeout = httpx.Timeout(settings.read_timeout_seconds, connect=settings.connect_timeout_seconds)
         self._client = httpx.Client(timeout=timeout, transport=transport)
-        self._embedding_targets = [(self._client, self._endpoint, settings.api_token)]
-        secondary_settings = settings.secondary_settings()
-        if secondary_settings is not None:
-            secondary_client = httpx.Client(timeout=timeout, transport=transport)
-            self._embedding_targets.append((
-                secondary_client,
-                f"{self._API_ROOT}/{secondary_settings.account_id}/ai/run/{secondary_settings.model}",
-                secondary_settings.api_token,
-            ))
-        tertiary_settings = settings.tertiary_settings()
-        if tertiary_settings is not None:
-            tertiary_client = httpx.Client(timeout=timeout, transport=transport)
-            self._embedding_targets.append((
-                tertiary_client,
-                f"{self._API_ROOT}/{tertiary_settings.account_id}/ai/run/{tertiary_settings.model}",
-                tertiary_settings.api_token,
-            ))
         self._closed = False
 
     @classmethod
@@ -244,8 +228,7 @@ class CloudflareWorkersAiEmbeddingClient:
 
     def close(self) -> None:
         try:
-            for client, _, _ in self._embedding_targets:
-                client.close()
+            self._client.close()
         except Exception:
             raise_sanitized(EmbeddingTransportError("Cloudflare embedding client close failed"))
         self._closed = True
@@ -263,19 +246,18 @@ class CloudflareWorkersAiEmbeddingClient:
 
         vectors: list[EmbeddingVector] = []
         dimension: int | None = None
-        active_target = 0
         for start in range(0, len(values), self.INTERNAL_BATCH_SIZE):
             batch = values[start : start + self.INTERNAL_BATCH_SIZE]
             result = None
             last_error = None
-            for target_index in range(active_target, len(self._embedding_targets)):
-                active_client, active_endpoint, active_api_token = self._embedding_targets[target_index]
+            for account in self._account_pool.ordered_accounts():
+                endpoint = f"{self._API_ROOT}/{account.account_id}/ai/run/{self._settings.model}"
                 try:
-                    result = self._embed_batch(batch, active_client, active_endpoint, active_api_token)
+                    result = self._embed_batch(batch, self._client, endpoint, account.api_token)
                 except self._FAILOVER_ERRORS as error:
                     last_error = error
+                    self._account_pool.mark_failed(account.index)
                     continue
-                active_target = target_index
                 break
             if result is None:
                 assert last_error is not None

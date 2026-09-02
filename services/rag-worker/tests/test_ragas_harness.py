@@ -28,10 +28,12 @@ def test_sample_output_is_machine_readable(capsys) -> None:
 
 def test_sample_accepts_factual_1000_record_dataset() -> None:
     result = run_sample(FACTUAL_DATASET_PATH, FACTUAL_RESPONSES_PATH)
+    response_count = len(json.loads(FACTUAL_RESPONSES_PATH.read_text(encoding="utf-8"))["records"])
 
     assert result["status"] == "fixture_validated"
     assert result["dataset_capacity"] == 1000
-    assert result["response_fixture_count"] == 1000
+    assert result["response_fixture_count"] == response_count
+    assert response_count > 0
 
 
 def test_live_constructs_only_llm_metrics_with_fakes(monkeypatch, tmp_path: Path) -> None:

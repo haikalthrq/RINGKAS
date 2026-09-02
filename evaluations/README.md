@@ -13,6 +13,12 @@ evaluations/
   scripts/
     generate_factual_dataset.py
     validate_factual_dataset.py
+    audit_qdrant_ground_truth.py
+    diagnose_retrieval_1000.py
+    generate_factual_responses.py
+    write_automated_audit.py
+    run_live_ragas_1000.py
+    run_t_eval_0003_background.sh
   src/evaluation_dataset.py
 ```
 
@@ -61,3 +67,40 @@ git diff --check
 RAGAS dan response generation tidak dijalankan sebagai bagian dari rebuild ini;
 keduanya hanya boleh dijalankan setelah report validasi menunjukkan `passed`
 dan `failures: 0`.
+
+## T-EVAL-0003 Background Pipeline
+
+Diagnostic retrieval menyimpan rank ID-based dan metrik dense, sparse, serta RRF
+di `retrieval_diagnostic_1000.json`; checkpoint dan log juga berada di folder
+ini. Response regeneration tidak memakai `responses.json` lama dan hanya
+menyimpan konteks dari private `rag-query`. Generation memakai kontrak
+Cloudflare Workers AI yang sama dengan production: akun primary, secondary,
+lalu tertiary dengan model/endpoint yang sama. Akun yang gagal dilewati untuk
+request berikutnya; jika seluruh akun Cloudflare gagal, evaluator mencoba model
+NVIDIA yang aktif dan secondary-nya bila tersedia.
+
+Pool memakai `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_SECONDARY_ACCOUNT_ID`/`CLOUDFLARE_SECONDARY_API_TOKEN`, dan
+`CLOUDFLARE_TERTIARY_ACCOUNT_ID`/`CLOUDFLARE_TERTIARY_API_TOKEN`. Nama ini
+berlaku sama untuk embedding dan generation; model tetap dipilih oleh
+`CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL` atau
+`CLOUDFLARE_WORKERS_AI_GENERATION_MODEL`.
+
+Untuk menjalankan kelanjutan secara detached setelah response generation:
+
+```bash
+nohup evaluations/scripts/run_t_eval_0003_background.sh \
+  > evaluations/t_eval_0003_background.log 2>&1 &
+```
+
+Runner menunggu `response_generation_report.json`, lalu menjalankan audit CSV
+dan live RAGAS. RAGAS hanya berstatus `completed` jika seluruh 1.000 response
+valid; error provider atau dependency ditulis sebagai `blocked` tanpa metrik
+fiktif.
+
+Status T-EVAL-0003 terakhir: retrieval diagnostic selesai untuk 1.000 record
+dengan 0 transport/provider failure. Response report sebelumnya terhenti pada
+135 response nyata karena quota Cloudflare primary habis. Pipeline sekarang
+mendukung account failover production-compatible dan resume; response lama
+tidak dijadikan fallback. Jalankan ulang generator setelah konfigurasi akun
+secondary/tertiary dan/atau quota provider tersedia.

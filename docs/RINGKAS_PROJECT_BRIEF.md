@@ -520,6 +520,10 @@ Generation:
 - Cloudflare generation account fallback: akun secondary lalu tertiary boleh
   dicoba otomatis ketika akun sebelumnya rate-limited atau gagal, dengan model,
   kontrak request/response, dan konfigurasi yang sama;
+- Embedding dan generation memakai account pool canonical yang sama melalui
+  `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_SECONDARY_ACCOUNT_ID`, dan
+  `CLOUDFLARE_TERTIARY_ACCOUNT_ID` beserta token pasangannya. Model tetap
+  resource-specific dan tidak boleh dicampur;
 - OpenCode Zen FREE (`mimo-v2.5-free` dan `muse-spark-1.2`, serta model FREE lain yang disetujui): diperbolehkan hanya jika eksplisit diminta (on-request, on-demand), bukan primary atau fallback otomatis.
 
 Embedding target yang disetujui:

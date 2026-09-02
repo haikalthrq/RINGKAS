@@ -7,6 +7,8 @@ namespace Ringkas.Api.Generation;
 
 public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, IConfiguration configuration) : ICloudflareWorkersAiGenerationClient, IModelOverrideGenerationClient
 {
+    private int _activeTargetIndex;
+
     public Task<GenerationResult> GenerateAsync(GenerationRequest request, CancellationToken cancellationToken = default) =>
         GenerateWithModelAsync(request, ReadSettings().Model, cancellationToken);
 
@@ -24,8 +26,10 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
         }
 
         GenerationException? lastFailure = null;
-        foreach (var target in settings.Targets)
+        var startIndex = Math.Min(Volatile.Read(ref _activeTargetIndex), settings.Targets.Count - 1);
+        for (var index = startIndex; index < settings.Targets.Count; index++)
         {
+            var target = settings.Targets[index];
             try
             {
                 using var timeoutSource = new CancellationTokenSource(TimeSpan.FromSeconds(settings.TimeoutSeconds));
@@ -34,6 +38,7 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
                 using var response = await SendAsync(message, linkedSource.Token, cancellationToken);
                 ThrowForStatus(response);
                 var responseContent = await ReadContentAsync(response, linkedSource.Token, cancellationToken);
+                AdvanceTargetIndex(index);
                 return GenerationResponseParser.Parse(responseContent, GenerationProvider.CloudflareWorkersAi, model);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -43,6 +48,7 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
             catch (GenerationException failure) when (IsAccountFailoverEligible(failure))
             {
                 lastFailure = failure;
+                AdvanceTargetIndex(index + 1);
             }
         }
 
@@ -52,6 +58,18 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
         }
 
         throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");
+    }
+
+    private void AdvanceTargetIndex(int nextIndex)
+    {
+        while (true)
+        {
+            var current = Volatile.Read(ref _activeTargetIndex);
+            if (current >= nextIndex || Interlocked.CompareExchange(ref _activeTargetIndex, nextIndex, current) == current)
+            {
+                return;
+            }
+        }
     }
 
     private CloudflareSettings ReadSettings()
@@ -73,12 +91,12 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
 
         if (!TryAddOptionalTarget(
                 targets,
-                configuration["CLOUDFLARE_WORKERS_AI_GENERATION_SECONDARY_ACCOUNT_ID"],
-                configuration["CLOUDFLARE_WORKERS_AI_GENERATION_SECONDARY_API_TOKEN"]) ||
+                configuration["CLOUDFLARE_SECONDARY_ACCOUNT_ID"],
+                configuration["CLOUDFLARE_SECONDARY_API_TOKEN"]) ||
             !TryAddOptionalTarget(
                 targets,
-                configuration["CLOUDFLARE_WORKERS_AI_GENERATION_TERTIARY_ACCOUNT_ID"],
-                configuration["CLOUDFLARE_WORKERS_AI_GENERATION_TERTIARY_API_TOKEN"]))
+                configuration["CLOUDFLARE_TERTIARY_ACCOUNT_ID"],
+                configuration["CLOUDFLARE_TERTIARY_API_TOKEN"]))
         {
             throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");
         }

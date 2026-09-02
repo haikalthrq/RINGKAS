@@ -7,6 +7,7 @@ import httpx
 import pytest
 from pydantic import SecretStr
 
+from ringkas_worker.cloudflare_accounts import CloudflareAccountConfigurationError, CloudflareAccountPool
 from ringkas_worker.embedding import (
     CloudflareWorkersAiEmbeddingClient,
     CloudflareWorkersAiEmbeddingSettings,
@@ -29,28 +30,23 @@ def nim_settings(base_url: str = "https://nim.example.test") -> NvidiaNimEmbeddi
 
 
 def cloudflare_settings() -> CloudflareWorkersAiEmbeddingSettings:
-    return CloudflareWorkersAiEmbeddingSettings("account-id", SecretStr("cloudflare-token"), "@cf/qwen/qwen3-embedding-0.6b")
+    return CloudflareWorkersAiEmbeddingSettings(
+        CloudflareAccountPool.from_values([("account-id", "cloudflare-token")]),
+        "@cf/qwen/qwen3-embedding-0.6b",
+    )
 
 
 def cloudflare_settings_with_secondary() -> CloudflareWorkersAiEmbeddingSettings:
     return CloudflareWorkersAiEmbeddingSettings(
-        "primary-account",
-        SecretStr("primary-token"),
+        CloudflareAccountPool.from_values([("primary-account", "primary-token"), ("secondary-account", "secondary-token")]),
         "@cf/qwen/qwen3-embedding-0.6b",
-        secondary_account_id="secondary-account",
-        secondary_api_token=SecretStr("secondary-token"),
     )
 
 
 def cloudflare_settings_with_tertiary() -> CloudflareWorkersAiEmbeddingSettings:
     return CloudflareWorkersAiEmbeddingSettings(
-        "primary-account",
-        SecretStr("primary-token"),
+        CloudflareAccountPool.from_values([("primary-account", "primary-token"), ("secondary-account", "secondary-token"), ("tertiary-account", "tertiary-token")]),
         "@cf/qwen/qwen3-embedding-0.6b",
-        secondary_account_id="secondary-account",
-        secondary_api_token=SecretStr("secondary-token"),
-        tertiary_account_id="tertiary-account",
-        tertiary_api_token=SecretStr("tertiary-token"),
     )
 
 
@@ -135,6 +131,31 @@ def test_cloudflare_tertiary_account_handles_primary_and_secondary_rate_limits()
     assert result.dimension == 1
     assert ["primary-account" in str(seen[0].url), "secondary-account" in str(seen[1].url), "tertiary-account" in str(seen[2].url)] == [True, True, True]
     assert seen[2].headers["authorization"] == "Bearer tertiary-token"
+
+
+def test_cloudflare_canonical_pool_drives_embedding_failover(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name, value in {
+        "CLOUDFLARE_ACCOUNT_ID": "primary-account",
+        "CLOUDFLARE_API_TOKEN": "primary-token",
+        "CLOUDFLARE_SECONDARY_ACCOUNT_ID": "secondary-account",
+        "CLOUDFLARE_SECONDARY_API_TOKEN": "secondary-token",
+        "CLOUDFLARE_TERTIARY_ACCOUNT_ID": "tertiary-account",
+        "CLOUDFLARE_TERTIARY_API_TOKEN": "tertiary-token",
+        "CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL": "@cf/qwen/qwen3-embedding-0.6b",
+    }.items():
+        monkeypatch.setenv(name, value)
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        if "tertiary-account" not in str(request.url):
+            return httpx.Response(429, request=request)
+        return httpx.Response(200, json={"success": True, "result": {"data": [[1.0]]}}, request=request)
+
+    with CloudflareWorkersAiEmbeddingClient.from_environment(transport=httpx.MockTransport(handler)) as client:
+        assert client.embed(["text"]).dimension == 1
+
+    assert ["primary-account" in str(seen[0].url), "secondary-account" in str(seen[1].url), "tertiary-account" in str(seen[2].url)] == [True, True, True]
 
 
 def test_cloudflare_internal_batching_preserves_order_and_indexes() -> None:
@@ -295,17 +316,15 @@ def test_cloudflare_context_manager_and_use_after_close() -> None:
 
 def test_cloudflare_model_mismatch_is_rejected() -> None:
     with pytest.raises(EmbeddingConfigurationError):
-        CloudflareWorkersAiEmbeddingSettings("account-id", SecretStr("cloudflare-token"), "other-model")
+        CloudflareWorkersAiEmbeddingSettings(
+            CloudflareAccountPool.from_values([("account-id", "cloudflare-token")]),
+            "other-model",
+        )
 
 
 def test_cloudflare_secondary_configuration_must_be_complete() -> None:
-    with pytest.raises(EmbeddingConfigurationError):
-        CloudflareWorkersAiEmbeddingSettings(
-            "account-id",
-            SecretStr("cloudflare-token"),
-            "@cf/qwen/qwen3-embedding-0.6b",
-            secondary_account_id="secondary-account",
-        )
+    with pytest.raises(CloudflareAccountConfigurationError):
+        CloudflareAccountPool.from_values([("account-id", "cloudflare-token"), ("secondary-account", "")])
 
 
 @pytest.mark.parametrize("name", ["CLOUDFLARE_WORKERS_AI_EMBEDDING_CONNECT_TIMEOUT_SECONDS", "CLOUDFLARE_WORKERS_AI_EMBEDDING_READ_TIMEOUT_SECONDS"])

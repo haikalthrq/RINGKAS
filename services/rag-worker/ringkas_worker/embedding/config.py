@@ -7,6 +7,7 @@ from urllib.parse import SplitResult, urlsplit, urlunsplit
 
 from pydantic import SecretStr
 
+from ringkas_worker.cloudflare_accounts import CloudflareAccountConfigurationError, CloudflareAccountPool
 from ringkas_worker.embedding.errors import EmbeddingConfigurationError, raise_sanitized
 
 
@@ -111,38 +112,16 @@ class NvidiaNimEmbeddingSettings:
 class CloudflareWorkersAiEmbeddingSettings:
     """Configuration for the approved Cloudflare embedding model."""
 
-    account_id: str
-    api_token: SecretStr = field(repr=False)
+    account_pool: CloudflareAccountPool
     model: str
     connect_timeout_seconds: float = 10.0
     read_timeout_seconds: float = 60.0
-    secondary_account_id: str | None = None
-    secondary_api_token: SecretStr | None = field(default=None, repr=False)
-    tertiary_account_id: str | None = None
-    tertiary_api_token: SecretStr | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
-        _validate_account_id(self.account_id, "CLOUDFLARE_ACCOUNT_ID")
-        if not isinstance(self.api_token, SecretStr) or not self.api_token.get_secret_value().strip():
-            raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_API_TOKEN is required"))
+        if not isinstance(self.account_pool, CloudflareAccountPool):
+            raise_sanitized(EmbeddingConfigurationError("Cloudflare account pool is invalid"))
         if self.model != "@cf/qwen/qwen3-embedding-0.6b":
             raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL is invalid"))
-        if (self.secondary_account_id is None) != (self.secondary_api_token is None):
-            raise_sanitized(EmbeddingConfigurationError("secondary Cloudflare account configuration is incomplete"))
-        if self.secondary_account_id is not None:
-            _validate_account_id(self.secondary_account_id, "CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID")
-            if self.secondary_account_id == self.account_id:
-                raise_sanitized(EmbeddingConfigurationError("secondary Cloudflare account must differ from primary"))
-            if not isinstance(self.secondary_api_token, SecretStr) or not self.secondary_api_token.get_secret_value().strip():
-                raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN is required"))
-        if (self.tertiary_account_id is None) != (self.tertiary_api_token is None):
-            raise_sanitized(EmbeddingConfigurationError("tertiary Cloudflare account configuration is incomplete"))
-        if self.tertiary_account_id is not None:
-            _validate_account_id(self.tertiary_account_id, "CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_ACCOUNT_ID")
-            if self.tertiary_account_id in {self.account_id, self.secondary_account_id}:
-                raise_sanitized(EmbeddingConfigurationError("tertiary Cloudflare account must differ from primary and secondary"))
-            if not isinstance(self.tertiary_api_token, SecretStr) or not self.tertiary_api_token.get_secret_value().strip():
-                raise_sanitized(EmbeddingConfigurationError("CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_API_TOKEN is required"))
         object.__setattr__(self, "connect_timeout_seconds", _validated_timeout(self.connect_timeout_seconds, "connect timeout"))
         object.__setattr__(self, "read_timeout_seconds", _validated_timeout(self.read_timeout_seconds, "read timeout"))
 
@@ -150,59 +129,22 @@ class CloudflareWorkersAiEmbeddingSettings:
     def from_environment(cls) -> CloudflareWorkersAiEmbeddingSettings:
         conversion_failed = False
         try:
-            api_token = SecretStr(os.getenv("CLOUDFLARE_API_TOKEN") or os.getenv("CLOUDFLARE_WORKERS_AI_TOKEN", ""))
-            account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
+            account_pool = CloudflareAccountPool.from_environment()
             model = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL", "")
             connect = float(os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_CONNECT_TIMEOUT_SECONDS", "10"))
             read = float(os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_READ_TIMEOUT_SECONDS", "60"))
-            secondary_account_id = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID") or None
-            secondary_token = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN") or None
-            tertiary_account_id = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_ACCOUNT_ID") or None
-            tertiary_token = os.getenv("CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_API_TOKEN") or None
+        except CloudflareAccountConfigurationError as error:
+            raise_sanitized(EmbeddingConfigurationError(str(error)))
         except (OverflowError, TypeError, ValueError):
             conversion_failed = True
             connect = read = 0.0
         if conversion_failed:
             raise_sanitized(EmbeddingConfigurationError("Cloudflare embedding timeout configuration is invalid"))
         return cls(
-            account_id,
-            api_token,
+            account_pool,
             model,
             connect,
             read,
-            secondary_account_id,
-            SecretStr(secondary_token) if secondary_token is not None else None,
-            tertiary_account_id,
-            SecretStr(tertiary_token) if tertiary_token is not None else None,
-        )
-
-    def secondary_settings(self) -> CloudflareWorkersAiEmbeddingSettings | None:
-        if self.secondary_account_id is None or self.secondary_api_token is None:
-            return None
-        return type(self)(
-            self.secondary_account_id,
-            self.secondary_api_token,
-            self.model,
-            self.connect_timeout_seconds,
-            self.read_timeout_seconds,
-        )
-
-    def tertiary_settings(self) -> CloudflareWorkersAiEmbeddingSettings | None:
-        if self.tertiary_account_id is None or self.tertiary_api_token is None:
-            return None
-        return type(self)(
-            self.tertiary_account_id,
-            self.tertiary_api_token,
-            self.model,
-            self.connect_timeout_seconds,
-            self.read_timeout_seconds,
         )
 
     from_env = from_environment
-
-
-def _validate_account_id(value: object, name: str) -> None:
-    if not isinstance(value, str) or not value.strip():
-        raise_sanitized(EmbeddingConfigurationError(f"{name} is required"))
-    if any(character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" for character in value):
-        raise_sanitized(EmbeddingConfigurationError(f"{name} is invalid"))

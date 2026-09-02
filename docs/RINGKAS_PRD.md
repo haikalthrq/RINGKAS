@@ -35,6 +35,10 @@ sebelum berpindah ke fallback NVIDIA NIM.
 Arsitektur embedding yang disetujui menggunakan Cloudflare Workers AI dengan
 model `@cf/qwen/qwen3-embedding-0.6b`. Satu akun Cloudflare utama serta akun
 Cloudflare secondary dan tertiary opsional boleh digunakan sebagai account-level failover.
+Account pool canonical menggunakan `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_SECONDARY_ACCOUNT_ID`/`CLOUDFLARE_SECONDARY_API_TOKEN`, dan
+`CLOUDFLARE_TERTIARY_ACCOUNT_ID`/`CLOUDFLARE_TERTIARY_API_TOKEN` untuk embedding
+dan generation; model tetap resource-specific.
 Failover ini hanya sah jika model ID, kontrak request, dan dimensi output sama,
 serta seluruh kontrak diverifikasi secara independen. Client, verifikasi dimensi,
 collection berversi, serta jalur hybrid dense+sparse indexing/query telah
