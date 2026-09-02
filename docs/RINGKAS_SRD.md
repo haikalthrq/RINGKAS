@@ -480,7 +480,7 @@ Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` diperbolehkan seba
 
 #### FR-GEN-004 Locked MVP Models
 
-MVP mengunci urutan generation berikut: `nvidia/nemotron-3-nano-30b-a3b` sebagai primary, `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai cross-provider fallback, `mistralai/mistral-small-4-119b-2603` sebagai same-provider fallback, `nvidia/nemotron-mini-4b-instruct` sebagai fallback ringan, dan `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai kandidat eksperimental terakhir. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk urutan terkunci dan hanya boleh dipakai jika eksplisit diminta. Semua model tetap harus melewati citation/grounding guard.
+MVP mengunci urutan generation berikut: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai primary (setelah penghapusan model NVIDIA yang tidak tersedia), `mistralai/mistral-small-4-119b-2603` sebagai same-provider fallback, `nvidia/nemotron-mini-4b-instruct` sebagai fallback ringan, dan `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai kandidat eksperimental terakhir. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk urutan terkunci dan hanya boleh dipakai jika eksplisit diminta. Semua model tetap harus melewati citation/grounding guard.
 
 #### FR-GEN-005 Context Bound
 
@@ -751,10 +751,9 @@ daftar publikasi. Limits dan terms provider tetap harus dihormati.
 
 ### EI-002 NVIDIA NIM
 
-Digunakan untuk generation primary dengan model MVP yang dikunci
-`nvidia/nemotron-3-nano-30b-a3b`. NVIDIA NIM bukan embedding provider MVP.
+Digunakan untuk generation fallback dengan model MVP yang dikunci `mistralai/mistral-small-4-119b-2603` dan `nvidia/nemotron-mini-4b-instruct`. Cloudflare Workers AI kini menjadi primary. NVIDIA NIM bukan embedding provider MVP.
 
-Model MVP yang dikunci adalah `nvidia/nemotron-3-nano-30b-a3b`. Rate limit dan availability hosted preview tetap bergantung pada account/provider.
+Model MVP yang dikunci kini adalah `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai primary. Rate limit dan availability hosted preview tetap bergantung pada account/provider.
 
 ### EI-003 Cloudflare Workers AI
 

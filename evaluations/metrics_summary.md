@@ -2,7 +2,7 @@
 
 **Tanggal:** 2026-08-31 (VPS staging, corpus 263 dokumen / 98974 chunks)
 **Dataset:** `evaluations/evaluation_dataset.json` — 1000 records `ready`, semua `verified`, 6 tipe {'definition': 167, 'number': 167, 'period': 167, 'region': 167, 'methodology': 166, 'document_search': 166}, IDs `q-0001..q-1000`, **tanpa fiktif** (fictitious 0/1000)
-**Responses:** `evaluations/responses.json` — 1000 records via staging RAG (rag-query + NVIDIA NIM `nvidia/nemotron-3-nano-30b-a3b`)
+**Responses:** `evaluations/responses.json` — 1000 records via staging RAG (rag-query + Cloudflare `@cf/meta/llama-3.3-70b-instruct-fp8-fast` primary, NVIDIA `mistralai/mistral-small-4-119b-2603` fallback)
 
 ## Retrieval (direct)
 - **Evaluated:** 1000

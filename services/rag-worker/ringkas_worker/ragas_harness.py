@@ -88,7 +88,7 @@ def run_live(dataset_path: Path, responses_path: Path) -> dict[str, Any]:
         }
 
     try:
-        AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, Faithfulness, ContextPrecision, ContextRecall = (
+        AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, faithfulness, context_precision, context_recall = (
             _load_ragas_components()
         )
     except ImportError as error:
@@ -105,9 +105,9 @@ def run_live(dataset_path: Path, responses_path: Path) -> dict[str, Any]:
     result = evaluate(
         dataset=ragas_dataset,
         metrics=[
-            Faithfulness(llm=evaluator_llm),
-            ContextPrecision(llm=evaluator_llm),
-            ContextRecall(llm=evaluator_llm),
+            faithfulness,
+            context_precision,
+            context_recall,
         ],
         llm=evaluator_llm,
     )
@@ -125,9 +125,11 @@ def _load_ragas_components() -> tuple[Any, ...]:
     from openai import AsyncOpenAI
     from ragas import EvaluationDataset as RagasEvaluationDataset, evaluate
     from ragas.llms import llm_factory
-    from ragas.metrics.collections import ContextPrecision, ContextRecall, Faithfulness
+    from ragas.metrics._context_precision import context_precision
+    from ragas.metrics._context_recall import context_recall
+    from ragas.metrics._faithfulness import faithfulness
 
-    return AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, Faithfulness, ContextPrecision, ContextRecall
+    return AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, faithfulness, context_precision, context_recall
 
 
 def main(argv: list[str] | None = None) -> int:

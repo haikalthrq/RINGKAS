@@ -29,16 +29,12 @@ rows.
 
 The configured generation attempts are locked exactly to this order:
 
-1. `nvidia/nemotron-3-nano-30b-a3b`
-2. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
-3. `mistralai/mistral-small-4-119b-2603`
-4. `nvidia/nemotron-mini-4b-instruct`
-5. `@cf/meta/llama-4-scout-17b-16e-instruct`
+1. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
+2. `mistralai/mistral-small-4-119b-2603`
+3. `nvidia/nemotron-mini-4b-instruct`
+4. `@cf/meta/llama-4-scout-17b-16e-instruct`
 
-The first item is NVIDIA NIM primary. The second is the Cloudflare fallback;
-the next two are NVIDIA reserve models and the last is the experimental
-Cloudflare reserve. T-0608 used NVIDIA NIM successfully, so failover was not
-live-exercised.
+The first item is the Cloudflare fallback (now primary after removal of the unavailable NVIDIA model). The next two are NVIDIA reserve models and the last is the experimental Cloudflare reserve. T-0608 used NVIDIA NIM successfully, so failover was not live-exercised.
 
 ## Required Environment Names
 

@@ -51,7 +51,8 @@ def test_live_constructs_only_llm_metrics_with_fakes(monkeypatch, tmp_path: Path
     constructed: list[str] = []
 
     def metric(name):
-        return type(name, (), {"__init__": lambda self, llm: constructed.append(name)})
+        constructed.append(name)
+        return object()
 
     class FakeClient:
         def __init__(self, **kwargs):

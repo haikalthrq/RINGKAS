@@ -116,11 +116,10 @@ dimension verification, a new versioned collection, and a full reindex.
 
 The generation order is locked exactly as follows:
 
-1. `nvidia/nemotron-3-nano-30b-a3b`
-2. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
-3. `mistralai/mistral-small-4-119b-2603`
-4. `nvidia/nemotron-mini-4b-instruct`
-5. `@cf/meta/llama-4-scout-17b-16e-instruct`
+1. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
+2. `mistralai/mistral-small-4-119b-2603`
+3. `nvidia/nemotron-mini-4b-instruct`
+4. `@cf/meta/llama-4-scout-17b-16e-instruct`
 
 Google OAuth is implemented when `GOOGLE_CLIENT_ID` and
 `GOOGLE_CLIENT_SECRET` are configured. Email verification is intentionally not

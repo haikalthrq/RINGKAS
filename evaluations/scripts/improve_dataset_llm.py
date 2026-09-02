@@ -43,7 +43,7 @@ Kembalikan JSON saja dengan format: {{"question": "...", "reference_answer": "..
 Jangan tambahkan penjelasan lain di luar JSON."""
 
     payload = {
-        "model": "nvidia/nemotron-3-nano-30b-a3b",
+        "model": "mistralai/mistral-small-4-119b-2603",
         "messages": [
             {"role": "system", "content": "Kamu adalah generator evaluasi RINGKAS. Selalu kembalikan JSON valid saja."},
             {"role": "user", "content": user_content}

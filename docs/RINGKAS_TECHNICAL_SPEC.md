@@ -340,12 +340,12 @@ AUTH_COOKIE_DOMAIN=TBD
 GOOGLE_CLIENT_ID=TBD
 GOOGLE_CLIENT_SECRET=TBD
 NVIDIA_NIM_API_KEY=TBD
-NVIDIA_NIM_GENERATION_MODEL=nvidia/nemotron-3-nano-30b-a3b
+NVIDIA_NIM_GENERATION_MODEL=mistralai/mistral-small-4-119b-2603
 NVIDIA_NIM_GENERATION_BASE_URL=https://integrate.api.nvidia.com/v1
 NVIDIA_NIM_GENERATION_ALLOWED_HOSTS=integrate.api.nvidia.com
 NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS=60
-NVIDIA_NIM_GENERATION_SECONDARY_MODEL=mistralai/mistral-small-4-119b-2603
-NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL=nvidia/nemotron-mini-4b-instruct
+NVIDIA_NIM_GENERATION_SECONDARY_MODEL=nvidia/nemotron-mini-4b-instruct
+NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL=
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=@cf/meta/llama-3.3-70b-instruct-fp8-fast
@@ -1021,15 +1021,12 @@ However, the system must still have a sufficiency rule:
 
 The MVP locks generation attempts in this order:
 
-1. `nvidia/nemotron-3-nano-30b-a3b`
-2. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
-3. `mistralai/mistral-small-4-119b-2603`
-4. `nvidia/nemotron-mini-4b-instruct`
-5. `@cf/meta/llama-4-scout-17b-16e-instruct`
+1. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
+2. `mistralai/mistral-small-4-119b-2603`
+3. `nvidia/nemotron-mini-4b-instruct`
+4. `@cf/meta/llama-4-scout-17b-16e-instruct`
 
-The first model is the NVIDIA NIM primary, the second is the Cloudflare
-cross-provider fallback, the next two are NVIDIA reserve models, and the last is
-an experimental Cloudflare reserve. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk dalam urutan terkunci ini dan hanya boleh dipakai jika eksplisit diminta (on-request). All attempts remain subject to the grounding
+The first model is the Cloudflare fallback (now primary after removal of the unavailable NVIDIA model). The next two are NVIDIA reserve models and the last is the experimental Cloudflare reserve. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk dalam urutan terkunci ini dan hanya boleh dipakai jika eksplisit diminta (on-request). All attempts remain subject to the grounding
 and citation guard.
 
 ### 20.2 Prompt Rules
@@ -1367,10 +1364,9 @@ Note:
 | Item | Status | Notes |
 |---|---|---|
 | Domain and HTTPS | TBD | Caddy recommended if no preference |
-| NVIDIA NIM generation model | Locked | `nvidia/nemotron-3-nano-30b-a3b`; hosted preview availability verified |
+| NVIDIA NIM generation model | Locked | `mistralai/mistral-small-4-119b-2603`; now primary |
 | Cloudflare Workers AI embedding secondary/tertiary accounts | Approved contract, implementation complete | Optional ordered account-level failover using the exact same `@cf/qwen/qwen3-embedding-0.6b` model and independently verified contract/dimension |
-| NVIDIA NIM secondary generation model | Locked reserve | `mistralai/mistral-small-4-119b-2603`; ordered after the Cloudflare fallback |
-| NVIDIA NIM lightweight generation model | Locked reserve | `nvidia/nemotron-mini-4b-instruct`; ordered after the NIM secondary model |
+| NVIDIA NIM lightweight generation model | Locked reserve | `nvidia/nemotron-mini-4b-instruct`; ordered after the NIM primary model |
 | Cloudflare Workers AI embedding model | Approved and dimension-locked | `@cf/qwen/qwen3-embedding-0.6b`; live-verified vector dimension `1024` |
 | Cloudflare Workers AI generation fallback model | Locked | `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; account endpoint availability verified |
 | Cloudflare Workers AI experimental generation model | Experimental reserve | `@cf/meta/llama-4-scout-17b-16e-instruct`; requires evaluation before promotion |
