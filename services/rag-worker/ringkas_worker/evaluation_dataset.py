@@ -24,6 +24,7 @@ class EvidenceReference(BaseModel):
 
     document_id: UUID | None = None
     chunk_id: UUID | None = None
+    qdrant_point_id: str | None = None
     document_title: str | None = None
     publication_year: int | None = Field(default=None, gt=0)
     region: str | None = None
@@ -31,6 +32,16 @@ class EvidenceReference(BaseModel):
     page_end: int | None = Field(default=None, gt=0)
     source_url: AnyHttpUrl | None = None
     excerpt: str | None = None
+
+
+class GroundTruthReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_document_id: UUID
+    expected_chunk_id: UUID
+    expected_qdrant_point_id: str
+    expected_page_start: int = Field(gt=0)
+    expected_page_end: int = Field(gt=0)
 
 
 class EvaluationRecord(BaseModel):
@@ -42,6 +53,7 @@ class EvaluationRecord(BaseModel):
     topic: str = ""
     reference_answer: str = ""
     evidence: EvidenceReference = Field(default_factory=EvidenceReference)
+    ground_truth: GroundTruthReference | None = None
     verification_status: Literal["pending", "verified", "rejected"] = "pending"
     reviewer_notes: str = ""
 
@@ -60,6 +72,7 @@ class EvaluationRecord(BaseModel):
             self.reference_answer,
             self.evidence.document_id,
             self.evidence.chunk_id,
+            self.evidence.qdrant_point_id,
             self.evidence.document_title,
             self.evidence.publication_year,
             self.evidence.region,
@@ -67,6 +80,7 @@ class EvaluationRecord(BaseModel):
             self.evidence.page_end,
             self.evidence.source_url,
             self.evidence.excerpt,
+            self.ground_truth,
         )
         if any(value is None or (isinstance(value, str) and not value.strip()) for value in required):
             raise ValueError("verified evaluation records require complete grounded evidence")
@@ -77,7 +91,7 @@ class EvaluationDataset(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: str
-    dataset_status: Literal["pending_manual_verification", "ready"]
+    dataset_status: Literal["pending_manual_verification", "pending_automated_validation", "ready"]
     capacity: int = Field(gt=0)
     records: list[EvaluationRecord]
 

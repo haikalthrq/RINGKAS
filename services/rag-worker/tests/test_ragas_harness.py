@@ -6,6 +6,10 @@ from ringkas_worker.evaluation_dataset import APPROVED_QUESTION_TYPES, DATASET_P
 from ringkas_worker.ragas_harness import DEFAULT_FIXTURE_PATH, run_sample
 
 
+FACTUAL_DATASET_PATH = DATASET_PATH.parents[2] / "evaluations" / "evaluation_dataset.json"
+FACTUAL_RESPONSES_PATH = DATASET_PATH.parents[2] / "evaluations" / "responses.json"
+
+
 def test_deterministic_sample_is_explicitly_fixture_validation() -> None:
     result = run_sample(responses_path=DEFAULT_FIXTURE_PATH)
 
@@ -22,6 +26,14 @@ def test_sample_output_is_machine_readable(capsys) -> None:
     assert json.loads(capsys.readouterr().out)["status"] == "fixture_validated"
 
 
+def test_sample_accepts_factual_1000_record_dataset() -> None:
+    result = run_sample(FACTUAL_DATASET_PATH, FACTUAL_RESPONSES_PATH)
+
+    assert result["status"] == "fixture_validated"
+    assert result["dataset_capacity"] == 1000
+    assert result["response_fixture_count"] == 1000
+
+
 def test_live_constructs_only_llm_metrics_with_fakes(monkeypatch, tmp_path: Path) -> None:
     payload = json.loads(DATASET_PATH.read_text(encoding="utf-8"))
     question_types = sorted(APPROVED_QUESTION_TYPES)
@@ -31,17 +43,25 @@ def test_live_constructs_only_llm_metrics_with_fakes(monkeypatch, tmp_path: Path
             question_type=question_types[index % len(question_types)],
             topic="Topic",
             reference_answer="Answer",
-            evidence={
-                "document_id": "00000000-0000-0000-0000-000000000001",
-                "chunk_id": "00000000-0000-0000-0000-000000000002",
-                "document_title": "Title",
+                evidence={
+                    "document_id": "00000000-0000-0000-0000-000000000001",
+                    "chunk_id": "00000000-0000-0000-0000-000000000002",
+                    "qdrant_point_id": "point-00000000-0000-0000-0000-000000000003",
+                    "document_title": "Title",
                 "publication_year": 2024,
                 "region": "DKI Jakarta",
                 "page_start": 1,
                 "page_end": 1,
                 "source_url": "https://example.com/source.pdf",
-                "excerpt": "Evidence",
-            },
+                    "excerpt": "Evidence",
+                },
+                ground_truth={
+                    "expected_document_id": "00000000-0000-0000-0000-000000000001",
+                    "expected_chunk_id": "00000000-0000-0000-0000-000000000002",
+                    "expected_qdrant_point_id": "point-00000000-0000-0000-0000-000000000003",
+                    "expected_page_start": 1,
+                    "expected_page_end": 1,
+                },
             verification_status="verified",
         )
     payload["dataset_status"] = "ready"
