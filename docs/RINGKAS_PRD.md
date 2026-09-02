@@ -30,7 +30,8 @@ Produk disajikan melalui Next.js + TypeScript dengan App Router sebagai frontend
 Generation menggunakan Cloudflare Workers AI sebagai primary. Jika akun Cloudflare
 primary rate-limited atau gagal, sistem otomatis mencoba akun secondary lalu
 tertiary yang dikonfigurasi dengan model dan kontrak request/response yang sama,
-sebelum berpindah ke fallback NVIDIA NIM.
+sebelum berpindah ke hingga lima model fallback NVIDIA NIM yang dikonfigurasi
+secara berurutan.
 
 Arsitektur embedding yang disetujui menggunakan Cloudflare Workers AI dengan
 model `@cf/qwen/qwen3-embedding-0.6b`. Satu akun Cloudflare utama serta akun

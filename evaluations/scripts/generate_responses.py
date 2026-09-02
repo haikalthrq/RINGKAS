@@ -10,7 +10,7 @@ with open("/home/haikalthoriqa/RINGKAS/.env") as f:
 
 RAG_TOKEN = env.get("RAG_INTERNAL_TOKEN")
 NVIDIA_KEY = env.get("NVIDIA_NIM_API_KEY")
-NVIDIA_MODEL = env.get("NVIDIA_NIM_GENERATION_MODEL", "mistralai/mistral-small-4-119b-2603")
+NVIDIA_MODEL = env.get("NVIDIA_NIM_GENERATION_MODEL", "openai/gpt-oss-120b")
 NVIDIA_BASE = env.get("NVIDIA_NIM_GENERATION_BASE_URL", "https://integrate.api.nvidia.com/v1")
 
 dataset_path = pathlib.Path("/home/haikalthoriqa/RINGKAS/evaluation/evaluation_dataset.json")

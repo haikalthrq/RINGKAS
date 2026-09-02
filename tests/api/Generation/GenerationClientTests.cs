@@ -442,6 +442,8 @@ public sealed class GenerationClientTests
     [InlineData(GenerationFailureCategory.Timeout, 0)]
     [InlineData(GenerationFailureCategory.Timeout, 408)]
     [InlineData(GenerationFailureCategory.RateLimited, 429)]
+    [InlineData(GenerationFailureCategory.ProviderRejection, 404)]
+    [InlineData(GenerationFailureCategory.ProviderRejection, 410)]
     [InlineData(GenerationFailureCategory.ProviderRejection, 500)]
     [InlineData(GenerationFailureCategory.ProviderRejection, 502)]
     [InlineData(GenerationFailureCategory.ProviderRejection, 503)]
@@ -528,7 +530,10 @@ public sealed class GenerationClientTests
         var cloudflareModels = new List<string>();
         var nvidiaResponses = new Queue<HttpResponseMessage>([
             ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-primary-failure"),
-            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-secondary-failure")
+            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-secondary-failure"),
+            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-tertiary-failure"),
+            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-quaternary-failure"),
+            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-quinary-failure")
         ]);
         var cloudflareResponses = new Queue<HttpResponseMessage>([
             ResponseMessage(HttpStatusCode.InternalServerError, "cloudflare-fallback-failure"),
@@ -536,6 +541,9 @@ public sealed class GenerationClientTests
         ]);
         var configuration = Configuration(
             secondaryModel: "mini-model",
+            tertiaryModel: "tertiary-model",
+            quaternaryModel: "quaternary-model",
+            quinaryModel: "quinary-model",
             experimentalModel: "llama4-model");
         var primary = new CloudflareWorkersAiGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
         {
@@ -552,7 +560,7 @@ public sealed class GenerationClientTests
 
         Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
         Assert.Equal("llama4-model", result.Model);
-        Assert.Equal(["nvidia-model", "mini-model"], nvidiaModels);
+        Assert.Equal(["nvidia-model", "mini-model", "tertiary-model", "quaternary-model", "quinary-model"], nvidiaModels);
         Assert.Equal(["cloudflare-model", "llama4-model"], cloudflareModels);
     }
 
@@ -580,6 +588,9 @@ public sealed class GenerationClientTests
         string? cloudflareModel = null,
         string? cloudflareTimeout = null,
         string? secondaryModel = null,
+        string? tertiaryModel = null,
+        string? quaternaryModel = null,
+        string? quinaryModel = null,
         string? experimentalModel = null,
         string? cloudflareSecondaryAccountId = null,
         string? cloudflareSecondaryToken = null,
@@ -601,6 +612,9 @@ public sealed class GenerationClientTests
             ["CLOUDFLARE_TERTIARY_API_TOKEN"] = cloudflareTertiaryToken,
             ["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"] = includeCloudflare ? cloudflareTimeout ?? "10" : null,
             ["NVIDIA_NIM_GENERATION_SECONDARY_MODEL"] = secondaryModel,
+            ["NVIDIA_NIM_GENERATION_TERTIARY_MODEL"] = tertiaryModel,
+            ["NVIDIA_NIM_GENERATION_QUATERNARY_MODEL"] = quaternaryModel,
+            ["NVIDIA_NIM_GENERATION_QUINARY_MODEL"] = quinaryModel,
             ["CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL"] = experimentalModel,
             ["OPENCODE_ZEN_API_KEY"] = "zen-secret",
             ["OPENCODE_ZEN_BASE_URL"] = "https://opencode.ai/zen/v1",

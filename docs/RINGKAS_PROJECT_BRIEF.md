@@ -552,7 +552,7 @@ Jika embedding provider gagal:
 
 Catatan:
 
-- Model generation MVP dikunci berurutan: Cloudflare `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai primary (setelah penghapusan model NVIDIA yang tidak tersedia), NVIDIA `mistralai/mistral-small-4-119b-2603` dan `nvidia/nemotron-mini-4b-instruct` sebagai reserve fallback, serta Cloudflare `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai eksperimental. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk urutan terkunci dan hanya diperbolehkan jika eksplisit diminta.
+- Model generation MVP dikunci berurutan: Cloudflare `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai primary (setelah penghapusan model NVIDIA yang tidak tersedia), lalu lima model NVIDIA NIM `openai/gpt-oss-120b`, `google/gemma-4-31b-it`, `meta/llama-3.2-11b-vision-instruct`, `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`, dan `openai/gpt-oss-20b` sebagai reserve fallback, serta Cloudflare `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai eksperimental. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk urutan terkunci dan hanya diperbolehkan jika eksplisit diminta.
 - Dimensi output `1024` untuk model embedding Cloudflare yang disetujui telah diverifikasi live.
 - Rate limit, terms, dan availability provider tetap harus diverifikasi untuk deployment.
 
@@ -760,7 +760,7 @@ Asumsi awal:
 2. Publikasi BPS DKI Jakarta 5 tahun terakhir tersedia dalam format PDF digital yang dapat diproses tanpa OCR.
 3. Jumlah publikasi dalam scope MVP tidak melebihi 300 dokumen, atau dapat diprioritaskan jika lebih.
 4. VPS memiliki storage cukup untuk menyimpan PDF, metadata, dan service backend.
-5. Cloudflare Workers AI digunakan sebagai provider generation utama dengan model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; NVIDIA reserve models are `mistralai/mistral-small-4-119b-2603` and `nvidia/nemotron-mini-4b-instruct`.
+5. Cloudflare Workers AI digunakan sebagai provider generation utama dengan model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; NVIDIA NIM reserve models are `openai/gpt-oss-120b`, `google/gemma-4-31b-it`, `meta/llama-3.2-11b-vision-instruct`, `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`, and `openai/gpt-oss-20b`.
 6. Cloudflare Workers AI `@cf/meta/llama-4-scout-17b-16e-instruct` is the experimental last-resort model, and Cloudflare remains the sole embedding provider with `@cf/qwen/qwen3-embedding-0.6b`.
 7. RAGAS dan LLM-as-judge dapat membantu evaluasi otomatis, tetapi tetap memiliki keterbatasan.
 8. Manual audit 20% cukup untuk baseline awal MVP, bukan untuk klaim akurasi menyeluruh.

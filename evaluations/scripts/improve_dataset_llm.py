@@ -43,7 +43,7 @@ Kembalikan JSON saja dengan format: {{"question": "...", "reference_answer": "..
 Jangan tambahkan penjelasan lain di luar JSON."""
 
     payload = {
-        "model": "mistralai/mistral-small-4-119b-2603",
+        "model": "openai/gpt-oss-120b",
         "messages": [
             {"role": "system", "content": "Kamu adalah generator evaluasi RINGKAS. Selalu kembalikan JSON valid saja."},
             {"role": "user", "content": user_content}

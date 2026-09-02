@@ -479,8 +479,10 @@ generation: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_SECONDARY_ACCOUNT_ID`, dan
 
 #### FR-GEN-002 Fallback Provider
 
-Jika seluruh akun Cloudflare generation gagal, sistem boleh mencoba NVIDIA NIM
-dengan model `mistralai/mistral-small-4-119b-2603` sebagai fallback.
+Jika seluruh akun Cloudflare generation gagal, sistem boleh mencoba hingga lima
+target NVIDIA NIM terurut: `openai/gpt-oss-120b`, `google/gemma-4-31b-it`,
+`meta/llama-3.2-11b-vision-instruct`,
+`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`, dan `openai/gpt-oss-20b`.
 
 #### FR-GEN-003 Experimental Provider
 
@@ -488,7 +490,7 @@ Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` diperbolehkan seba
 
 #### FR-GEN-004 Locked MVP Models
 
-MVP mengunci urutan generation berikut: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai primary (setelah penghapusan model NVIDIA yang tidak tersedia), `mistralai/mistral-small-4-119b-2603` sebagai same-provider fallback, `nvidia/nemotron-mini-4b-instruct` sebagai fallback ringan, dan `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai kandidat eksperimental terakhir. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk urutan terkunci dan hanya boleh dipakai jika eksplisit diminta. Semua model tetap harus melewati citation/grounding guard.
+MVP mengunci urutan generation berikut: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai primary (setelah penghapusan model NVIDIA yang tidak tersedia), `openai/gpt-oss-120b`, `google/gemma-4-31b-it`, `meta/llama-3.2-11b-vision-instruct`, `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`, dan `openai/gpt-oss-20b` sebagai lima fallback NVIDIA NIM, lalu `@cf/meta/llama-4-scout-17b-16e-instruct` sebagai kandidat eksperimental terakhir. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk urutan terkunci dan hanya boleh dipakai jika eksplisit diminta. Semua model tetap harus melewati citation/grounding guard.
 
 #### FR-GEN-005 Context Bound
 
@@ -759,8 +761,10 @@ daftar publikasi. Limits dan terms provider tetap harus dihormati.
 
 ### EI-002 NVIDIA NIM
 
-Digunakan untuk generation fallback dengan model MVP yang dikunci
-`mistralai/mistral-small-4-119b-2603` dan `nvidia/nemotron-mini-4b-instruct`.
+Digunakan untuk generation fallback dengan lima model MVP yang dikunci:
+`openai/gpt-oss-120b`, `google/gemma-4-31b-it`,
+`meta/llama-3.2-11b-vision-instruct`,
+`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`, dan `openai/gpt-oss-20b`.
 Cloudflare Workers AI kini menjadi primary. NVIDIA NIM bukan embedding provider MVP.
 
 Model MVP yang dikunci kini adalah `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai primary. Rate limit dan availability tetap bergantung pada account/provider.
@@ -805,7 +809,8 @@ menampilkan error dan tidak otomatis mengganti embedding model/provider.
 
 ### ERR-006 Generation Primary Failure
 
-Jika seluruh akun Cloudflare Workers AI generation gagal, sistem boleh mencoba NVIDIA NIM fallback.
+Jika seluruh akun Cloudflare Workers AI generation gagal, sistem boleh mencoba
+hingga lima target NVIDIA NIM fallback yang dikonfigurasi secara berurutan.
 
 ### ERR-007 Ingestion Partial Failure
 

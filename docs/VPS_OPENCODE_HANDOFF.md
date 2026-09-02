@@ -145,6 +145,11 @@ RAG_INTERNAL_TOKEN=<same non-whitespace token of at least 32 chars for API and r
 DATA_PROTECTION_KEYS_PATH=/data/ringkas/keys
 
 NVIDIA_NIM_API_KEY=
+NVIDIA_NIM_GENERATION_MODEL=openai/gpt-oss-120b
+NVIDIA_NIM_GENERATION_SECONDARY_MODEL=google/gemma-4-31b-it
+NVIDIA_NIM_GENERATION_TERTIARY_MODEL=meta/llama-3.2-11b-vision-instruct
+NVIDIA_NIM_GENERATION_QUATERNARY_MODEL=nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+NVIDIA_NIM_GENERATION_QUINARY_MODEL=openai/gpt-oss-20b
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 REGISTERED_DAILY_QUOTA=<positive integer decided by the operator>

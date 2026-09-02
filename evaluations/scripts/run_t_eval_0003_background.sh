@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -u
+set -euo pipefail
 
 ROOT="${RINGKAS_ROOT:-/home/haikalthoriqa/RINGKAS}"
 cd "$ROOT" || exit 1
@@ -11,6 +11,28 @@ trap 'rm -f "$ROOT/evaluations/t_eval_0003.lock"' EXIT
 if [ ! -f "$ROOT/.env" ]; then
   exit 1
 fi
+
+query_startup_timeout="${RINGKAS_QUERY_STARTUP_TIMEOUT_SECONDS:-900}"
+if ! [[ "$query_startup_timeout" =~ ^[0-9]+$ ]]; then
+  echo "RINGKAS_QUERY_STARTUP_TIMEOUT_SECONDS must be a nonnegative integer" >&2
+  exit 1
+fi
+query_deadline=$(( $(date +%s) + query_startup_timeout ))
+while true; do
+  query_container="$(docker compose --env-file .env -f infra/docker-compose.yml ps -q rag-query)"
+  query_health=""
+  if [ -n "$query_container" ]; then
+    query_health="$(docker inspect --format '{{.State.Health.Status}}' "$query_container" 2>/dev/null || true)"
+  fi
+  if [ "$query_health" = "healthy" ]; then
+    break
+  fi
+  if [ "$(date +%s)" -ge "$query_deadline" ]; then
+    echo "rag-query did not become healthy; response generation was not started" >&2
+    exit 1
+  fi
+  sleep 10
+done
 
 started_at="$(date +%s)"
 docker compose --env-file .env -f infra/docker-compose.yml run -d --rm --no-deps --user 0:0 \

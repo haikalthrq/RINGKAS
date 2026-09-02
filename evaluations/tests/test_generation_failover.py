@@ -81,6 +81,13 @@ def test_evaluator_uses_shared_canonical_account_pool(monkeypatch) -> None:
         "CLOUDFLARE_TERTIARY_ACCOUNT_ID": "tertiary",
         "CLOUDFLARE_TERTIARY_API_TOKEN": "tertiary-token",
         "CLOUDFLARE_WORKERS_AI_GENERATION_MODEL": "generation-model",
+        "NVIDIA_NIM_API_KEY": "nvidia-token",
+        "NVIDIA_NIM_GENERATION_BASE_URL": "https://nvidia.invalid/v1",
+        "NVIDIA_NIM_GENERATION_MODEL": "model-1",
+        "NVIDIA_NIM_GENERATION_SECONDARY_MODEL": "model-2",
+        "NVIDIA_NIM_GENERATION_TERTIARY_MODEL": "model-3",
+        "NVIDIA_NIM_GENERATION_QUATERNARY_MODEL": "model-4",
+        "NVIDIA_NIM_GENERATION_QUINARY_MODEL": "model-5",
     }
     for name, value in values.items():
         monkeypatch.setenv(name, value)
@@ -89,6 +96,7 @@ def test_evaluator_uses_shared_canonical_account_pool(monkeypatch) -> None:
 
     assert [account.index for account in configured.cloudflare_pool.accounts] == [0, 1, 2]
     assert configured.cloudflare_model == "generation-model"
+    assert [target.model for target in configured.nvidia] == ["model-1", "model-2", "model-3", "model-4", "model-5"]
 
 
 def test_evaluator_has_no_nvidia_target_when_nvidia_environment_is_empty(monkeypatch) -> None:
@@ -98,13 +106,38 @@ def test_evaluator_has_no_nvidia_target_when_nvidia_environment_is_empty(monkeyp
         "CLOUDFLARE_WORKERS_AI_GENERATION_MODEL": "generation-model",
     }.items():
         monkeypatch.setenv(name, value)
-    for name in ("NVIDIA_NIM_API_KEY", "NVIDIA_NIM_GENERATION_MODEL", "NVIDIA_NIM_GENERATION_BASE_URL", "NVIDIA_NIM_GENERATION_SECONDARY_MODEL"):
+    for name in (
+        "NVIDIA_NIM_API_KEY",
+        "NVIDIA_NIM_GENERATION_MODEL",
+        "NVIDIA_NIM_GENERATION_BASE_URL",
+        "NVIDIA_NIM_GENERATION_SECONDARY_MODEL",
+        "NVIDIA_NIM_GENERATION_TERTIARY_MODEL",
+        "NVIDIA_NIM_GENERATION_QUATERNARY_MODEL",
+        "NVIDIA_NIM_GENERATION_QUINARY_MODEL",
+    ):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.delenv("RINGKAS_ENV_FILE", raising=False)
 
     configured = module.configured_generation_pool()
 
     assert configured.nvidia == ()
+
+
+def test_evaluator_rejects_a_gap_in_nvidia_model_slots(monkeypatch) -> None:
+    for name, value in {
+        "CLOUDFLARE_ACCOUNT_ID": "primary",
+        "CLOUDFLARE_API_TOKEN": "primary-token",
+        "CLOUDFLARE_WORKERS_AI_GENERATION_MODEL": "generation-model",
+        "NVIDIA_NIM_API_KEY": "nvidia-token",
+        "NVIDIA_NIM_GENERATION_BASE_URL": "https://nvidia.invalid/v1",
+        "NVIDIA_NIM_GENERATION_MODEL": "model-1",
+        "NVIDIA_NIM_GENERATION_TERTIARY_MODEL": "model-3",
+    }.items():
+        monkeypatch.setenv(name, value)
+    monkeypatch.delenv("NVIDIA_NIM_GENERATION_SECONDARY_MODEL", raising=False)
+
+    with pytest.raises(RuntimeError, match="slots must be contiguous"):
+        module.configured_generation_pool()
 
 
 def test_cloudflare_timeout_advances_to_secondary() -> None:
@@ -153,7 +186,7 @@ def test_nvidia_primary_failure_uses_secondary_model() -> None:
     def request(endpoint, payload, _headers, **_kwargs):
         calls.append(payload["model"])
         if payload["model"] in {"configured-model", "mistral-model"}:
-            raise http_error(503)
+            raise http_error(410)
         return response("secondary NVIDIA")
 
     pool = module.GenerationPool(

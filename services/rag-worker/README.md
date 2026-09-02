@@ -36,7 +36,7 @@ It still has no live lease/heartbeat, force reprocess, or distributed
 PostgreSQL-Qdrant transaction. Concurrent checksum deduplication and provider
 availability/limits remain MVP limitations. Hybrid sparse indexing/query uses
 FastEmbed `Qdrant/bm25` with Qdrant IDF weighting; the approved embedding model
-and locked generation order are implementation decisions, not unresolved model
+and locked five-model NVIDIA NIM fallback order are implementation decisions, not unresolved model
 choices.
 
 ## Retrieval debug logging

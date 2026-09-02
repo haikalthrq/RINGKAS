@@ -76,8 +76,8 @@ ini. Response regeneration tidak memakai `responses.json` lama dan hanya
 menyimpan konteks dari private `rag-query`. Generation memakai kontrak
 Cloudflare Workers AI yang sama dengan production: akun primary, secondary,
 lalu tertiary dengan model/endpoint yang sama. Akun yang gagal dilewati untuk
-request berikutnya; jika seluruh akun Cloudflare gagal, evaluator mencoba model
-NVIDIA yang aktif dan secondary-nya bila tersedia.
+request berikutnya; jika seluruh akun Cloudflare gagal, evaluator mencoba sampai
+lima model NVIDIA NIM dalam urutan konfigurasi.
 
 Pool memakai `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_API_TOKEN`,
 `CLOUDFLARE_SECONDARY_ACCOUNT_ID`/`CLOUDFLARE_SECONDARY_API_TOKEN`, dan
@@ -85,6 +85,12 @@ Pool memakai `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_API_TOKEN`,
 berlaku sama untuk embedding dan generation; model tetap dipilih oleh
 `CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL` atau
 `CLOUDFLARE_WORKERS_AI_GENERATION_MODEL`.
+
+Model generation NVIDIA NIM dipilih secara berurutan oleh
+`NVIDIA_NIM_GENERATION_MODEL`, `NVIDIA_NIM_GENERATION_SECONDARY_MODEL`,
+`NVIDIA_NIM_GENERATION_TERTIARY_MODEL`,
+`NVIDIA_NIM_GENERATION_QUATERNARY_MODEL`, dan
+`NVIDIA_NIM_GENERATION_QUINARY_MODEL`.
 
 Untuk menjalankan kelanjutan secara detached setelah response generation:
 

@@ -11,7 +11,7 @@ set -a
 . "$ROOT/.env"
 set +a
 RAGAS_LLM_API_KEY="${RAGAS_LLM_API_KEY:-${NVIDIA_NIM_API_KEY:-}}"
-RAGAS_LLM_MODEL="${RAGAS_LLM_MODEL:-mistralai/mistral-small-4-119b-2603}"
+RAGAS_LLM_MODEL="${RAGAS_LLM_MODEL:-openai/gpt-oss-120b}"
 RAGAS_LLM_BASE_URL="${RAGAS_LLM_BASE_URL:-https://integrate.api.nvidia.com/v1}"
 RAGAS_LLM_PROVIDER="${RAGAS_LLM_PROVIDER:-openai}"
 test -n "$RAGAS_LLM_API_KEY"

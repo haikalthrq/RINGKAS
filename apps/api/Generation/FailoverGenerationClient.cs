@@ -6,6 +6,14 @@ public sealed class FailoverGenerationClient(
     ILogger<FailoverGenerationClient> logger,
     IConfiguration? configuration = null) : IGenerationClient
 {
+    private static readonly string[] NvidiaModelKeys =
+    [
+        "NVIDIA_NIM_GENERATION_SECONDARY_MODEL",
+        "NVIDIA_NIM_GENERATION_TERTIARY_MODEL",
+        "NVIDIA_NIM_GENERATION_QUATERNARY_MODEL",
+        "NVIDIA_NIM_GENERATION_QUINARY_MODEL"
+    ];
+
     public async Task<GenerationResult> GenerateAsync(GenerationRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -16,7 +24,10 @@ public sealed class FailoverGenerationClient(
             (primary, null),
             (fallback, null)
         };
-        AddConfiguredAttempt(attempts, fallback, "NVIDIA_NIM_GENERATION_SECONDARY_MODEL");
+        foreach (var key in NvidiaModelKeys)
+        {
+            AddConfiguredAttempt(attempts, fallback, key);
+        }
         AddConfiguredAttempt(attempts, primary, "CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL");
 
         GenerationException? firstFailure = null;
@@ -96,5 +107,6 @@ public sealed class FailoverGenerationClient(
             GenerationFailureCategory.Timeout or
             GenerationFailureCategory.RateLimited or
             GenerationFailureCategory.MalformedResponse ||
-        (exception.Category == GenerationFailureCategory.ProviderRejection && exception.StatusCode is >= 500 and <= 599);
+        (exception.Category == GenerationFailureCategory.ProviderRejection &&
+            (exception.StatusCode is 404 or 410 or >= 500 and <= 599));
 }
