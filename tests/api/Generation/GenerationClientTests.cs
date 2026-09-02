@@ -268,6 +268,51 @@ public sealed class GenerationClientTests
         Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
     }
 
+    [Fact]
+    public async Task CloudflareGenerationFailsOverFromPrimaryAndSecondaryToTertiary()
+    {
+        var accounts = new List<string>();
+        var client = new CloudflareWorkersAiGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
+        {
+            accounts.Add(request.RequestUri!.ToString());
+            if (!request.RequestUri.ToString().Contains("tertiary-account", StringComparison.Ordinal))
+            {
+                return Response(HttpStatusCode.TooManyRequests, "rate-limited");
+            }
+
+            return Response(HttpStatusCode.OK, """{"choices":[{"message":{"content":"tertiary answer"}}]}""");
+        })), Configuration(
+            cloudflareSecondaryAccountId: "secondary-account",
+            cloudflareSecondaryToken: "secondary-secret",
+            cloudflareTertiaryAccountId: "tertiary-account",
+            cloudflareTertiaryToken: "tertiary-secret"));
+
+        var result = await client.GenerateAsync(Request());
+
+        Assert.Equal("tertiary answer", result.Text);
+        Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
+        Assert.Equal(3, accounts.Count);
+        Assert.Contains("accounts/account_123/", accounts[0], StringComparison.Ordinal);
+        Assert.Contains("accounts/secondary-account/", accounts[1], StringComparison.Ordinal);
+        Assert.Contains("accounts/tertiary-account/", accounts[2], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CloudflareRejectsIncompleteAccountFailoverConfiguration()
+    {
+        var calls = 0;
+        var client = new CloudflareWorkersAiGenerationClient(new HttpClient(new DelegateHandler((_, _) =>
+        {
+            calls++;
+            throw new InvalidOperationException();
+        })), Configuration(cloudflareSecondaryAccountId: "secondary-account"));
+
+        var error = await Assert.ThrowsAsync<GenerationException>(() => client.GenerateAsync(Request()));
+
+        Assert.Equal(GenerationFailureCategory.InvalidConfiguration, error.Category);
+        Assert.Equal(0, calls);
+    }
+
     [Theory]
     [InlineData("account/id")]
     [InlineData("")]
@@ -535,7 +580,11 @@ public sealed class GenerationClientTests
         string? cloudflareModel = null,
         string? cloudflareTimeout = null,
         string? secondaryModel = null,
-        string? experimentalModel = null) =>
+        string? experimentalModel = null,
+        string? cloudflareSecondaryAccountId = null,
+        string? cloudflareSecondaryToken = null,
+        string? cloudflareTertiaryAccountId = null,
+        string? cloudflareTertiaryToken = null) =>
         new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["NVIDIA_NIM_API_KEY"] = "nvidia-secret",
@@ -546,6 +595,10 @@ public sealed class GenerationClientTests
             ["CLOUDFLARE_ACCOUNT_ID"] = includeCloudflare ? accountId ?? "account_123" : null,
             ["CLOUDFLARE_API_TOKEN"] = includeCloudflare ? cloudflareToken ?? "cloudflare-secret" : null,
             ["CLOUDFLARE_WORKERS_AI_GENERATION_MODEL"] = includeCloudflare ? cloudflareModel ?? "cloudflare-model" : null,
+            ["CLOUDFLARE_WORKERS_AI_GENERATION_SECONDARY_ACCOUNT_ID"] = cloudflareSecondaryAccountId,
+            ["CLOUDFLARE_WORKERS_AI_GENERATION_SECONDARY_API_TOKEN"] = cloudflareSecondaryToken,
+            ["CLOUDFLARE_WORKERS_AI_GENERATION_TERTIARY_ACCOUNT_ID"] = cloudflareTertiaryAccountId,
+            ["CLOUDFLARE_WORKERS_AI_GENERATION_TERTIARY_API_TOKEN"] = cloudflareTertiaryToken,
             ["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"] = includeCloudflare ? cloudflareTimeout ?? "10" : null,
             ["NVIDIA_NIM_GENERATION_SECONDARY_MODEL"] = secondaryModel,
             ["CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL"] = experimentalModel,

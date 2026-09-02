@@ -517,6 +517,9 @@ Generation:
 
 - primary: Cloudflare Workers AI;
 - fallback: NVIDIA NIM;
+- Cloudflare generation account fallback: akun secondary lalu tertiary boleh
+  dicoba otomatis ketika akun sebelumnya rate-limited atau gagal, dengan model,
+  kontrak request/response, dan konfigurasi yang sama;
 - OpenCode Zen FREE (`mimo-v2.5-free` dan `muse-spark-1.2`, serta model FREE lain yang disetujui): diperbolehkan hanya jika eksplisit diminta (on-request, on-demand), bukan primary atau fallback otomatis.
 
 Embedding target yang disetujui:

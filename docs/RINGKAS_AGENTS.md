@@ -191,7 +191,7 @@ Tidak boleh:
 
 - Menambahkan OCR ke MVP.
 - Menjadikan Docling parser production.
-- Menggunakan embedding provider/model berbeda sebagai fallback otomatis. Account-level failover ke akun Cloudflare Workers AI secondary atau tertiary diperbolehkan hanya jika model ID, kontrak request, dan dimensi output sama serta sudah diverifikasi; failover ini wajib eksplisit di config contract.
+- Menggunakan embedding provider/model berbeda sebagai fallback otomatis. Account-level failover ke akun Cloudflare Workers AI secondary atau tertiary untuk embedding maupun generation diperbolehkan hanya jika model ID, kontrak request, dan output contract sama serta sudah diverifikasi; failover ini wajib eksplisit di config contract.
 - Mengubah corpus scope tanpa approval.
 - Membuat angka/statistik sendiri di output.
 
@@ -615,9 +615,15 @@ NVIDIA_NIM_GENERATION_MODEL=mistralai/mistral-small-4-119b-2603
 CLOUDFLARE_ACCOUNT_ID=
 CLOUDFLARE_API_TOKEN=
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=@cf/meta/llama-3.3-70b-instruct-fp8-fast
+CLOUDFLARE_WORKERS_AI_GENERATION_SECONDARY_ACCOUNT_ID=
+CLOUDFLARE_WORKERS_AI_GENERATION_SECONDARY_API_TOKEN=
+CLOUDFLARE_WORKERS_AI_GENERATION_TERTIARY_ACCOUNT_ID=
+CLOUDFLARE_WORKERS_AI_GENERATION_TERTIARY_API_TOKEN=
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
 CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID=
 CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN=
+CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_ACCOUNT_ID=
+CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_API_TOKEN=
 QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v2
 QDRANT_DENSE_VECTOR_SIZE=1024
 GOOGLE_CLIENT_ID=

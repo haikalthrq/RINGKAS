@@ -27,6 +27,11 @@ MVP RINGKAS berfokus pada publikasi BPS DKI Jakarta tingkat provinsi dalam 5 tah
 
 Produk disajikan melalui Next.js + TypeScript dengan App Router sebagai frontend/web presentation layer dan API consumer terhadap ASP.NET Core Web API. ASP.NET Core tetap menjadi main backend/API dan source of truth untuk domain logic, authentication, authorization, Chat/Q&A, document search, admin ingestion, rate limiting, dan application logging. Python RAG Worker tetap menjadi internal processing service. Next.js tidak mengakses PostgreSQL atau Qdrant secara langsung.
 
+Generation menggunakan Cloudflare Workers AI sebagai primary. Jika akun Cloudflare
+primary rate-limited atau gagal, sistem otomatis mencoba akun secondary lalu
+tertiary yang dikonfigurasi dengan model dan kontrak request/response yang sama,
+sebelum berpindah ke fallback NVIDIA NIM.
+
 Arsitektur embedding yang disetujui menggunakan Cloudflare Workers AI dengan
 model `@cf/qwen/qwen3-embedding-0.6b`. Satu akun Cloudflare utama serta akun
 Cloudflare secondary dan tertiary opsional boleh digunakan sebagai account-level failover.

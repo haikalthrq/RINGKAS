@@ -470,11 +470,14 @@ Filter tidak boleh terlalu ketat sampai membuang sumber relevan.
 
 Generation primary menggunakan Cloudflare Workers AI dengan model
 `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
+Jika akun Cloudflare primary rate-limited atau gagal, sistem otomatis mencoba
+akun Cloudflare secondary lalu tertiary yang dikonfigurasi, memakai model dan
+kontrak request/response yang sama.
 
 #### FR-GEN-002 Fallback Provider
 
-Jika generation primary gagal, sistem boleh mencoba NVIDIA NIM dengan model
-`mistralai/mistral-small-4-119b-2603` sebagai fallback.
+Jika seluruh akun Cloudflare generation gagal, sistem boleh mencoba NVIDIA NIM
+dengan model `mistralai/mistral-small-4-119b-2603` sebagai fallback.
 
 #### FR-GEN-003 Experimental Provider
 
@@ -761,7 +764,7 @@ Model MVP yang dikunci kini adalah `@cf/meta/llama-3.3-70b-instruct-fp8-fast` se
 
 ### EI-003 Cloudflare Workers AI
 
-Digunakan sebagai generation primary dengan model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. Rate limit dan availability tetap bergantung pada account/provider.
+Digunakan sebagai generation primary dengan model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. Akun secondary dan tertiary boleh dicoba otomatis jika akun sebelumnya rate-limited atau gagal; rate limit dan availability tetap bergantung pada account/provider.
 
 ### EI-004 Google OAuth
 
@@ -799,7 +802,7 @@ menampilkan error dan tidak otomatis mengganti embedding model/provider.
 
 ### ERR-006 Generation Primary Failure
 
-Jika Cloudflare Workers AI generation gagal, sistem boleh mencoba NVIDIA NIM fallback.
+Jika seluruh akun Cloudflare Workers AI generation gagal, sistem boleh mencoba NVIDIA NIM fallback.
 
 ### ERR-007 Ingestion Partial Failure
 

@@ -45,7 +45,7 @@ Keputusan arsitektur inti:
 | Retrieval | Qdrant dense + sparse vector retrieval |
 | Fusion | Reciprocal Rank Fusion / RRF |
 | Generation primary | Cloudflare Workers AI |
-| Generation fallback | Ordered generation failover: NVIDIA NIM, secondary NVIDIA NIM, then experimental Cloudflare model |
+| Generation fallback | Cloudflare secondary/tertiary accounts, then NVIDIA NIM and experimental Cloudflare model |
 | Embedding provider | Cloudflare Workers AI only: `@cf/qwen/qwen3-embedding-0.6b` |
 | Auth | ASP.NET Core Identity + Google OAuth via backend |
 | Admin UI | Sederhana: trigger ingestion, status job, log ringkas |
@@ -348,6 +348,10 @@ NVIDIA_NIM_GENERATION_SECONDARY_MODEL=nvidia/nemotron-mini-4b-instruct
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=@cf/meta/llama-3.3-70b-instruct-fp8-fast
+CLOUDFLARE_WORKERS_AI_GENERATION_SECONDARY_ACCOUNT_ID=TBD_OPTIONAL
+CLOUDFLARE_WORKERS_AI_GENERATION_SECONDARY_API_TOKEN=TBD_OPTIONAL
+CLOUDFLARE_WORKERS_AI_GENERATION_TERTIARY_ACCOUNT_ID=TBD_OPTIONAL
+CLOUDFLARE_WORKERS_AI_GENERATION_TERTIARY_API_TOKEN=TBD_OPTIONAL
 CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL=@cf/meta/llama-4-scout-17b-16e-instruct
 CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS=60
 QDRANT_URL=http://qdrant:6333
@@ -368,6 +372,8 @@ CLOUDFLARE_API_TOKEN=TBD
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
 CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID=TBD_OPTIONAL
 CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN=TBD_OPTIONAL
+CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_ACCOUNT_ID=TBD_OPTIONAL
+CLOUDFLARE_WORKERS_AI_EMBEDDING_TERTIARY_API_TOKEN=TBD_OPTIONAL
 QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v2
 QDRANT_DENSE_VECTOR_SIZE=1024
 PDF_STORAGE_PATH=/data/ringkas/pdfs
@@ -1014,9 +1020,16 @@ However, the system must still have a sufficiency rule:
 
 | Role | Provider |
 |---|---|
-| Primary generation | NVIDIA NIM |
-| Fallback generation | Cloudflare Workers AI |
+| Primary generation | Cloudflare Workers AI |
+| Fallback generation | Cloudflare secondary/tertiary accounts, then NVIDIA NIM |
 | On-request only (FREE) | OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` — hanya jika eksplisit diminta, bukan fallback otomatis |
+
+Cloudflare generation account failover is ordered as primary, secondary, then
+tertiary. Each configured account uses the same requested model and the same
+request/response contract. Rate-limit, authentication, timeout, transport, and
+provider 5xx failures may advance to the next Cloudflare account. If all
+configured Cloudflare accounts fail, the outer generation order proceeds to the
+NVIDIA fallbacks below.
 
 The MVP locks generation attempts in this order:
 
