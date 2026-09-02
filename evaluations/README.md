@@ -8,7 +8,7 @@ evaluations/
   README.md
   evaluation_dataset.json      # 1000 records ready, verified, 6 tipe (167/167/167/167/166/166) — 100% grounded dari dokumen asli
   responses.json               # 20 respons RAG aktual (q-0001..q-0020) via direct rag-query + NVIDIA NIM (contoh untuk 1000)
-  ragas_report.json            # hasil harness live (blocked) + baseline alternatif
+  ragas_report.json            # hasil harness live saat dijalankan + baseline alternatif
   automated_audit_report.csv   # 20 baris audit otomatis (pengganti manual_audit_template.csv)
   metrics_summary.md           # ringkasan baseline otomatis
   scripts/
@@ -36,7 +36,7 @@ bash evaluations/scripts/run_ragas.sh
 ## Status Saat Ini
 - Dataset: **1000** ready, semua `verified`, semua tipe ter-cover (167/167/167/167/166/166), IDs `q-0001..q-1000`, **tanpa pertanyaan fiktif** (setiap `reference_answer` adalah substring `excerpt` asli atau `title`, `evidence` lengkap dari chunk asli)
 - Responses: 20 contoh (q-0001..q-0020) via staging RAG, avg 9 konteks, avg 1881 chars — untuk 1000, jalankan skrip dengan slice 1000
-- RAGAS: harness `sample` lulus, `live` blocked (ragas 0.4.3 incompat) — baseline alternatif di `metrics_summary.md`
+- RAGAS: harness `sample` lulus; dependency live sudah dipin dan tervalidasi. Live baseline menunggu dataset retrieval yang diperbaiki dan evaluator provider yang tersedia.
 - Audit: 100% otomatis via `automated_audit_report.csv` (20 baris); `manual_audit_template.csv` telah dihapus per `AGENTS.md:277`.
 
 Lihat `metrics_summary.md` untuk hasil otomatis pertama.

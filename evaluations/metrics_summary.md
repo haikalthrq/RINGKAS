@@ -16,7 +16,7 @@
 
 ## RAGAS
 - **Harness `sample`:** `fixture_validated`
-- **Harness `live`:** `blocked` — ragas 0.4.3 incompat (lihat `ragas_report.json`). Baseline di atas adalah 100% otomatis per `AGENTS.md:277`.
+- **Harness `live`:** dependency RAGAS sudah kompatibel (`ragas==0.4.3`, `langchain-community==0.3.31`, `langchain-openai==1.3.5`, `openai==2.46.0`); live baseline belum dijalankan ulang setelah dataset retrieval diperbaiki. Baseline di atas adalah 100% otomatis per `AGENTS.md:277`.
 
 ## Audit (100% Automated)
 Per `AGENTS.md:277` terbaru, pipeline 100% otomatis. `automated_audit_report.csv` berisi 1000 baris `automated`.
