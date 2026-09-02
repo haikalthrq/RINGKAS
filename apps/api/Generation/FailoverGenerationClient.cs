@@ -1,8 +1,8 @@
 namespace Ringkas.Api.Generation;
 
 public sealed class FailoverGenerationClient(
-    INvidiaNimGenerationClient primary,
-    ICloudflareWorkersAiGenerationClient fallback,
+    ICloudflareWorkersAiGenerationClient primary,
+    INvidiaNimGenerationClient fallback,
     ILogger<FailoverGenerationClient> logger,
     IConfiguration? configuration = null) : IGenerationClient
 {
@@ -16,9 +16,8 @@ public sealed class FailoverGenerationClient(
             (primary, null),
             (fallback, null)
         };
-        AddConfiguredAttempt(attempts, primary, "NVIDIA_NIM_GENERATION_SECONDARY_MODEL");
-        AddConfiguredAttempt(attempts, primary, "NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL");
-        AddConfiguredAttempt(attempts, fallback, "CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL");
+        AddConfiguredAttempt(attempts, fallback, "NVIDIA_NIM_GENERATION_SECONDARY_MODEL");
+        AddConfiguredAttempt(attempts, primary, "CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL");
 
         GenerationException? firstFailure = null;
         GenerationException? lastFailure = null;
@@ -49,8 +48,8 @@ public sealed class FailoverGenerationClient(
                     failure.Category,
                     failure.StatusCode,
                     index + 1 < attempts.Count
-                        ? attempts[index + 1].Client is INvidiaNimGenerationClient ? GenerationProvider.NvidiaNim : GenerationProvider.CloudflareWorkersAi
-                        : attempt.Client is INvidiaNimGenerationClient ? GenerationProvider.NvidiaNim : GenerationProvider.CloudflareWorkersAi);
+                        ? ProviderFor(attempts[index + 1].Client)
+                        : ProviderFor(attempt.Client));
             }
             catch (GenerationException failure) when (firstFailure is not null)
             {
@@ -66,6 +65,13 @@ public sealed class FailoverGenerationClient(
 
         throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Generation provider configuration is invalid.");
     }
+
+    private static GenerationProvider ProviderFor(IGenerationClient client) => client switch
+    {
+        INvidiaNimGenerationClient => GenerationProvider.NvidiaNim,
+        ICloudflareWorkersAiGenerationClient => GenerationProvider.CloudflareWorkersAi,
+        _ => throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Generation provider configuration is invalid.")
+    };
 
     private string? ReadModel(string key)
     {

@@ -34,7 +34,7 @@ The configured generation attempts are locked exactly to this order:
 3. `nvidia/nemotron-mini-4b-instruct`
 4. `@cf/meta/llama-4-scout-17b-16e-instruct`
 
-The first item is the Cloudflare fallback (now primary after removal of the unavailable NVIDIA model). The next two are NVIDIA reserve models and the last is the experimental Cloudflare reserve. T-0608 used NVIDIA NIM successfully, so failover was not live-exercised.
+The first item is the Cloudflare primary after removal of the unavailable NVIDIA model. The next two are NVIDIA reserve models and the last is the experimental Cloudflare reserve. T-0608 used NVIDIA NIM successfully, so failover was not live-exercised.
 
 ## Required Environment Names
 
@@ -77,7 +77,6 @@ NVIDIA_NIM_GENERATION_BASE_URL
 NVIDIA_NIM_GENERATION_ALLOWED_HOSTS
 NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS
 NVIDIA_NIM_GENERATION_SECONDARY_MODEL
-NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL
 CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS
 CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL

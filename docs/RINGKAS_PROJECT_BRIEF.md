@@ -515,17 +515,17 @@ Reranking:
 
 Generation:
 
-- primary: NVIDIA NIM;
-- fallback: Cloudflare Workers AI;
+- primary: Cloudflare Workers AI;
+- fallback: NVIDIA NIM;
 - OpenCode Zen FREE (`mimo-v2.5-free` dan `muse-spark-1.2`, serta model FREE lain yang disetujui): diperbolehkan hanya jika eksplisit diminta (on-request, on-demand), bukan primary atau fallback otomatis.
 
 Embedding target yang disetujui:
 
-- Cloudflare Workers AI saja, dengan satu akun sekunder opsional untuk
+- Cloudflare Workers AI saja, dengan akun secondary dan tertiary opsional untuk
   account-level failover;
 - model: `@cf/qwen/qwen3-embedding-0.6b`;
 - tidak ada fallback otomatis ke model/provider embedding berbeda;
-- akun sekunder wajib memakai model ID, kontrak request, dan dimensi output yang
+- akun secondary dan tertiary wajib memakai model ID, kontrak request, dan dimensi output yang
   sama serta diverifikasi sebelum diaktifkan.
 
 Task T-0415 sampai T-0417 telah mengimplementasikan dan memverifikasi client
@@ -538,9 +538,9 @@ kontrak yang sama dapat memakai collection yang sama setelah verifikasi.
 
 Jika embedding provider gagal:
 
-- sistem boleh mencoba akun Cloudflare sekunder yang dikonfigurasi jika seluruh
-  kontraknya identik;
-- jika akun utama dan sekunder gagal, sistem menampilkan error;
+- sistem boleh mencoba akun Cloudflare secondary lalu tertiary yang dikonfigurasi
+  jika seluruh kontraknya identik;
+- jika akun utama, secondary, dan tertiary gagal, sistem menampilkan error;
 - sistem tidak otomatis memakai embedding model/provider berbeda.
 
 Catatan:
@@ -754,7 +754,7 @@ Asumsi awal:
 3. Jumlah publikasi dalam scope MVP tidak melebihi 300 dokumen, atau dapat diprioritaskan jika lebih.
 4. VPS memiliki storage cukup untuk menyimpan PDF, metadata, dan service backend.
 5. Cloudflare Workers AI digunakan sebagai provider generation utama dengan model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; NVIDIA reserve models are `mistralai/mistral-small-4-119b-2603` and `nvidia/nemotron-mini-4b-instruct`.
-6. Cloudflare Workers AI digunakan sebagai fallback generation dengan model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; `@cf/meta/llama-4-scout-17b-16e-instruct` is the experimental last-resort model, and Cloudflare remains the sole embedding provider with `@cf/qwen/qwen3-embedding-0.6b`.
+6. Cloudflare Workers AI `@cf/meta/llama-4-scout-17b-16e-instruct` is the experimental last-resort model, and Cloudflare remains the sole embedding provider with `@cf/qwen/qwen3-embedding-0.6b`.
 7. RAGAS dan LLM-as-judge dapat membantu evaluasi otomatis, tetapi tetap memiliki keterbatasan.
 8. Manual audit 20% cukup untuk baseline awal MVP, bukan untuk klaim akurasi menyeluruh.
 

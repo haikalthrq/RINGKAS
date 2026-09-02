@@ -44,8 +44,8 @@ Keputusan arsitektur inti:
 | Chunking | LangChain `RecursiveCharacterTextSplitter` |
 | Retrieval | Qdrant dense + sparse vector retrieval |
 | Fusion | Reciprocal Rank Fusion / RRF |
-| Generation primary | NVIDIA NIM |
-| Generation fallback | Ordered generation failover: Cloudflare Workers AI, secondary NVIDIA NIM, lightweight NVIDIA NIM, then experimental Cloudflare model |
+| Generation primary | Cloudflare Workers AI |
+| Generation fallback | Ordered generation failover: NVIDIA NIM, secondary NVIDIA NIM, then experimental Cloudflare model |
 | Embedding provider | Cloudflare Workers AI only: `@cf/qwen/qwen3-embedding-0.6b` |
 | Auth | ASP.NET Core Identity + Google OAuth via backend |
 | Admin UI | Sederhana: trigger ingestion, status job, log ringkas |
@@ -345,7 +345,6 @@ NVIDIA_NIM_GENERATION_BASE_URL=https://integrate.api.nvidia.com/v1
 NVIDIA_NIM_GENERATION_ALLOWED_HOSTS=integrate.api.nvidia.com
 NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS=60
 NVIDIA_NIM_GENERATION_SECONDARY_MODEL=nvidia/nemotron-mini-4b-instruct
-NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL=
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=@cf/meta/llama-3.3-70b-instruct-fp8-fast
@@ -1026,7 +1025,7 @@ The MVP locks generation attempts in this order:
 3. `nvidia/nemotron-mini-4b-instruct`
 4. `@cf/meta/llama-4-scout-17b-16e-instruct`
 
-The first model is the Cloudflare fallback (now primary after removal of the unavailable NVIDIA model). The next two are NVIDIA reserve models and the last is the experimental Cloudflare reserve. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk dalam urutan terkunci ini dan hanya boleh dipakai jika eksplisit diminta (on-request). All attempts remain subject to the grounding
+The first model is the Cloudflare primary after removal of the unavailable NVIDIA model. The next two are NVIDIA reserve models and the last is the experimental Cloudflare reserve. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk dalam urutan terkunci ini dan hanya boleh dipakai jika eksplisit diminta (on-request). All attempts remain subject to the grounding
 and citation guard.
 
 ### 20.2 Prompt Rules
@@ -1364,11 +1363,11 @@ Note:
 | Item | Status | Notes |
 |---|---|---|
 | Domain and HTTPS | TBD | Caddy recommended if no preference |
-| NVIDIA NIM generation model | Locked | `mistralai/mistral-small-4-119b-2603`; now primary |
+| NVIDIA NIM generation model | Locked fallback | `mistralai/mistral-small-4-119b-2603`; used after Cloudflare primary |
 | Cloudflare Workers AI embedding secondary/tertiary accounts | Approved contract, implementation complete | Optional ordered account-level failover using the exact same `@cf/qwen/qwen3-embedding-0.6b` model and independently verified contract/dimension |
-| NVIDIA NIM lightweight generation model | Locked reserve | `nvidia/nemotron-mini-4b-instruct`; ordered after the NIM primary model |
+| NVIDIA NIM secondary generation model | Locked reserve | `nvidia/nemotron-mini-4b-instruct`; ordered after the NIM fallback model |
 | Cloudflare Workers AI embedding model | Approved and dimension-locked | `@cf/qwen/qwen3-embedding-0.6b`; live-verified vector dimension `1024` |
-| Cloudflare Workers AI generation fallback model | Locked | `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; account endpoint availability verified |
+| Cloudflare Workers AI generation primary model | Locked | `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; account endpoint availability verified |
 | Cloudflare Workers AI experimental generation model | Experimental reserve | `@cf/meta/llama-4-scout-17b-16e-instruct`; requires evaluation before promotion |
 | Registered user daily quota | TBD | after provider limit estimation |
 | Session vs JWT | TBD | depends on deployment/domain setup |

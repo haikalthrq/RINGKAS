@@ -44,7 +44,7 @@ Next.js + TypeScript dengan App Router berfungsi sebagai frontend/web presentati
 11. PDF parsing text-first menggunakan PyMuPDF.
 12. Hybrid retrieval menggunakan Qdrant dense + sparse vector.
 13. RRF fusion.
-14. Generation dengan NVIDIA NIM primary dan Cloudflare Workers AI fallback.
+14. Generation dengan Cloudflare Workers AI primary dan NVIDIA NIM fallback.
 15. Embedding dengan Cloudflare Workers AI model `@cf/qwen/qwen3-embedding-0.6b` saja.
 16. Evaluasi automated-first menggunakan RAGAS/LLM-as-judge dan manual audit 20%.
 
@@ -468,11 +468,13 @@ Filter tidak boleh terlalu ketat sampai membuang sumber relevan.
 
 #### FR-GEN-001 Primary Provider
 
-Generation primary menggunakan NVIDIA NIM.
+Generation primary menggunakan Cloudflare Workers AI dengan model
+`@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
 
 #### FR-GEN-002 Fallback Provider
 
-Jika generation primary gagal, sistem boleh mencoba Cloudflare Workers AI sebagai fallback.
+Jika generation primary gagal, sistem boleh mencoba NVIDIA NIM dengan model
+`mistralai/mistral-small-4-119b-2603` sebagai fallback.
 
 #### FR-GEN-003 Experimental Provider
 
@@ -751,13 +753,15 @@ daftar publikasi. Limits dan terms provider tetap harus dihormati.
 
 ### EI-002 NVIDIA NIM
 
-Digunakan untuk generation fallback dengan model MVP yang dikunci `mistralai/mistral-small-4-119b-2603` dan `nvidia/nemotron-mini-4b-instruct`. Cloudflare Workers AI kini menjadi primary. NVIDIA NIM bukan embedding provider MVP.
+Digunakan untuk generation fallback dengan model MVP yang dikunci
+`mistralai/mistral-small-4-119b-2603` dan `nvidia/nemotron-mini-4b-instruct`.
+Cloudflare Workers AI kini menjadi primary. NVIDIA NIM bukan embedding provider MVP.
 
-Model MVP yang dikunci kini adalah `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai primary. Rate limit dan availability hosted preview tetap bergantung pada account/provider.
+Model MVP yang dikunci kini adalah `@cf/meta/llama-3.3-70b-instruct-fp8-fast` sebagai primary. Rate limit dan availability tetap bergantung pada account/provider.
 
 ### EI-003 Cloudflare Workers AI
 
-Digunakan sebagai generation fallback dengan model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. Rate limit dan availability tetap bergantung pada account/provider.
+Digunakan sebagai generation primary dengan model `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. Rate limit dan availability tetap bergantung pada account/provider.
 
 ### EI-004 Google OAuth
 
@@ -795,7 +799,7 @@ menampilkan error dan tidak otomatis mengganti embedding model/provider.
 
 ### ERR-006 Generation Primary Failure
 
-Jika NVIDIA NIM generation gagal, sistem boleh mencoba Cloudflare Workers AI fallback.
+Jika Cloudflare Workers AI generation gagal, sistem boleh mencoba NVIDIA NIM fallback.
 
 ### ERR-007 Ingestion Partial Failure
 

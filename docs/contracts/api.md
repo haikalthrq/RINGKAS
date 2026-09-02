@@ -70,7 +70,7 @@ Minimal planned chat response shape from Technical Spec:
 }
 ```
 
-Generation routing follows the locked five-model order in the Technical Spec and
+Generation routing follows the locked four-model order in the Technical Spec and
 Phase 6 runbook. Refusal wording and exact citation formatting remain TBD.
 
 ### Document Search
