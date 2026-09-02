@@ -246,13 +246,30 @@ def account_usage(responses: list[dict[str, Any]], failures: list[dict[str, Any]
     return {key: dict(sorted(counts.items())) for key, counts in sorted(usage.items())}
 
 
+def normalize_checkpoint_records(
+    responses: list[dict[str, Any]], failures: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    response_by_question: dict[str, dict[str, Any]] = {}
+    for response in responses:
+        question_id = response.get("question_id")
+        if isinstance(question_id, str) and question_id:
+            response_by_question[question_id] = response
+
+    failure_by_question: dict[str, dict[str, Any]] = {}
+    for failure in failures:
+        question_id = failure.get("question_id")
+        if isinstance(question_id, str) and question_id and question_id not in response_by_question:
+            failure_by_question[question_id] = failure
+    return list(response_by_question.values()), list(failure_by_question.values())
+
+
 def load_checkpoint(path: Path, dataset_sha256: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     if not path.exists():
         return [], []
     checkpoint = json.loads(path.read_text(encoding="utf-8"))
     if checkpoint.get("dataset_sha256") != dataset_sha256:
         return [], []
-    return checkpoint.get("responses", []), checkpoint.get("failures", [])
+    return normalize_checkpoint_records(checkpoint.get("responses", []), checkpoint.get("failures", []))
 
 
 def main() -> int:
@@ -311,12 +328,15 @@ def main() -> int:
             completed_ids.add(record["question_id"])
             failures = [failure for failure in failures if failure.get("question_id") != record["question_id"]]
         except Exception as error:
+            failures = [failure for failure in failures if failure.get("question_id") != record["question_id"]]
             failures.append({"question_id": record["question_id"], "error_category": category(error), "error_class": error.__class__.__name__, "attempts": list(pool.last_attempts)})
             logger.error("question_id=%s category=%s class=%s", record["question_id"], category(error), error.__class__.__name__)
         if index % 5 == 0 or index == len(records):
+            responses, failures = normalize_checkpoint_records(responses, failures)
             atomic_write(args.checkpoint, {"dataset_sha256": dataset_sha256, "responses": responses, "failures": failures})
             logger.info("checkpoint=%d/%d responses=%d failures=%d", index, len(records), len(responses), len(failures))
 
+    responses, failures = normalize_checkpoint_records(responses, failures)
     responses.sort(key=lambda item: item["question_id"])
     output = {"records": responses}
     atomic_write(args.output, output)

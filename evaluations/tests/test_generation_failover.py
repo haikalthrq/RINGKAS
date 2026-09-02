@@ -91,6 +91,22 @@ def test_evaluator_uses_shared_canonical_account_pool(monkeypatch) -> None:
     assert configured.cloudflare_model == "generation-model"
 
 
+def test_evaluator_has_no_nvidia_target_when_nvidia_environment_is_empty(monkeypatch) -> None:
+    for name, value in {
+        "CLOUDFLARE_ACCOUNT_ID": "primary",
+        "CLOUDFLARE_API_TOKEN": "primary-token",
+        "CLOUDFLARE_WORKERS_AI_GENERATION_MODEL": "generation-model",
+    }.items():
+        monkeypatch.setenv(name, value)
+    for name in ("NVIDIA_NIM_API_KEY", "NVIDIA_NIM_GENERATION_MODEL", "NVIDIA_NIM_GENERATION_BASE_URL", "NVIDIA_NIM_GENERATION_SECONDARY_MODEL"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.delenv("RINGKAS_ENV_FILE", raising=False)
+
+    configured = module.configured_generation_pool()
+
+    assert configured.nvidia == ()
+
+
 def test_cloudflare_timeout_advances_to_secondary() -> None:
     logger_instance, _ = logger()
 
@@ -181,6 +197,24 @@ def test_checkpoint_resume_returns_only_saved_successes(tmp_path: Path) -> None:
     assert [item["question_id"] for item in responses] == ["q-0001"]
     assert [item["question_id"] for item in failures] == ["q-0002"]
     assert module.load_checkpoint(checkpoint, "different") == ([], [])
+
+
+def test_checkpoint_resume_deduplicates_failures_and_drops_stale_failure(tmp_path: Path) -> None:
+    checkpoint = tmp_path / "checkpoint.json"
+    checkpoint.write_text(json.dumps({
+        "dataset_sha256": "sha",
+        "responses": [{"question_id": "q-0001", "response": "saved"}],
+        "failures": [
+            {"question_id": "q-0001", "error_class": "stale"},
+            {"question_id": "q-0002", "error_class": "old"},
+            {"question_id": "q-0002", "error_class": "latest"},
+        ],
+    }))
+
+    responses, failures = module.load_checkpoint(checkpoint, "sha")
+
+    assert responses == [{"question_id": "q-0001", "response": "saved"}]
+    assert failures == [{"question_id": "q-0002", "error_class": "latest"}]
 
 
 def test_no_synthetic_context_fallback_and_secrets_are_not_logged() -> None:

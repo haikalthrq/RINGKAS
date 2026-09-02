@@ -4,6 +4,10 @@ set -u
 ROOT="${RINGKAS_ROOT:-/home/haikalthoriqa/RINGKAS}"
 cd "$ROOT" || exit 1
 
+exec 9>"$ROOT/evaluations/t_eval_0003.lock"
+flock -n 9 || exit 0
+trap 'rm -f "$ROOT/evaluations/t_eval_0003.lock"' EXIT
+
 if [ ! -f "$ROOT/.env" ]; then
   exit 1
 fi
