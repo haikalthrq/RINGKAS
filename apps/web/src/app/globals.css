@@ -86,8 +86,9 @@ h1, h2, h3 { text-wrap: balance; }
 .nav-link:focus-visible, .brand:focus-visible, .inline-link:focus-visible, .source-link:focus-visible, .source-drawer-link:focus-visible { outline: 3px solid #8dc4df; outline-offset: 3px; }
 .nav-link-static { cursor: default; }
 
-.header-language-control { display: inline-flex; align-items: center; margin: 0 4px; }
-.header-language-control select { min-height: 36px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--blue-950); font-family: var(--font-mono); font-size: .8rem; font-weight: 750; cursor: pointer; transition: all .14s ease; }
+.header-language-control { position: relative; display: inline-flex; align-items: center; margin: 0 4px; }
+.header-language-control .language-globe-icon { position: absolute; left: 10px; width: 15px; height: 15px; color: var(--ink-600); pointer-events: none; }
+.header-language-control select { min-height: 38px; padding: 4px 10px 4px 30px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--blue-950); font-family: var(--font-mono); font-size: .8rem; font-weight: 750; cursor: pointer; transition: all .14s ease; }
 .header-language-control select:hover { border-color: var(--blue-700); background: var(--surface-subtle); }
 .header-language-control select:focus-visible { outline: 3px solid #8dc4df; outline-offset: 2px; }
 
