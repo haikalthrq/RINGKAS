@@ -11,19 +11,18 @@ import { UserAccountMenu } from "./user-account-menu";
 export function SiteHeader() {
   const pathname = usePathname();
   const { isLoading, isAuthenticated, hasAnyRole } = useAuth();
-  const [language] = useInterfaceLanguage();
-  const headerLanguage = pathname === "/" ? "id" : language;
-  const labels = headerLanguage === "id"
-    ? { home: "Beranda", chat: "Chat", documents: "Dokumen", admin: "Admin", checking: "Memeriksa sesi...", subtitle: "Riset BPS dengan bukti", bpsCredit: "Korpus BPS DKI" }
-    : { home: "Home", chat: "Chat", documents: "Documents", admin: "Admin", checking: "Checking session...", subtitle: "BPS research, with evidence", bpsCredit: "BPS DKI Corpus" };
+  const [language, changeLanguage] = useInterfaceLanguage();
+  const labels = language === "id"
+    ? { home: "Beranda", chat: "Chat", documents: "Dokumen", admin: "Admin", checking: "Memeriksa sesi...", bpsCredit: "Korpus BPS DKI" }
+    : { home: "Home", chat: "Chat", documents: "Documents", admin: "Admin", checking: "Checking session...", bpsCredit: "BPS DKI Corpus" };
   const visibleLinks = [{ href: "/", label: labels.home }, { href: "/chat", label: labels.chat }];
   if (isAuthenticated) {
     visibleLinks.push({ href: "/documents", label: labels.documents });
     if (hasAnyRole("admin", "system_maintainer")) visibleLinks.push({ href: "/admin", label: labels.admin });
   } else if (!isLoading) {
     visibleLinks.push(
-      { href: "/login", label: headerLanguage === "id" ? "Masuk" : "Sign in" },
-      { href: "/register", label: headerLanguage === "id" ? "Daftar" : "Register" }
+      { href: "/login", label: language === "id" ? "Masuk" : "Sign in" },
+      { href: "/register", label: language === "id" ? "Daftar" : "Register" }
     );
   }
 
@@ -43,6 +42,17 @@ export function SiteHeader() {
         </div>
         <nav className="nav" aria-label="Main navigation">
           {visibleLinks.map(({ href, label }) => <Link aria-current={pathname === href ? "page" : undefined} className={`nav-link${pathname === href ? " active" : ""}`} href={href} key={href}>{label}</Link>)}
+          <label className="language-control header-language-control">
+            <span className="sr-only">Bahasa / Language</span>
+            <select
+              value={language}
+              aria-label="Pilih Bahasa / Select Language"
+              onChange={(event) => changeLanguage(event.target.value as "id" | "en")}
+            >
+              <option value="id">ID</option>
+              <option value="en">EN</option>
+            </select>
+          </label>
           {isAuthenticated && <UserAccountMenu />}
         </nav>
       </div>
