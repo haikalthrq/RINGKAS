@@ -42,18 +42,22 @@ export function SiteHeader() {
         </div>
         <nav className="nav" aria-label="Main navigation">
           {visibleLinks.map(({ href, label }) => <Link aria-current={pathname === href ? "page" : undefined} className={`nav-link${pathname === href ? " active" : ""}`} href={href} key={href}>{label}</Link>)}
-          <label className="language-control header-language-control">
-            <span className="sr-only">Bahasa / Language</span>
-            <GlobeIcon className="language-globe-icon" aria-hidden="true" />
+          <div className="header-language-control">
+            <span className="language-pill-display" aria-hidden="true">
+              <GlobeIcon size={16} className="language-globe-icon" />
+              <span className="language-current-label">{language.toUpperCase()}</span>
+              <ChevronDownIcon size={12} className="language-chevron" />
+            </span>
             <select
+              className="language-native-select"
               value={language}
               aria-label="Pilih Bahasa / Select Language"
               onChange={(event) => changeLanguage(event.target.value as "id" | "en")}
             >
-              <option value="id">ID</option>
-              <option value="en">EN</option>
+              <option value="id">Bahasa Indonesia (ID)</option>
+              <option value="en">English (EN)</option>
             </select>
-          </label>
+          </div>
           {isAuthenticated && <UserAccountMenu />}
         </nav>
       </div>
@@ -61,7 +65,7 @@ export function SiteHeader() {
   );
 }
 
-function GlobeIcon({ className, size = 15 }: { className?: string; size?: number }) {
+function GlobeIcon({ className, size = 16 }: { className?: string; size?: number }) {
   return (
     <svg
       width={size}
@@ -69,7 +73,7 @@ function GlobeIcon({ className, size = 15 }: { className?: string; size?: number
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
@@ -77,6 +81,24 @@ function GlobeIcon({ className, size = 15 }: { className?: string; size?: number
       <circle cx="12" cy="12" r="10" />
       <line x1="2" y1="12" x2="22" y2="12" />
       <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className, size = 12 }: { className?: string; size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   );
 }

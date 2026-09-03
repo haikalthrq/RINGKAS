@@ -522,7 +522,6 @@ function ChatSidebar(props: {
       </div>
       <div className="sidebar-footer">
         {props.currentUserEmail ? <span className="sidebar-account"><span className="account-avatar" aria-hidden="true">{props.currentUserEmail[0]?.toUpperCase()}</span><span><strong>{props.labels.signedIn}</strong><small>{props.currentUserEmail}</small></span></span> : null}
-        <label className="sidebar-language-control"><span>{props.labels.language}</span><select value={props.language} aria-label={props.labels.language} onChange={(event) => props.onLanguageChange(event.target.value as InterfaceLanguage)}><option value="id">Bahasa Indonesia</option><option value="en">English</option></select></label>
       </div>
     </aside>
   );
