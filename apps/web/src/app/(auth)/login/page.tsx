@@ -42,7 +42,7 @@ function LoginForm() {
     <section className="page-card auth-card">
       <p className="eyebrow">Masuk Akun</p>
       <h1>Masuk ke RINGKAS</h1>
-      <p className="page-intro">Gunakan akun Anda untuk mengakses riwayat riset dan penelusuran publikasi BPS.</p>
+      <p className="page-intro">Masuk untuk mengakses riwayat pertanyaan dan dokumen tersimpan.</p>
       
       {googleError ? <p className="form-error" role="alert">{googleError}</p> : null}
       

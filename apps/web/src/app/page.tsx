@@ -18,7 +18,7 @@ export default function HomePage() {
         <div className="home-hero">
           <div className="home-copy">
             <p className="eyebrow">
-              {isEn ? "Source-Grounded Statistical Assistant" : "Asisten Statistik Berbasis Sumber"}
+              {isEn ? "Statistical Retrieval System" : "Sistem Penelusuran Statistik"}
             </p>
             <h1 id="home-title">
               <span className="home-title-brand">RINGKAS</span>
@@ -29,94 +29,94 @@ export default function HomePage() {
               </span>
               <span className="home-title-tagline">
                 {isEn ? (
-                  <>Evidence first.<br />Then believe.</>
+                  <>Ground every statistic<br />in official publications.</>
                 ) : (
-                  <>Bukti dulu.<br />Baru percaya.</>
+                  <>Rujuk data statistik<br />langsung ke dokumen aslinya.</>
                 )}
               </span>
             </h1>
             <p className="home-description">
               {isEn
-                ? "RINGKAS helps you discover and comprehend BPS DKI Jakarta publications. Every substantive answer requires authentic citations that can be verified directly on the source page."
-                : "RINGKAS membantu Anda menemukan dan memahami publikasi BPS DKI Jakarta. Setiap jawaban substantif wajib memiliki sitasi otentik yang dapat Anda verifikasi langsung ke halaman sumber."}
+                ? "RINGKAS indexes BPS DKI Jakarta publications so you can query regional statistics and inspect the exact page, table, and paragraph behind every claim."
+                : "RINGKAS mengindeks publikasi BPS DKI Jakarta agar Anda dapat menelusuri data statistik daerah dan memeriksa langsung halaman, tabel, serta paragraf sumbernya."}
             </p>
             <div className="home-actions">
               <Link className="primary-button ds-btn-primary" href="/chat">
                 {isAuthenticated
-                  ? (isEn ? "Open Research Workspace" : "Buka Ruang Riset")
-                  : (isEn ? "Start Research" : "Mulai Riset")}
+                  ? (isEn ? "Open Workspace" : "Buka Ruang Riset")
+                  : (isEn ? "Start Querying" : "Mulai Penelusuran")}
               </Link>
               {!isAuthenticated ? (
                 <Link className="secondary-button" href="/login">
-                  {isEn ? "Sign In to Save" : "Masuk untuk Menyimpan"}
+                  {isEn ? "Sign In" : "Masuk"}
                 </Link>
               ) : null}
             </div>
             <p className="home-access-note">
               {isAuthenticated
                 ? (isEn
-                    ? "Research workspace, document search, and question history ready."
-                    : "Ruang riset, pencarian dokumen, dan riwayat pertanyaan siap digunakan.")
+                    ? "Saved chats, document search, and query history are enabled."
+                    : "Riwayat pertanyaan dan penelusuran dokumen tersimpan di akun Anda.")
                 : (isEn
-                    ? "Guest mode available for 1 research query with publication citations."
-                    : "Mode tamu tersedia untuk 1 kali pertanyaan riset beserta sitasi publikasi.")}
+                    ? "Guest mode allows 1 test query with verified citations."
+                    : "Mode tamu tersedia untuk 1 kali pertanyaan beserta rujukan dokumen.")}
             </p>
           </div>
-          <div className="home-visual" aria-label={isEn ? "RINGKAS citation preview example" : "Contoh tampilan citation RINGKAS"}>
+          <div className="home-visual" aria-label={isEn ? "Sample citation preview" : "Pratinjau contoh sitasi"}>
             <div className="evidence-preview">
               <div className="preview-top">
-                <span>RINGKAS / EVIDENCE SPEC</span>
-                <b>{isEn ? "VERIFIED CITATION" : "SITASI SAH"}</b>
+                <span>{isEn ? "SAMPLE CITATION" : "CONTOH SITASI"}</span>
+                <b>{isEn ? "PAGE 14" : "HALAMAN 14"}</b>
               </div>
               <div className="preview-rule" />
               <p className="preview-question">
                 {isEn
-                  ? "How do you find statistics you can truly rely on?"
-                  : "Bagaimana menemukan statistik yang dapat dipertanggungjawabkan?"}
+                  ? "What was the poverty line in DKI Jakarta in September 2024?"
+                  : "Berapa Garis Kemiskinan di DKI Jakarta pada September 2024?"}
               </p>
               <div className="preview-answer">
                 <span>[01]</span>
                 <p>
                   {isEn
-                    ? "Answers are synthesized directly from verified BPS publication text extracts, complete with page metadata and authentic quotes."
-                    : "Jawaban disusun langsung dari ekstrak teks publikasi BPS, lengkap dengan metadata halaman dan kutipan asli."}
+                    ? "The poverty line for DKI Jakarta in September 2024 stood at IDR 826,315 per capita per month, an increase of 2.14% compared to March 2024."
+                    : "Garis Kemiskinan DKI Jakarta pada September 2024 tercatat sebesar Rp826.315 per kapita per bulan, naik 2,14% dibanding Maret 2024."}
                 </p>
               </div>
               <div className="preview-source">
-                <small>VERIFIED SOURCE</small>
-                <strong>BPS Provinsi DKI Jakarta</strong>
-                <span>{isEn ? "Region · Year · Page · Excerpt" : "Wilayah · Tahun · Halaman · Excerpt"}</span>
+                <small>{isEn ? "SOURCE PUBLICATION" : "PUBLIKASI SUMBER"}</small>
+                <strong>{isEn ? "BPS DKI Jakarta Province" : "BPS Provinsi DKI Jakarta"}</strong>
+                <span>{isEn ? "Poverty Profile in DKI Jakarta · Sep 2024 · p. 14" : "Profil Kemiskinan di DKI Jakarta · Sep 2024 · hal. 14"}</span>
               </div>
               <div className="preview-bottom">
-                <span>{isEn ? "Verified Citation" : "Sitasi Terverifikasi"}</span>
+                <span>{isEn ? "Verified from publication text" : "Terverifikasi dari teks publikasi"}</span>
                 <i aria-hidden="true" />
               </div>
             </div>
           </div>
         </div>
-        <div className="home-proof" aria-label={isEn ? "RINGKAS Principles" : "Prinsip RINGKAS"}>
+        <div className="home-proof" aria-label={isEn ? "System standards" : "Standar sistem"}>
           <span>
-            <b>{isEn ? "Publication-Grounded" : "Berbasis Publikasi"}</b>
+            <b>{isEn ? "Indexed Corpus" : "Korpus Terindeks"}</b>
             <small>
               {isEn
-                ? "Answers synthesized purely from indexed BPS documents without fabricated statistics."
-                : "Jawaban murni dari corpus BPS yang terindeks tanpa karangan statistik."}
+                ? "Extracted text and metadata from official BPS regional releases."
+                : "Teks dan metadata diekstrak dari publikasi resmi rilis BPS daerah."}
             </small>
           </span>
           <span>
-            <b>{isEn ? "Transparent Citations" : "Sitasi Transparan"}</b>
+            <b>{isEn ? "Page-Level Citations" : "Sitasi Nomor Halaman"}</b>
             <small>
               {isEn
-                ? "Direct access to metadata, page numbers, paragraph quotes, and PDF source links."
-                : "Akses metadata, nomor halaman, cuplikan paragraf, dan link sumber PDF."}
+                ? "Every substantive claim links to the document title, page number, and original quote."
+                : "Setiap klaim data memuat judul publikasi, nomor halaman, dan kutipan kalimat aslinya."}
             </small>
           </span>
           <span>
-            <b>{isEn ? "Honest Limitations" : "Batasan Jujur"}</b>
+            <b>{isEn ? "Refusal on Weak Evidence" : "Penolakan Bukti Lemah"}</b>
             <small>
               {isEn
-                ? "RINGKAS refuses to answer substantive claims when available evidence is insufficient."
-                : "RINGKAS menolak menjawab secara terukur apabila bukti belum mencukupi."}
+                ? "The system refuses to generate statistical answers when retrieved evidence is insufficient."
+                : "Sistem menolak memberikan angka jika bukti dokumen yang ditemukan belum mencukupi."}
             </small>
           </span>
         </div>
@@ -124,14 +124,14 @@ export default function HomePage() {
           <div className="home-attribution-badge">
             <BpsLogo width={40} height={31} className="bps-attribution-img" />
             <div>
-              <p className="eyebrow">{isEn ? "Data Source Attribution" : "Apresiasi Sumber Data"}</p>
+              <p className="eyebrow">{isEn ? "Data Source" : "Sumber Data"}</p>
               <strong>{isEn ? "BPS - Statistics Indonesia" : "Badan Pusat Statistik Republik Indonesia"}</strong>
             </div>
           </div>
           <p className="home-attribution-note">
             {isEn
-              ? "All data, indicator definitions, and publication documents in this system originate from BPS Provinsi DKI Jakarta. RINGKAS is developed as an independent information retrieval system prioritizing citation transparency and page-level precision."
-              : "Seluruh data, definisi indikator, dan dokumen publikasi dalam sistem ini bersumber dari Badan Pusat Statistik Provinsi DKI Jakarta. RINGKAS dikembangkan sebagai sistem temu-kembali informasi independen yang memprioritaskan transparansi kutipan dan akurasi rujukan halaman."}
+              ? "All statistical data and publications in this repository originate from BPS Provinsi DKI Jakarta. RINGKAS is an independent retrieval tool built to verify citations and page references."
+              : "Seluruh publikasi dan data statistik dalam sistem ini bersumber dari Badan Pusat Statistik Provinsi DKI Jakarta. RINGKAS merupakan alat temu-kembali independen yang dirancang untuk memverifikasi rujukan halaman dan kutipan data."}
           </p>
         </div>
         <div className="home-footer">
@@ -141,8 +141,8 @@ export default function HomePage() {
           </div>
           <p>
             {isEn
-              ? "Statistical research guiding you from question to authentic evidence."
-              : "Riset statistik yang membantu Anda bergerak dari pertanyaan ke bukti otentik."}
+              ? "Search and verify BPS statistical publications with citations."
+              : "Temu-kembali dan verifikasi publikasi statistik BPS berbasis sitasi."}
           </p>
           <b>{isEn ? "DKI JAKARTA / BPS PUBLICATIONS" : "DKI JAKARTA / PUBLIKASI BPS"}</b>
         </div>

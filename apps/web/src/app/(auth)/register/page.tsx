@@ -38,8 +38,8 @@ export default function RegisterPage() {
   return (
     <section className="page-card auth-card">
       <p className="eyebrow">Daftar Akun</p>
-      <h1>Buat Akun Peneliti RINGKAS</h1>
-      <p className="page-intro">Daftarkan akun untuk menyimpan sesi riset, pertanyaan, dan sitasi dokumen BPS Anda.</p>
+      <h1>Daftar Akun RINGKAS</h1>
+      <p className="page-intro">Simpan riwayat pertanyaan, penelusuran, dan sitasi publikasi BPS Anda.</p>
 
       <a className="google-auth-button" href="/api/auth/google?returnUrl=%2Fchat">
         <GoogleIcon size={18} />
