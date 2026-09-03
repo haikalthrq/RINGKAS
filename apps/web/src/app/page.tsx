@@ -11,12 +11,6 @@ export default function HomePage() {
   return (
     <div className="home-page">
       <section className="home-card" aria-labelledby="home-title">
-        <div className="home-kicker">
-          <span>RINGKAS / BPS</span>
-          <span className="home-scope">
-            <i aria-hidden="true" /> Corpus Publikasi DKI Jakarta
-          </span>
-        </div>
         <div className="home-hero">
           <div className="home-copy">
             <p className="eyebrow">Asisten Statistik Berbasis Sumber</p>
