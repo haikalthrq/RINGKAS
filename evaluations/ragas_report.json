@@ -1,26 +1,8 @@
 {
-  "ragas_live": {
-    "status": "empty"
-  },
-  "alternative_baseline": {
-    "evaluation_label": "staging baseline 1000 (100% automated)",
-    "status": "completed_1000",
-    "dataset": "evaluations/evaluation_dataset.json (1000 ready)",
-    "responses": "evaluations/responses.json (1000)",
-    "retrieval": {
-      "evaluated": 1000,
-      "hit_at_k": "98/1000 (9.8%)",
-      "avg_contexts": 9.1
-    },
-    "generation": {
-      "substantive": "961/1000",
-      "refusals": "39/1000",
-      "avg_length": 2273
-    },
-    "fictitious": "0/1000"
-  },
-  "files": {
-    "dataset": "evaluations/evaluation_dataset.json:1",
-    "responses": "evaluations/responses.json:1"
-  }
+  "evaluation_label": "live RAGAS evaluation",
+  "status": "blocked",
+  "sample_count": 0,
+  "metrics": null,
+  "error_class": "ResponseValidationError",
+  "reason": "response generation did not complete; no synthetic responses were evaluated"
 }

@@ -47,7 +47,9 @@ function LoginForm() {
 }
 
 function AuthField(props: { label: string; type: string; value: string; error?: string; disabled: boolean; autoComplete: string; onChange: (value: string) => void }) {
-  return <label className="field"><span>{props.label}</span><input autoComplete={props.autoComplete} disabled={props.disabled} name={props.label.toLowerCase()} onChange={(event) => props.onChange(event.target.value)} required type={props.type} value={props.value} />{props.error ? <span className="field-error">{props.error}</span> : null}</label>;
+  const fieldId = `auth-${props.label.toLowerCase()}`;
+  const errorId = `${fieldId}-error`;
+  return <label className="field"><span>{props.label}</span><input aria-describedby={props.error ? errorId : undefined} aria-invalid={Boolean(props.error)} autoComplete={props.autoComplete} disabled={props.disabled} id={fieldId} name={props.label.toLowerCase()} onChange={(event) => props.onChange(event.target.value)} required type={props.type} value={props.value} />{props.error ? <span className="field-error" id={errorId}>{props.error}</span> : null}</label>;
 }
 
 function resolveSafeRedirectPath(from: string | null, fallback: string) {
