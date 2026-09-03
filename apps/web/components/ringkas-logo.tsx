@@ -9,7 +9,7 @@ export function RingkasLogo({
     <svg
       width={size}
       height={size}
-      viewBox="0 0 100 100"
+      viewBox="0 0 105 105"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
@@ -17,39 +17,46 @@ export function RingkasLogo({
       role="img"
       {...props}
     >
-      {/* Left spine of R */}
-      <rect x="12" y="10" width="16" height="80" rx="3" fill="var(--orange-500, #f58220)" />
-      
-      {/* Histogram Bar 1 (Short) */}
-      <rect x="33" y="52" width="14" height="38" rx="2.5" fill="var(--orange-500, #f58220)" />
-      
-      {/* Histogram Bar 2 (Mid-High) */}
-      <rect x="52" y="34" width="14" height="56" rx="2.5" fill="var(--orange-500, #f58220)" />
-      
-      {/* Top loop of R */}
+      {/* 1. Left Spine - Lower Block (Histogram Bar 0) */}
+      <rect x="8" y="66" width="16" height="28" fill="var(--orange-500, #F58220)" />
+
+      {/* 2. Middle Histogram Bar (Bar 1 - mid height) */}
+      <rect x="29" y="52" width="16" height="42" fill="var(--orange-500, #F58220)" />
+
+      {/* 3. Right Histogram Bar (Bar 2 - tallest bar) */}
+      <rect x="50" y="34" width="16" height="60" fill="var(--orange-500, #F58220)" />
+
+      {/* 4. Left Spine Upper Block + Top Roof + R Bowl + Diagonal Leg */}
       <path
-        d="M28 10H66C78.15 10 88 19.85 88 32C88 44.15 78.15 54 66 54H28V10Z"
-        fill="var(--orange-500, #f58220)"
+        d="
+          M 8 11
+          H 68
+          C 86 11 98 23 98 40
+          C 98 55 87 66 74 69
+          L 97 92
+          L 77 92
+          L 66 69
+          V 60
+          H 8
+          V 11
+          Z
+          M 24 25
+          V 60
+          H 66
+          C 74 60 82 54 82 40
+          C 82 28 74 25 66 25
+          H 24
+          Z
+        "
+        fill="var(--orange-500, #F58220)"
       />
-      {/* Inner cutout of R loop */}
-      <rect x="28" y="22" width="40" height="20" rx="2" fill="var(--surface, #ffffff)" />
-      
-      {/* Diagonal R leg */}
-      <path
-        d="M58 50L78 80H62L48 50H58Z"
-        fill="var(--orange-500, #f58220)"
-      />
-      
-      {/* Folded archive folio corner accent */}
-      <path
-        d="M72 74L88 90H72V74Z"
-        fill="var(--blue-900, #083b5c)"
-      />
-      <path
-        d="M88 74L72 74L88 90V74Z"
-        fill="var(--blue-700, #005b96)"
-        opacity="0.3"
-      />
+
+      {/* 5. Page-turn dog ear: Dark Navy Underneath */}
+      <polygon points="77,92 97,76 97,92" fill="var(--blue-950, #062c45)" />
+
+      {/* 6. Page-turn dog ear: Folded Silver Paper Flap */}
+      <polygon points="67,92 77,92 97,76" fill="#cbd5e1" />
+      <polygon points="67,92 77,92 77,84" fill="#94a3b8" />
     </svg>
   );
 }

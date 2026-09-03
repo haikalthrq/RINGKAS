@@ -32,12 +32,12 @@ export function SiteHeader() {
       <div className="site-header-inner">
         <div className="brand-group">
           <Link className="brand" href="/" aria-label="Beranda RINGKAS">
-            <RingkasLogo size={28} className="brand-logo-svg" />
+            <RingkasLogo size={34} className="brand-logo-svg" />
             <span className="brand-title">RINGKAS</span>
           </Link>
           <div className="brand-divider" aria-hidden="true" />
           <div className="brand-bps-credit" title="Publikasi dan arsip bersumber dari Badan Pusat Statistik Republik Indonesia">
-            <BpsLogo width={20} height={16} className="bps-header-logo" />
+            <BpsLogo width={22} height={18} className="bps-header-logo" />
             <span className="bps-credit-text">{labels.bpsCredit}</span>
           </div>
         </div>
