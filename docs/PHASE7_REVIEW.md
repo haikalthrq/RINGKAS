@@ -140,7 +140,7 @@ Status: reviewed
 | Sparse retrieval truthfulness | critical drift | The Qdrant sparse reader accepts an externally built `SparseQuery` (`sparse_retrieval.py:81-117,199-224`), but no sparse encoder or sparse index write exists. Indexing writes only `vector={DENSE_VECTOR_NAME: ...}` (`indexing.py:335-345`). The live query engine explicitly creates an empty sparse result (`query_service.py:56-60`). |
 | RRF and final Top-10 | partial | RRF and final selection are implemented and tested (`fusion.py:152-200`, `selection.py:101-150`), but production RRF receives dense candidates plus an empty sparse candidate set. The accepted Phase 6 retrieval result therefore proves ten citations, not hybrid retrieval. |
 | Retrieval sufficiency guard | compliant with known quality limitation | `QualitativeRetrievalSufficiencyEvaluator` requires citable evidence and returns limitation/refusal states (`sufficiency.py:259-292`); `query_service.py:61-90` applies the result before API generation. Relevance is deterministic lexical assessment and semantic entailment remains future work (`sufficiency.py:94-129,291-292`). |
-| Seven-stage generation order | compliant in code/tests | `FailoverGenerationClient` builds the ordered Cloudflare/five-NVIDIA-NIM/Cloudflare attempts (`apps/api/Generation/FailoverGenerationClient.cs:22-32`), and the locked-order test covers the current models (`tests/api/Generation/GenerationClientTests.cs:527-565`). Phase 6 only live-exercised the historical NVIDIA path (`docs/PHASE6_RUNBOOK.md:38-41`). |
+| Five-model generation order | compliant in code/tests | `FailoverGenerationClient` builds the ordered five attempts (`apps/api/Generation/FailoverGenerationClient.cs:14-22`), and the locked-order test covers all models (`tests/api/Generation/GenerationClientTests.cs:418-452`). Phase 6 only live-exercised the primary (`docs/PHASE6_RUNBOOK.md:38-41`). |
 | Citation fields and source endpoint | compliant | Retrieval validates title, year, region, page range, URL, and snippet (`apps/api/Retrieval/InternalRetrievalClient.cs:110-132`); the source API returns the persisted excerpt and metadata (`apps/api/Endpoints/SourceEndpoints.cs:25-46`). Generation rejects lines without valid citation labels (`apps/api/Endpoints/ChatEndpoints.cs:295-333`). |
 | Authentication, authorization, quota, and rate limit | partial | Cookie auth, Identity, role policies, guest quota, short-window limits, and admin ingestion limits exist (`Program.cs:20-65,179-236`; `AdminIngestionEndpoints.cs:12-20`). Google OAuth/email verification are placeholders, registered quota is optional/in-memory, and there is no durable usage-log table. |
 | Docker Compose single-VPS topology | compliant as local topology | Compose includes PostgreSQL, Qdrant, worker, private `rag-query`, API, and web (`infra/docker-compose.yml:3-184`). Domain/HTTPS, reverse proxy choice, exact VPS size, and backups remain unresolved. |
@@ -268,7 +268,7 @@ evidence and an explicit source-of-truth update.
   `rag-query` private.
 - Keep Next.js as an App Router presentation layer and API consumer only.
 - Keep PostgreSQL, Qdrant, PyMuPDF, Cloudflare-only embedding, and the locked
-  seven-stage generation order with five NVIDIA NIM fallback models.
+  five-model generation order.
 - Do not add OCR, production Docling, uploads, public third-party API, mobile,
   payment, complex analytics, fine-tuning, custom embedding training, or a
   replacement backend/database/vector store.

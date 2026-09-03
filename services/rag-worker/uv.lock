@@ -2379,9 +2379,6 @@ dependencies = [
 
 [package.optional-dependencies]
 evaluation = [
-    { name = "langchain-community" },
-    { name = "langchain-openai" },
-    { name = "openai" },
     { name = "ragas" },
 ]
 test = [
@@ -2391,10 +2388,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = "==0.28.1" },
-    { name = "langchain-community", marker = "extra == 'evaluation'", specifier = "==0.3.31" },
-    { name = "langchain-openai", marker = "extra == 'evaluation'", specifier = "==1.3.5" },
     { name = "langchain-text-splitters", specifier = "==0.3.11" },
-    { name = "openai", marker = "extra == 'evaluation'", specifier = "==2.46.0" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.3.4" },
     { name = "pydantic-settings", specifier = "==2.14.2" },
     { name = "pymupdf", specifier = "==1.26.3" },

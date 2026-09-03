@@ -1,19 +1,11 @@
 namespace Ringkas.Api.Generation;
 
 public sealed class FailoverGenerationClient(
-    ICloudflareWorkersAiGenerationClient primary,
-    INvidiaNimGenerationClient fallback,
+    INvidiaNimGenerationClient primary,
+    ICloudflareWorkersAiGenerationClient fallback,
     ILogger<FailoverGenerationClient> logger,
     IConfiguration? configuration = null) : IGenerationClient
 {
-    private static readonly string[] NvidiaModelKeys =
-    [
-        "NVIDIA_NIM_GENERATION_SECONDARY_MODEL",
-        "NVIDIA_NIM_GENERATION_TERTIARY_MODEL",
-        "NVIDIA_NIM_GENERATION_QUATERNARY_MODEL",
-        "NVIDIA_NIM_GENERATION_QUINARY_MODEL"
-    ];
-
     public async Task<GenerationResult> GenerateAsync(GenerationRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -24,11 +16,9 @@ public sealed class FailoverGenerationClient(
             (primary, null),
             (fallback, null)
         };
-        foreach (var key in NvidiaModelKeys)
-        {
-            AddConfiguredAttempt(attempts, fallback, key);
-        }
-        AddConfiguredAttempt(attempts, primary, "CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL");
+        AddConfiguredAttempt(attempts, primary, "NVIDIA_NIM_GENERATION_SECONDARY_MODEL");
+        AddConfiguredAttempt(attempts, primary, "NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL");
+        AddConfiguredAttempt(attempts, fallback, "CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL");
 
         GenerationException? firstFailure = null;
         GenerationException? lastFailure = null;
@@ -59,8 +49,8 @@ public sealed class FailoverGenerationClient(
                     failure.Category,
                     failure.StatusCode,
                     index + 1 < attempts.Count
-                        ? ProviderFor(attempts[index + 1].Client)
-                        : ProviderFor(attempt.Client));
+                        ? attempts[index + 1].Client is INvidiaNimGenerationClient ? GenerationProvider.NvidiaNim : GenerationProvider.CloudflareWorkersAi
+                        : attempt.Client is INvidiaNimGenerationClient ? GenerationProvider.NvidiaNim : GenerationProvider.CloudflareWorkersAi);
             }
             catch (GenerationException failure) when (firstFailure is not null)
             {
@@ -76,13 +66,6 @@ public sealed class FailoverGenerationClient(
 
         throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Generation provider configuration is invalid.");
     }
-
-    private static GenerationProvider ProviderFor(IGenerationClient client) => client switch
-    {
-        INvidiaNimGenerationClient => GenerationProvider.NvidiaNim,
-        ICloudflareWorkersAiGenerationClient => GenerationProvider.CloudflareWorkersAi,
-        _ => throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Generation provider configuration is invalid.")
-    };
 
     private string? ReadModel(string key)
     {
@@ -107,6 +90,5 @@ public sealed class FailoverGenerationClient(
             GenerationFailureCategory.Timeout or
             GenerationFailureCategory.RateLimited or
             GenerationFailureCategory.MalformedResponse ||
-        (exception.Category == GenerationFailureCategory.ProviderRejection &&
-            (exception.StatusCode is 404 or 410 or >= 500 and <= 599));
+        (exception.Category == GenerationFailureCategory.ProviderRejection && exception.StatusCode is >= 500 and <= 599);
 }

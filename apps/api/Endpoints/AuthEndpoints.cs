@@ -18,6 +18,7 @@ public static class AuthEndpoints
 
         group.MapPost("/register", RegisterAsync).AllowAnonymous();
         group.MapPost("/login", LoginAsync).AllowAnonymous();
+        group.MapPost("/logout", LogoutAsync).AllowAnonymous();
         group.MapGet("/me", MeAsync).AllowAnonymous();
         group.MapPost("/email-verification/request", RequestEmailVerificationAsync).AllowAnonymous();
         group.MapPost("/email-verification/confirm", ConfirmEmailVerificationAsync).AllowAnonymous();
@@ -25,6 +26,12 @@ public static class AuthEndpoints
         group.MapGet("/google/callback", GoogleOAuthCallbackAsync).AllowAnonymous();
 
         return endpoints;
+    }
+
+    private static async Task<IResult> LogoutAsync(SignInManager<ApplicationUser> signInManager)
+    {
+        await signInManager.SignOutAsync();
+        return Results.Ok(new { message = "Logged out successfully." });
     }
 
     private static async Task<IResult> RegisterAsync(

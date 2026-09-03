@@ -1,1 +1,0 @@
-"""Internal RINGKAS RAG worker."""

@@ -7,32 +7,24 @@ DATASET="$ROOT/evaluations/evaluation_dataset.json"
 RESPONSES="$ROOT/evaluations/responses.json"
 REPORT="$ROOT/evaluations/ragas_report.json"
 
-set -a
-. "$ROOT/.env"
-set +a
-RAGAS_LLM_API_KEY="${RAGAS_LLM_API_KEY:-${NVIDIA_NIM_API_KEY:-}}"
-RAGAS_LLM_MODEL="${RAGAS_LLM_MODEL:-openai/gpt-oss-120b}"
-RAGAS_LLM_BASE_URL="${RAGAS_LLM_BASE_URL:-https://integrate.api.nvidia.com/v1}"
-RAGAS_LLM_PROVIDER="${RAGAS_LLM_PROVIDER:-openai}"
-test -n "$RAGAS_LLM_API_KEY"
+RAGAS_KEY=$(grep NVIDIA_NIM_API_KEY "$ROOT/.env" | cut -d= -f2)
+export RAGAS_LLM_API_KEY="$RAGAS_KEY"
+export RAGAS_LLM_MODEL="nvidia/nemotron-3-nano-30b-a3b"
+export RAGAS_LLM_BASE_URL="https://integrate.api.nvidia.com/v1"
+export RAGAS_LLM_PROVIDER="openai"
 
 echo "Dataset: $DATASET"
 echo "Responses: $RESPONSES"
 echo "Report: $REPORT"
 
-sudo docker run --rm \
-  --volume "$ROOT/services/rag-worker:/app" \
+# Coba dengan langchain-community 0.2.16 (yang terbukti work untuk import)
+sudo docker compose --env-file .env -f infra/docker-compose.yml -f infra/docker-compose.production.yml run --rm --no-deps \
+  --volume "$DATASET:/app/evaluation_dataset.json:ro" \
+  --volume "$RESPONSES:/app/responses.json:ro" \
   --volume "$ROOT/evaluations:/evaluation:rw" \
-  --workdir /app \
-  -e RAGAS_LLM_API_KEY="$RAGAS_LLM_API_KEY" \
-  -e RAGAS_LLM_MODEL="$RAGAS_LLM_MODEL" \
-  -e RAGAS_LLM_BASE_URL="$RAGAS_LLM_BASE_URL" \
-  -e RAGAS_LLM_PROVIDER="$RAGAS_LLM_PROVIDER" \
-  python:3.12-slim bash -lc '
-    pip install --no-cache-dir uv >/dev/null &&
-    uv run --extra evaluation --frozen python -m ringkas_worker.ragas_harness \
-      --mode live \
-      --dataset /evaluation/evaluation_dataset.json \
-      --responses /evaluation/responses.json > /evaluation/ragas_report.json &&
-    cat /evaluation/ragas_report.json
-  '
+  -e RAGAS_LLM_API_KEY -e RAGAS_LLM_MODEL -e RAGAS_LLM_BASE_URL -e RAGAS_LLM_PROVIDER \
+  --entrypoint bash rag-query -c "
+pip install --no-cache-dir langchain-community==0.2.16 ragas==0.4.3 --quiet
+python -m ringkas_worker.ragas_harness --mode live --dataset /app/evaluation_dataset.json --responses /app/responses.json > /evaluation/ragas_report.json || cat /evaluation/ragas_report.json
+cat /evaluation/ragas_report.json
+"

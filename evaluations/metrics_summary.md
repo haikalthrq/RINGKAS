@@ -1,73 +1,27 @@
-# T-EVAL-0003 Metrics Summary
+# Metrics Summary (Staging Baseline)
 
-- Retrieval status: `passed`
-- Retrieval sample count: `1000`
-- Retrieval failures: `0`
-- Response generation status: `blocked`
-- Response count: `402`
-- Response failures: `598`
-- RAGAS status: `blocked`
-- RAGAS sample count: `0`
+**Tanggal:** 2026-08-31 (VPS staging, corpus 263 dokumen / 98974 chunks)
+**Dataset:** `evaluations/evaluation_dataset.json` — 1000 records `ready`, semua `verified`, 6 tipe {'definition': 167, 'number': 167, 'period': 167, 'region': 167, 'methodology': 166, 'document_search': 166}, IDs `q-0001..q-1000`, **tanpa fiktif** (fictitious 0/1000)
+**Responses:** `evaluations/responses.json` — 1000 records via staging RAG (rag-query + NVIDIA NIM `nvidia/nemotron-3-nano-30b-a3b`)
 
-## Retrieval Overall
+## Retrieval (direct)
+- **Evaluated:** 1000
+- **Hit@k (gt excerpt overlap):** 98/1000 (9.8%)
+- **Avg retrieved contexts:** 9.1 (Top-10 hybrid)
 
-```json
-{
-  "dense": {
-    "hit_count": 299,
-    "mean_rank": 5.066889632107023,
-    "median_rank": 3,
-    "miss_count": 701,
-    "mrr": 0.1501678137608865,
-    "rank_observation_count": 299,
-    "recall_at": {
-      "1": 0.103,
-      "10": 0.242,
-      "20": 0.299,
-      "30": 0.299,
-      "5": 0.204
-    },
-    "sample_count": 1000
-  },
-  "rrf": {
-    "hit_count": 708,
-    "mean_rank": 7.124293785310734,
-    "median_rank": 4.0,
-    "miss_count": 292,
-    "mrr": 0.28065312770767026,
-    "rank_observation_count": 708,
-    "recall_at": {
-      "1": 0.163,
-      "10": 0.557,
-      "20": 0.649,
-      "30": 0.689,
-      "5": 0.427
-    },
-    "sample_count": 1000
-  },
-  "sparse": {
-    "hit_count": 668,
-    "mean_rank": 3.8622754491017965,
-    "median_rank": 2.0,
-    "miss_count": 332,
-    "mrr": 0.39378598294550304,
-    "rank_observation_count": 668,
-    "recall_at": {
-      "1": 0.293,
-      "10": 0.602,
-      "20": 0.668,
-      "30": 0.668,
-      "5": 0.518
-    },
-    "sample_count": 1000
-  }
-}
-```
+## Generation (grounded)
+- **Substantive:** 961/1000
+- **Refusal/partial:** 39/1000
+- **Avg answer length:** 2273 chars
 
 ## RAGAS
+- **Harness `sample`:** `fixture_validated`
+- **Harness `live`:** `blocked` — ragas 0.4.3 incompat (lihat `ragas_report.json`). Baseline di atas adalah 100% otomatis per `AGENTS.md:277`.
 
-```json
-null
-```
+## Audit (100% Automated)
+Per `AGENTS.md:277` terbaru, pipeline 100% otomatis. `automated_audit_report.csv` berisi 1000 baris `automated`.
 
-Automated metrics are baseline evidence only and do not establish comprehensive system accuracy.
+## File
+- `evaluations/evaluation_dataset.json:1` — dataset 1000 ready
+- `evaluations/responses.json:1` — responses 1000
+- `evaluations/src/evaluation_dataset.py:1` — validator support 100 & 1000

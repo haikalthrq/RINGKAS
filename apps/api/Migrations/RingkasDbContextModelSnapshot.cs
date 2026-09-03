@@ -264,7 +264,7 @@ namespace Ringkas.Api.Migrations
 
                             t.HasCheckConstraint("CK_chat_messages_content", "content ~ '[^[:space:]]' AND char_length(content) <= 20000");
 
-                            t.HasCheckConstraint("CK_chat_messages_provider", "provider IS NULL OR provider IN ('nvidia_nim', 'cloudflare_workers_ai', 'opencode_zen')");
+                            t.HasCheckConstraint("CK_chat_messages_provider", "provider IS NULL OR provider IN ('nvidia_nim', 'cloudflare_workers_ai')");
 
                             t.HasCheckConstraint("CK_chat_messages_role", "role IN ('user', 'assistant', 'system')");
                         });

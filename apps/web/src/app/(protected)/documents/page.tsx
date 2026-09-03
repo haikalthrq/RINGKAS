@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { DocumentSearch } from "@/components/documents/document-search";
+
+export const metadata: Metadata = {
+  title: "Dokumen Publikasi"
+};
 
 export default function DocumentsPage() {
   return (

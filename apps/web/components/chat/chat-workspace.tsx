@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type RefObject } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { RingkasLogo } from "@/components/ringkas-logo";
 import { ApiClientError, apiRequest } from "@/lib/api-client";
 import { useInterfaceLanguage, type InterfaceLanguage } from "@/lib/language";
 
@@ -542,7 +543,7 @@ function ChatSidebar(props: {
 function EmptyChat({ labels, language, onSuggestion }: { labels: ChatLabels; language: InterfaceLanguage; onSuggestion: (value: string) => void }) {
   return (
     <div className="chat-empty">
-      <div className="empty-mark" aria-hidden="true"><span>R</span><i /></div>
+      <div className="empty-mark" aria-hidden="true"><RingkasLogo size={42} /><i /></div>
       <p className="empty-kicker">{labels.scope}</p>
       <h2>{labels.emptyTitle}</h2>
       <p className="empty-description">{labels.emptyDescription}</p>

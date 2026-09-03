@@ -7,8 +7,6 @@ namespace Ringkas.Api.Generation;
 
 public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, IConfiguration configuration) : ICloudflareWorkersAiGenerationClient, IModelOverrideGenerationClient
 {
-    private int _activeTargetIndex;
-
     public Task<GenerationResult> GenerateAsync(GenerationRequest request, CancellationToken cancellationToken = default) =>
         GenerateWithModelAsync(request, ReadSettings().Model, cancellationToken);
 
@@ -25,50 +23,46 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
             throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");
         }
 
-        GenerationException? lastFailure = null;
-        var startIndex = Math.Min(Volatile.Read(ref _activeTargetIndex), settings.Targets.Count - 1);
-        for (var index = startIndex; index < settings.Targets.Count; index++)
+        using var timeoutSource = new CancellationTokenSource(TimeSpan.FromSeconds(settings.TimeoutSeconds));
+        using var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
+
+        using var message = new HttpRequestMessage(HttpMethod.Post, settings.Endpoint);
+        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.ApiToken);
+        message.Content = new StringContent(JsonSerializer.Serialize(new
         {
-            var target = settings.Targets[index];
-            try
-            {
-                using var timeoutSource = new CancellationTokenSource(TimeSpan.FromSeconds(settings.TimeoutSeconds));
-                using var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
-                using var message = CreateRequest(target, request, model);
-                using var response = await SendAsync(message, linkedSource.Token, cancellationToken);
-                ThrowForStatus(response);
-                var responseContent = await ReadContentAsync(response, linkedSource.Token, cancellationToken);
-                AdvanceTargetIndex(index);
-                return GenerationResponseParser.Parse(responseContent, GenerationProvider.CloudflareWorkersAi, model);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (GenerationException failure) when (IsAccountFailoverEligible(failure))
-            {
-                lastFailure = failure;
-                AdvanceTargetIndex(index + 1);
-            }
+            model,
+            messages = request.Messages.Select(item => new { role = NvidiaNimGenerationClient.ToWireRole(item.Role), content = item.Content }),
+            stream = false
+        }), Encoding.UTF8, "application/json");
+
+        HttpResponseMessage response;
+        try
+        {
+            response = await httpClient.SendAsync(message, linkedSource.Token);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (OperationCanceledException)
+        {
+            throw new GenerationException(GenerationFailureCategory.Timeout, "Cloudflare Workers AI generation timed out.");
+        }
+        catch (HttpRequestException) when (cancellationToken.IsCancellationRequested)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            throw;
+        }
+        catch (HttpRequestException)
+        {
+            throw new GenerationException(GenerationFailureCategory.TransportUnavailable, "Cloudflare Workers AI generation is unavailable.");
         }
 
-        if (lastFailure is not null)
+        using (response)
         {
-            throw lastFailure;
-        }
-
-        throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");
-    }
-
-    private void AdvanceTargetIndex(int nextIndex)
-    {
-        while (true)
-        {
-            var current = Volatile.Read(ref _activeTargetIndex);
-            if (current >= nextIndex || Interlocked.CompareExchange(ref _activeTargetIndex, nextIndex, current) == current)
-            {
-                return;
-            }
+            ThrowForStatus(response);
+            var responseContent = await ReadContentAsync(response, linkedSource.Token, cancellationToken);
+            return GenerationResponseParser.Parse(responseContent, GenerationProvider.CloudflareWorkersAi, model);
         }
     }
 
@@ -83,91 +77,14 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
             throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");
         }
 
-        var targets = new List<CloudflareTarget>();
-        if (!TryAddTarget(targets, accountId!, apiToken!))
-        {
-            throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");
-        }
-
-        if (!TryAddOptionalTarget(
-                targets,
-                configuration["CLOUDFLARE_SECONDARY_ACCOUNT_ID"],
-                configuration["CLOUDFLARE_SECONDARY_API_TOKEN"]) ||
-            !TryAddOptionalTarget(
-                targets,
-                configuration["CLOUDFLARE_TERTIARY_ACCOUNT_ID"],
-                configuration["CLOUDFLARE_TERTIARY_API_TOKEN"]))
-        {
-            throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");
-        }
-
-        return new CloudflareSettings(targets, model!, timeoutSeconds);
-    }
-
-    private static HttpRequestMessage CreateRequest(CloudflareTarget target, GenerationRequest request, string model)
-    {
-        var message = new HttpRequestMessage(HttpMethod.Post, target.Endpoint);
-        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", target.ApiToken);
-        message.Content = new StringContent(JsonSerializer.Serialize(new
-        {
-            model,
-            messages = request.Messages.Select(item => new { role = NvidiaNimGenerationClient.ToWireRole(item.Role), content = item.Content }),
-            stream = false
-        }), Encoding.UTF8, "application/json");
-        return message;
-    }
-
-    private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage message, CancellationToken linkedToken, CancellationToken callerToken)
-    {
         try
         {
-            return await httpClient.SendAsync(message, linkedToken);
-        }
-        catch (OperationCanceledException) when (callerToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (OperationCanceledException)
-        {
-            throw new GenerationException(GenerationFailureCategory.Timeout, "Cloudflare Workers AI generation timed out.");
-        }
-        catch (HttpRequestException) when (callerToken.IsCancellationRequested)
-        {
-            callerToken.ThrowIfCancellationRequested();
-            throw;
-        }
-        catch (HttpRequestException)
-        {
-            throw new GenerationException(GenerationFailureCategory.TransportUnavailable, "Cloudflare Workers AI generation is unavailable.");
-        }
-    }
-
-    private static bool TryAddOptionalTarget(ICollection<CloudflareTarget> targets, string? accountId, string? apiToken)
-    {
-        var hasAccount = !string.IsNullOrWhiteSpace(accountId);
-        var hasToken = !string.IsNullOrWhiteSpace(apiToken);
-        return !hasAccount && !hasToken || hasAccount && hasToken && TryAddTarget(targets, accountId!, apiToken!);
-    }
-
-    private static bool TryAddTarget(ICollection<CloudflareTarget> targets, string accountId, string apiToken)
-    {
-        if (!IsSafeAccountId(accountId) || !IsSafeCredential(apiToken) ||
-            targets.Any(target => target.AccountId.Equals(accountId, StringComparison.OrdinalIgnoreCase)))
-        {
-            return false;
-        }
-
-        try
-        {
-            targets.Add(new CloudflareTarget(
-                accountId,
-                apiToken,
-                new Uri($"https://api.cloudflare.com/client/v4/accounts/{accountId}/ai/v1/chat/completions", UriKind.Absolute)));
-            return true;
+            var endpoint = new Uri($"https://api.cloudflare.com/client/v4/accounts/{accountId}/ai/v1/chat/completions", UriKind.Absolute);
+            return new CloudflareSettings(apiToken!, model!, endpoint, timeoutSeconds);
         }
         catch (UriFormatException)
         {
-            return false;
+            throw new GenerationException(GenerationFailureCategory.InvalidConfiguration, "Cloudflare Workers AI generation configuration is invalid.");
         }
     }
 
@@ -228,24 +145,16 @@ public sealed class CloudflareWorkersAiGenerationClient(HttpClient httpClient, I
         }
     }
 
-    private static bool IsAccountFailoverEligible(GenerationException failure) =>
-        failure.Category is GenerationFailureCategory.AuthenticationOrAuthorization or
-            GenerationFailureCategory.RateLimited or
-            GenerationFailureCategory.Timeout or
-            GenerationFailureCategory.TransportUnavailable or
-            GenerationFailureCategory.MalformedResponse ||
-        (failure.Category == GenerationFailureCategory.ProviderRejection && failure.StatusCode is >= 500 and <= 599);
-
-    private sealed class CloudflareSettings(IReadOnlyList<CloudflareTarget> targets, string model, double timeoutSeconds)
+    private sealed class CloudflareSettings(string apiToken, string model, Uri endpoint, double timeoutSeconds)
     {
-        public IReadOnlyList<CloudflareTarget> Targets { get; } = targets;
+        public string ApiToken { get; } = apiToken;
 
         public string Model { get; } = model;
+
+        public Uri Endpoint { get; } = endpoint;
 
         public double TimeoutSeconds { get; } = timeoutSeconds;
 
         public override string ToString() => "CloudflareSettings { [REDACTED] }";
     }
-
-    private sealed record CloudflareTarget(string AccountId, string ApiToken, Uri Endpoint);
 }

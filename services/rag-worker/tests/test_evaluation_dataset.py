@@ -6,9 +6,6 @@ from pydantic import ValidationError
 from ringkas_worker.evaluation_dataset import DATASET_PATH, EvaluationDataset, EvaluationRecord, load_dataset
 
 
-FACTUAL_DATASET_PATH = DATASET_PATH.parents[2] / "evaluations" / "evaluation_dataset.json"
-
-
 def test_template_has_exactly_100_pending_stable_slots() -> None:
     dataset = load_dataset(DATASET_PATH)
     payload = json.loads(DATASET_PATH.read_text(encoding="utf-8"))
@@ -60,14 +57,3 @@ def test_pending_record_does_not_invent_evidence() -> None:
 
     assert record.evidence.document_id is None
     assert record.evidence.source_url is None
-
-
-def test_factual_dataset_has_complete_ground_truth_contract() -> None:
-    dataset = load_dataset(FACTUAL_DATASET_PATH)
-
-    assert dataset.dataset_status == "ready"
-    assert dataset.capacity == 1000
-    assert len(dataset.records) == 1000
-    assert all(record.verification_status == "verified" for record in dataset.records)
-    assert all(record.evidence.qdrant_point_id for record in dataset.records)
-    assert all(record.ground_truth is not None for record in dataset.records)

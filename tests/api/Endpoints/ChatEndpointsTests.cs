@@ -19,8 +19,6 @@ public sealed class ChatEndpointsTests
     public void RequestAcceptsSession()
     {
         Assert.Empty(new ChatRequest("question", Guid.NewGuid()).Validate());
-        Assert.Empty(new ChatRequest("question", null, OpenCodeZenModels.MiMoV25Free).Validate());
-        Assert.NotEmpty(new ChatRequest("question", null, "unsupported-model").Validate());
     }
 
     [Fact]

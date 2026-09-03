@@ -2,18 +2,11 @@
 
 import Link from "next/link";
 import { useAuth } from "@/components/auth-provider";
+import { RingkasLogo } from "@/components/ringkas-logo";
+import { BpsLogo } from "@/components/bps-logo";
 
 export default function HomePage() {
-  const { isLoading: authLoading, isAuthenticated } = useAuth();
-
-  if (authLoading) {
-    return (
-      <section className="page-card status-card" aria-live="polite">
-        <p className="eyebrow">RINGKAS / BPS</p>
-        <h1>Membuka ruang riset...</h1>
-      </section>
-    );
-  }
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="home-page">
@@ -97,8 +90,23 @@ export default function HomePage() {
             <small>RINGKAS menolak menjawab secara terukur apabila bukti belum mencukupi.</small>
           </span>
         </div>
+        <div className="home-attribution">
+          <div className="home-attribution-badge">
+            <BpsLogo width={40} height={31} className="bps-attribution-img" />
+            <div>
+              <p className="eyebrow">Apresiasi Sumber Data</p>
+              <strong>Badan Pusat Statistik Republik Indonesia</strong>
+            </div>
+          </div>
+          <p className="home-attribution-note">
+            Seluruh data, definisi indikator, dan dokumen publikasi dalam sistem ini bersumber dari Badan Pusat Statistik Provinsi DKI Jakarta. RINGKAS dikembangkan sebagai sistem temu-kembali informasi independen yang memprioritaskan transparansi kutipan dan akurasi rujukan halaman.
+          </p>
+        </div>
         <div className="home-footer">
-          <span>RINGKAS</span>
+          <div className="home-footer-brand">
+            <RingkasLogo size={20} className="footer-logo-svg" />
+            <span>RINGKAS</span>
+          </div>
           <p>Riset statistik yang membantu Anda bergerak dari pertanyaan ke bukti otentik.</p>
           <b>DKI JAKARTA / PUBLIKASI BPS</b>
         </div>

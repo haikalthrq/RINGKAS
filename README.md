@@ -76,11 +76,9 @@ Embedding and private retrieval:
 ```text
 CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
-CLOUDFLARE_SECONDARY_ACCOUNT_ID
-CLOUDFLARE_SECONDARY_API_TOKEN
-CLOUDFLARE_TERTIARY_ACCOUNT_ID
-CLOUDFLARE_TERTIARY_API_TOKEN
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN
 RAG_QUERY_BASE_URL
 RAG_QUERY_ALLOWED_AUTHORITIES
 RAG_QUERY_TIMEOUT_SECONDS
@@ -96,9 +94,7 @@ NVIDIA_NIM_GENERATION_BASE_URL
 NVIDIA_NIM_GENERATION_ALLOWED_HOSTS
 NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS
 NVIDIA_NIM_GENERATION_SECONDARY_MODEL
-NVIDIA_NIM_GENERATION_TERTIARY_MODEL
-NVIDIA_NIM_GENERATION_QUATERNARY_MODEL
-NVIDIA_NIM_GENERATION_QUINARY_MODEL
+NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL
 CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS
 CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL
@@ -120,13 +116,11 @@ dimension verification, a new versioned collection, and a full reindex.
 
 The generation order is locked exactly as follows:
 
-1. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
-2. `openai/gpt-oss-120b`
-3. `google/gemma-4-31b-it`
-4. `meta/llama-3.2-11b-vision-instruct`
-5. `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`
-6. `openai/gpt-oss-20b`
-7. `@cf/meta/llama-4-scout-17b-16e-instruct`
+1. `nvidia/nemotron-3-nano-30b-a3b`
+2. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
+3. `mistralai/mistral-small-4-119b-2603`
+4. `nvidia/nemotron-mini-4b-instruct`
+5. `@cf/meta/llama-4-scout-17b-16e-instruct`
 
 Google OAuth is implemented when `GOOGLE_CLIENT_ID` and
 `GOOGLE_CLIENT_SECRET` are configured. Email verification is intentionally not

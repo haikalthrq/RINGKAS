@@ -11,6 +11,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   hasAnyRole: (...roles: string[]) => boolean;
   setCurrentUser: (user: CurrentUser | null) => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -27,17 +28,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus(authenticatedUser ? "authenticated" : "unauthenticated");
   }
 
+  async function logout() {
+    try {
+      await apiRequest("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore network failure on logout
+    } finally {
+      commitSession(null);
+      window.location.href = "/";
+    }
+  }
+
   useEffect(() => {
     const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
     const currentRequest = ++requestId.current;
     apiRequest<CurrentUser>("/api/auth/me", { signal: controller.signal })
       .then((user) => {
         if (!controller.signal.aborted && requestId.current === currentRequest) commitSession(user);
       })
       .catch(() => {
-        if (!controller.signal.aborted && requestId.current === currentRequest) commitSession(null);
-      });
-    return () => controller.abort();
+        if (requestId.current === currentRequest) commitSession(null);
+      })
+      .finally(() => clearTimeout(timeoutId));
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, []);
 
   return (
@@ -47,7 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading: status === "loading",
       isAuthenticated: status === "authenticated" && currentUser?.authenticated === true,
       hasAnyRole: (...roles) => roles.some((role) => currentUser?.roles.includes(role)),
-      setCurrentUser: commitSession
+      setCurrentUser: commitSession,
+      logout
     }}>
       {children}
     </AuthContext.Provider>

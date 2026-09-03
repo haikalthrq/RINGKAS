@@ -55,68 +55,6 @@ public sealed class GenerationClientTests
         Assert.Equal(5, result.Usage!.TotalTokens);
     }
 
-    [Fact]
-    public async Task OpenCodeZenMiMoUsesChatCompletionsEndpoint()
-    {
-        HttpRequestMessage? captured = null;
-        string? capturedBody = null;
-        var client = new OpenCodeZenGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
-        {
-            captured = request;
-            capturedBody = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
-            return Response(HttpStatusCode.OK, """{"choices":[{"message":{"content":"MiMo answer [1]."}}],"usage":{"prompt_tokens":2,"completion_tokens":3,"total_tokens":5}}""");
-        })), Configuration());
-
-        var result = await client.GenerateWithModelAsync(Request("grounded prompt"), OpenCodeZenModels.MiMoV25Free);
-
-        Assert.Equal("https://opencode.ai/zen/v1/chat/completions", captured!.RequestUri!.ToString());
-        Assert.Equal("zen-secret", captured.Headers.Authorization!.Parameter);
-        using var json = JsonDocument.Parse(capturedBody!);
-        Assert.Equal(OpenCodeZenModels.MiMoV25Free, json.RootElement.GetProperty("model").GetString());
-        Assert.Equal("user", json.RootElement.GetProperty("messages")[0].GetProperty("role").GetString());
-        Assert.Equal(GenerationProvider.OpenCodeZen, result.Provider);
-        Assert.Equal(5, result.Usage!.TotalTokens);
-    }
-
-    [Fact]
-    public async Task OpenCodeZenMuseUsesResponsesEndpointAndParsesOutput()
-    {
-        HttpRequestMessage? captured = null;
-        string? capturedBody = null;
-        var client = new OpenCodeZenGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
-        {
-            captured = request;
-            capturedBody = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
-            return Response(HttpStatusCode.OK, """{"output":[{"type":"message","content":[{"type":"output_text","text":"Muse answer [1]."}]}],"usage":{"input_tokens":4,"output_tokens":6,"total_tokens":10}}""");
-        })), Configuration());
-
-        var result = await client.GenerateWithModelAsync(Request("grounded prompt"), OpenCodeZenModels.MuseSpark12);
-
-        Assert.Equal("https://opencode.ai/zen/v1/responses", captured!.RequestUri!.ToString());
-        using var json = JsonDocument.Parse(capturedBody!);
-        Assert.Equal(OpenCodeZenModels.MuseSpark12, json.RootElement.GetProperty("model").GetString());
-        Assert.Equal("user", json.RootElement.GetProperty("input")[0].GetProperty("role").GetString());
-        Assert.Equal("Muse answer [1].", result.Text);
-        Assert.Equal(GenerationProvider.OpenCodeZen, result.Provider);
-        Assert.Equal(10, result.Usage!.TotalTokens);
-    }
-
-    [Fact]
-    public async Task OpenCodeZenRejectsUnsupportedModelWithoutHttpInvocation()
-    {
-        var calls = 0;
-        var client = new OpenCodeZenGenerationClient(new HttpClient(new DelegateHandler((_, _) =>
-        {
-            calls++;
-            return Response(HttpStatusCode.OK, "{}");
-        })), Configuration());
-
-        var error = await Assert.ThrowsAsync<GenerationException>(() => client.GenerateWithModelAsync(Request(), "mimo-v2.5-free-other"));
-
-        Assert.Equal(GenerationFailureCategory.InvalidConfiguration, error.Category);
-        Assert.Equal(0, calls);
-    }
-
     [Theory]
     [InlineData(400, GenerationFailureCategory.ProviderRejection)]
     [InlineData(401, GenerationFailureCategory.AuthenticationOrAuthorization)]
@@ -268,51 +206,6 @@ public sealed class GenerationClientTests
         Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
     }
 
-    [Fact]
-    public async Task CloudflareGenerationFailsOverFromPrimaryAndSecondaryToTertiary()
-    {
-        var accounts = new List<string>();
-        var client = new CloudflareWorkersAiGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
-        {
-            accounts.Add(request.RequestUri!.ToString());
-            if (!request.RequestUri.ToString().Contains("tertiary-account", StringComparison.Ordinal))
-            {
-                return Response(HttpStatusCode.TooManyRequests, "rate-limited");
-            }
-
-            return Response(HttpStatusCode.OK, """{"choices":[{"message":{"content":"tertiary answer"}}]}""");
-        })), Configuration(
-            cloudflareSecondaryAccountId: "secondary-account",
-            cloudflareSecondaryToken: "secondary-secret",
-            cloudflareTertiaryAccountId: "tertiary-account",
-            cloudflareTertiaryToken: "tertiary-secret"));
-
-        var result = await client.GenerateAsync(Request());
-
-        Assert.Equal("tertiary answer", result.Text);
-        Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
-        Assert.Equal(3, accounts.Count);
-        Assert.Contains("accounts/account_123/", accounts[0], StringComparison.Ordinal);
-        Assert.Contains("accounts/secondary-account/", accounts[1], StringComparison.Ordinal);
-        Assert.Contains("accounts/tertiary-account/", accounts[2], StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task CloudflareRejectsIncompleteAccountFailoverConfiguration()
-    {
-        var calls = 0;
-        var client = new CloudflareWorkersAiGenerationClient(new HttpClient(new DelegateHandler((_, _) =>
-        {
-            calls++;
-            throw new InvalidOperationException();
-        })), Configuration(cloudflareSecondaryAccountId: "secondary-account"));
-
-        var error = await Assert.ThrowsAsync<GenerationException>(() => client.GenerateAsync(Request()));
-
-        Assert.Equal(GenerationFailureCategory.InvalidConfiguration, error.Category);
-        Assert.Equal(0, calls);
-    }
-
     [Theory]
     [InlineData("account/id")]
     [InlineData("")]
@@ -416,24 +309,24 @@ public sealed class GenerationClientTests
     [Fact]
     public async Task FailoverMakesAtMostOneLocalFallbackInvocationForEligiblePrimaryFailure()
     {
-        var primary = new ScriptedCloudflareClient(_ => throw new GenerationException(GenerationFailureCategory.RateLimited, "safe", 429));
-        var fallback = new ScriptedNvidiaClient(_ => Task.FromResult(new GenerationResult("answer", GenerationProvider.NvidiaNim, "fallback-model")));
+        var primary = new ScriptedNvidiaClient(_ => throw new GenerationException(GenerationFailureCategory.RateLimited, "safe", 429));
+        var fallback = new ScriptedCloudflareClient(_ => Task.FromResult(new GenerationResult("answer", GenerationProvider.CloudflareWorkersAi, "fallback-model")));
         var client = new FailoverGenerationClient(primary, fallback, new ListLogger());
 
         var result = await client.GenerateAsync(Request());
 
         Assert.Equal(1, primary.Calls);
         Assert.Equal(1, fallback.Calls);
-        Assert.Equal(GenerationProvider.NvidiaNim, result.Provider);
+        Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
     }
 
     [Fact]
     public async Task FailoverDoesNotInvokeFallbackAfterPrimarySuccess()
     {
-        var primary = new ScriptedCloudflareClient(_ => Task.FromResult(new GenerationResult("answer", GenerationProvider.CloudflareWorkersAi, "model")));
-        var fallback = new ScriptedNvidiaClient(_ => throw new InvalidOperationException());
+        var primary = new ScriptedNvidiaClient(_ => Task.FromResult(new GenerationResult("answer", GenerationProvider.NvidiaNim, "model")));
+        var fallback = new ScriptedCloudflareClient(_ => throw new InvalidOperationException());
         var result = await new FailoverGenerationClient(primary, fallback, new ListLogger()).GenerateAsync(Request());
-        Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
+        Assert.Equal(GenerationProvider.NvidiaNim, result.Provider);
         Assert.Equal(0, fallback.Calls);
     }
 
@@ -442,18 +335,16 @@ public sealed class GenerationClientTests
     [InlineData(GenerationFailureCategory.Timeout, 0)]
     [InlineData(GenerationFailureCategory.Timeout, 408)]
     [InlineData(GenerationFailureCategory.RateLimited, 429)]
-    [InlineData(GenerationFailureCategory.ProviderRejection, 404)]
-    [InlineData(GenerationFailureCategory.ProviderRejection, 410)]
     [InlineData(GenerationFailureCategory.ProviderRejection, 500)]
     [InlineData(GenerationFailureCategory.ProviderRejection, 502)]
     [InlineData(GenerationFailureCategory.ProviderRejection, 503)]
     [InlineData(GenerationFailureCategory.MalformedResponse, 0)]
     public async Task FailoverInvokesFallbackOnceForEligiblePrimaryFailure(GenerationFailureCategory category, int statusCode)
     {
-        var primary = new ScriptedCloudflareClient(_ => throw new GenerationException(category, "raw-primary-secret", statusCode == 0 ? null : statusCode));
-        var fallback = new ScriptedNvidiaClient(_ => Task.FromResult(new GenerationResult("answer", GenerationProvider.NvidiaNim, "model")));
+        var primary = new ScriptedNvidiaClient(_ => throw new GenerationException(category, "raw-primary-secret", statusCode == 0 ? null : statusCode));
+        var fallback = new ScriptedCloudflareClient(_ => Task.FromResult(new GenerationResult("answer", GenerationProvider.CloudflareWorkersAi, "model")));
         var result = await new FailoverGenerationClient(primary, fallback, new ListLogger()).GenerateAsync(Request());
-        Assert.Equal(GenerationProvider.NvidiaNim, result.Provider);
+        Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
         Assert.Equal(1, fallback.Calls);
     }
 
@@ -464,8 +355,8 @@ public sealed class GenerationClientTests
     [InlineData(GenerationFailureCategory.ProviderRejection, 400)]
     public async Task FailoverDoesNotRunForIneligiblePrimaryFailures(GenerationFailureCategory category, int statusCode)
     {
-        var primary = new ScriptedCloudflareClient(_ => throw new GenerationException(category, "safe", statusCode == 0 ? null : statusCode));
-        var fallback = new ScriptedNvidiaClient(_ => throw new InvalidOperationException());
+        var primary = new ScriptedNvidiaClient(_ => throw new GenerationException(category, "safe", statusCode == 0 ? null : statusCode));
+        var fallback = new ScriptedCloudflareClient(_ => throw new InvalidOperationException());
         var client = new FailoverGenerationClient(primary, fallback, new ListLogger());
 
         await Assert.ThrowsAsync<GenerationException>(() => client.GenerateAsync(Request()));
@@ -475,8 +366,8 @@ public sealed class GenerationClientTests
     [Fact]
     public async Task FailoverReturnsSanitizedExhaustedErrorWithoutInnerException()
     {
-        var primary = new ScriptedCloudflareClient(_ => throw new GenerationException(GenerationFailureCategory.MalformedResponse, "raw-primary-secret"));
-        var fallback = new ScriptedNvidiaClient(_ => throw new GenerationException(GenerationFailureCategory.AuthenticationOrAuthorization, "raw-fallback-secret"));
+        var primary = new ScriptedNvidiaClient(_ => throw new GenerationException(GenerationFailureCategory.MalformedResponse, "raw-primary-secret"));
+        var fallback = new ScriptedCloudflareClient(_ => throw new GenerationException(GenerationFailureCategory.AuthenticationOrAuthorization, "raw-fallback-secret"));
         var error = await Assert.ThrowsAsync<GenerationFallbackExhaustedException>(() => new FailoverGenerationClient(primary, fallback, new ListLogger()).GenerateAsync(Request()));
 
         Assert.Null(error.InnerException);
@@ -490,18 +381,18 @@ public sealed class GenerationClientTests
     {
         using var beforePrimary = new CancellationTokenSource();
         beforePrimary.Cancel();
-        var primary = new ScriptedCloudflareClient(_ => throw new InvalidOperationException());
-        var fallback = new ScriptedNvidiaClient(_ => throw new InvalidOperationException());
+        var primary = new ScriptedNvidiaClient(_ => throw new InvalidOperationException());
+        var fallback = new ScriptedCloudflareClient(_ => throw new InvalidOperationException());
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new FailoverGenerationClient(primary, fallback, new ListLogger()).GenerateAsync(Request(), beforePrimary.Token));
         Assert.Equal(0, fallback.Calls);
 
         using var betweenAttempts = new CancellationTokenSource();
-        var cancellingPrimary = new ScriptedCloudflareClient(_ =>
+        var cancellingPrimary = new ScriptedNvidiaClient(_ =>
         {
             betweenAttempts.Cancel();
             throw new GenerationException(GenerationFailureCategory.Timeout, "raw-primary-secret");
         });
-        var secondFallback = new ScriptedNvidiaClient(_ => throw new InvalidOperationException());
+        var secondFallback = new ScriptedCloudflareClient(_ => throw new InvalidOperationException());
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new FailoverGenerationClient(cancellingPrimary, secondFallback, new ListLogger()).GenerateAsync(Request(), betweenAttempts.Token));
         Assert.Equal(0, secondFallback.Calls);
     }
@@ -510,13 +401,13 @@ public sealed class GenerationClientTests
     public async Task FailoverLogsOnlySafeMetadata()
     {
         var logger = new ListLogger();
-        var primary = new ScriptedCloudflareClient(_ => throw new GenerationException(GenerationFailureCategory.RateLimited, "prompt-response-model-url-account-token", 429));
-        var fallback = new ScriptedNvidiaClient(_ => Task.FromResult(new GenerationResult("response-secret", GenerationProvider.NvidiaNim, "model-secret")));
+        var primary = new ScriptedNvidiaClient(_ => throw new GenerationException(GenerationFailureCategory.RateLimited, "prompt-response-model-url-account-token", 429));
+        var fallback = new ScriptedCloudflareClient(_ => Task.FromResult(new GenerationResult("response-secret", GenerationProvider.CloudflareWorkersAi, "model-secret")));
         await new FailoverGenerationClient(primary, fallback, logger).GenerateAsync(Request("prompt-secret"));
 
         var output = string.Join('\n', logger.Messages);
         Assert.Contains(nameof(GenerationFailureCategory.RateLimited), output);
-        Assert.Contains(nameof(GenerationProvider.NvidiaNim), output);
+        Assert.Contains(nameof(GenerationProvider.CloudflareWorkersAi), output);
         foreach (var secret in new[] { "prompt", "response", "model", "url", "account", "token" })
         {
             Assert.DoesNotContain(secret, output, StringComparison.OrdinalIgnoreCase);
@@ -524,43 +415,39 @@ public sealed class GenerationClientTests
     }
 
     [Fact]
-    public async Task FailoverUsesTheLockedGenerationOrder()
+    public async Task FailoverUsesTheLockedFiveModelOrder()
     {
         var nvidiaModels = new List<string>();
         var cloudflareModels = new List<string>();
         var nvidiaResponses = new Queue<HttpResponseMessage>([
             ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-primary-failure"),
             ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-secondary-failure"),
-            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-tertiary-failure"),
-            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-quaternary-failure"),
-            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-quinary-failure")
+            ResponseMessage(HttpStatusCode.InternalServerError, "nvidia-lightweight-failure")
         ]);
         var cloudflareResponses = new Queue<HttpResponseMessage>([
             ResponseMessage(HttpStatusCode.InternalServerError, "cloudflare-fallback-failure"),
             ResponseMessage(HttpStatusCode.OK, """{"choices":[{"message":{"content":"experimental answer"}}]}""")
         ]);
         var configuration = Configuration(
-            secondaryModel: "mini-model",
-            tertiaryModel: "tertiary-model",
-            quaternaryModel: "quaternary-model",
-            quinaryModel: "quinary-model",
+            secondaryModel: "mistral-model",
+            lightweightModel: "mini-model",
             experimentalModel: "llama4-model");
-        var primary = new CloudflareWorkersAiGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
-        {
-            cloudflareModels.Add(JsonDocument.Parse(request.Content!.ReadAsStringAsync().GetAwaiter().GetResult()).RootElement.GetProperty("model").GetString()!);
-            return Task.FromResult(cloudflareResponses.Dequeue());
-        })), configuration);
-        var fallback = new NvidiaNimGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
+        var primary = new NvidiaNimGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
         {
             nvidiaModels.Add(JsonDocument.Parse(request.Content!.ReadAsStringAsync().GetAwaiter().GetResult()).RootElement.GetProperty("model").GetString()!);
             return Task.FromResult(nvidiaResponses.Dequeue());
+        })), configuration);
+        var fallback = new CloudflareWorkersAiGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
+        {
+            cloudflareModels.Add(JsonDocument.Parse(request.Content!.ReadAsStringAsync().GetAwaiter().GetResult()).RootElement.GetProperty("model").GetString()!);
+            return Task.FromResult(cloudflareResponses.Dequeue());
         })), configuration);
 
         var result = await new FailoverGenerationClient(primary, fallback, new ListLogger(), configuration).GenerateAsync(Request());
 
         Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
         Assert.Equal("llama4-model", result.Model);
-        Assert.Equal(["nvidia-model", "mini-model", "tertiary-model", "quaternary-model", "quinary-model"], nvidiaModels);
+        Assert.Equal(["nvidia-model", "mistral-model", "mini-model"], nvidiaModels);
         Assert.Equal(["cloudflare-model", "llama4-model"], cloudflareModels);
     }
 
@@ -588,14 +475,8 @@ public sealed class GenerationClientTests
         string? cloudflareModel = null,
         string? cloudflareTimeout = null,
         string? secondaryModel = null,
-        string? tertiaryModel = null,
-        string? quaternaryModel = null,
-        string? quinaryModel = null,
-        string? experimentalModel = null,
-        string? cloudflareSecondaryAccountId = null,
-        string? cloudflareSecondaryToken = null,
-        string? cloudflareTertiaryAccountId = null,
-        string? cloudflareTertiaryToken = null) =>
+        string? lightweightModel = null,
+        string? experimentalModel = null) =>
         new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["NVIDIA_NIM_API_KEY"] = "nvidia-secret",
@@ -606,20 +487,10 @@ public sealed class GenerationClientTests
             ["CLOUDFLARE_ACCOUNT_ID"] = includeCloudflare ? accountId ?? "account_123" : null,
             ["CLOUDFLARE_API_TOKEN"] = includeCloudflare ? cloudflareToken ?? "cloudflare-secret" : null,
             ["CLOUDFLARE_WORKERS_AI_GENERATION_MODEL"] = includeCloudflare ? cloudflareModel ?? "cloudflare-model" : null,
-            ["CLOUDFLARE_SECONDARY_ACCOUNT_ID"] = cloudflareSecondaryAccountId,
-            ["CLOUDFLARE_SECONDARY_API_TOKEN"] = cloudflareSecondaryToken,
-            ["CLOUDFLARE_TERTIARY_ACCOUNT_ID"] = cloudflareTertiaryAccountId,
-            ["CLOUDFLARE_TERTIARY_API_TOKEN"] = cloudflareTertiaryToken,
             ["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"] = includeCloudflare ? cloudflareTimeout ?? "10" : null,
             ["NVIDIA_NIM_GENERATION_SECONDARY_MODEL"] = secondaryModel,
-            ["NVIDIA_NIM_GENERATION_TERTIARY_MODEL"] = tertiaryModel,
-            ["NVIDIA_NIM_GENERATION_QUATERNARY_MODEL"] = quaternaryModel,
-            ["NVIDIA_NIM_GENERATION_QUINARY_MODEL"] = quinaryModel,
-            ["CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL"] = experimentalModel,
-            ["OPENCODE_ZEN_API_KEY"] = "zen-secret",
-            ["OPENCODE_ZEN_BASE_URL"] = "https://opencode.ai/zen/v1",
-            ["OPENCODE_ZEN_ALLOWED_HOSTS"] = "opencode.ai",
-            ["OPENCODE_ZEN_TIMEOUT_SECONDS"] = "10"
+            ["NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL"] = lightweightModel,
+            ["CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL"] = experimentalModel
         }).Build();
 
     private static Task<HttpResponseMessage> Response(HttpStatusCode statusCode, string body) =>

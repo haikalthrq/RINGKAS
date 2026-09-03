@@ -1,0 +1,22 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" rx="22" fill="#062c45" />
+  <!-- Left spine of R -->
+  <rect x="18" y="16" width="14" height="68" rx="2.5" fill="#f58220" />
+  
+  <!-- Histogram Bar 1 (Short) -->
+  <rect x="36" y="52" width="12" height="32" rx="2" fill="#f58220" />
+  
+  <!-- Histogram Bar 2 (Mid) -->
+  <rect x="52" y="36" width="12" height="48" rx="2" fill="#f58220" />
+  
+  <!-- Top loop of R -->
+  <path d="M32 16H66C77.0457 16 86 24.9543 86 36C86 47.0457 77.0457 56 66 56H32V16Z" fill="#f58220" />
+  <rect x="32" y="27" width="36" height="17" rx="2" fill="#062c45" />
+  
+  <!-- Diagonal leg of R -->
+  <path d="M58 52L76 80H62L48 52H58Z" fill="#f58220" />
+  
+  <!-- Folded archive corner accent -->
+  <path d="M68 72L84 88H68V72Z" fill="#ffffff" />
+  <path d="M84 72L68 72L84 88V72Z" fill="#8dc4df" opacity="0.45" />
+</svg>

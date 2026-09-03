@@ -29,24 +29,16 @@ rows.
 
 The configured generation attempts are locked exactly to this order:
 
-1. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
-2. `openai/gpt-oss-120b`
-3. `google/gemma-4-31b-it`
-4. `meta/llama-3.2-11b-vision-instruct`
-5. `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`
-6. `openai/gpt-oss-20b`
-7. `@cf/meta/llama-4-scout-17b-16e-instruct`
+1. `nvidia/nemotron-3-nano-30b-a3b`
+2. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
+3. `mistralai/mistral-small-4-119b-2603`
+4. `nvidia/nemotron-mini-4b-instruct`
+5. `@cf/meta/llama-4-scout-17b-16e-instruct`
 
-The first item is the Cloudflare primary after removal of the unavailable NVIDIA model. The next five are NVIDIA NIM reserve models and the last is the experimental Cloudflare reserve. T-0608 used NVIDIA NIM successfully, so failover was not live-exercised.
-
-The five NVIDIA NIM models were selected from the live `/v1/models` catalog by
-usable response latency. Two identical grounded-payload smoke requests per
-model produced these median latencies: `openai/gpt-oss-120b` 793.4 ms,
-`google/gemma-4-31b-it` 1,246.1 ms, `meta/llama-3.2-11b-vision-instruct`
-1,249.7 ms, `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning` 1,383.1 ms, and
-`openai/gpt-oss-20b` 1,397.0 ms. Non-generation catalog entries such as
-translation, safety, and calibration models were excluded even when their
-raw endpoint latency was lower.
+The first item is NVIDIA NIM primary. The second is the Cloudflare fallback;
+the next two are NVIDIA reserve models and the last is the experimental
+Cloudflare reserve. T-0608 used NVIDIA NIM successfully, so failover was not
+live-exercised.
 
 ## Required Environment Names
 
@@ -77,10 +69,8 @@ OCR_ENABLED
 CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL
- CLOUDFLARE_SECONDARY_ACCOUNT_ID
- CLOUDFLARE_SECONDARY_API_TOKEN
- CLOUDFLARE_TERTIARY_ACCOUNT_ID
- CLOUDFLARE_TERTIARY_API_TOKEN
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN
 RAG_QUERY_BASE_URL
 RAG_QUERY_ALLOWED_AUTHORITIES
 RAG_QUERY_TIMEOUT_SECONDS
@@ -91,9 +81,7 @@ NVIDIA_NIM_GENERATION_BASE_URL
 NVIDIA_NIM_GENERATION_ALLOWED_HOSTS
 NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS
 NVIDIA_NIM_GENERATION_SECONDARY_MODEL
-NVIDIA_NIM_GENERATION_TERTIARY_MODEL
-NVIDIA_NIM_GENERATION_QUATERNARY_MODEL
-NVIDIA_NIM_GENERATION_QUINARY_MODEL
+NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL
 CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS
 CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL

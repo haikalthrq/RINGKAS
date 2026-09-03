@@ -44,8 +44,8 @@ Keputusan arsitektur inti:
 | Chunking | LangChain `RecursiveCharacterTextSplitter` |
 | Retrieval | Qdrant dense + sparse vector retrieval |
 | Fusion | Reciprocal Rank Fusion / RRF |
-| Generation primary | Cloudflare Workers AI |
-| Generation fallback | Cloudflare secondary/tertiary accounts, then NVIDIA NIM and experimental Cloudflare model |
+| Generation primary | NVIDIA NIM |
+| Generation fallback | Ordered generation failover: Cloudflare Workers AI, secondary NVIDIA NIM, lightweight NVIDIA NIM, then experimental Cloudflare model |
 | Embedding provider | Cloudflare Workers AI only: `@cf/qwen/qwen3-embedding-0.6b` |
 | Auth | ASP.NET Core Identity + Google OAuth via backend |
 | Admin UI | Sederhana: trigger ingestion, status job, log ringkas |
@@ -340,21 +340,15 @@ AUTH_COOKIE_DOMAIN=TBD
 GOOGLE_CLIENT_ID=TBD
 GOOGLE_CLIENT_SECRET=TBD
 NVIDIA_NIM_API_KEY=TBD
-NVIDIA_NIM_GENERATION_MODEL=openai/gpt-oss-120b
+NVIDIA_NIM_GENERATION_MODEL=nvidia/nemotron-3-nano-30b-a3b
 NVIDIA_NIM_GENERATION_BASE_URL=https://integrate.api.nvidia.com/v1
 NVIDIA_NIM_GENERATION_ALLOWED_HOSTS=integrate.api.nvidia.com
 NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS=60
-NVIDIA_NIM_GENERATION_SECONDARY_MODEL=google/gemma-4-31b-it
-NVIDIA_NIM_GENERATION_TERTIARY_MODEL=meta/llama-3.2-11b-vision-instruct
-NVIDIA_NIM_GENERATION_QUATERNARY_MODEL=nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
-NVIDIA_NIM_GENERATION_QUINARY_MODEL=openai/gpt-oss-20b
+NVIDIA_NIM_GENERATION_SECONDARY_MODEL=mistralai/mistral-small-4-119b-2603
+NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL=nvidia/nemotron-mini-4b-instruct
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=@cf/meta/llama-3.3-70b-instruct-fp8-fast
-CLOUDFLARE_SECONDARY_ACCOUNT_ID=TBD_OPTIONAL
-CLOUDFLARE_SECONDARY_API_TOKEN=TBD_OPTIONAL
-CLOUDFLARE_TERTIARY_ACCOUNT_ID=TBD_OPTIONAL
-CLOUDFLARE_TERTIARY_API_TOKEN=TBD_OPTIONAL
 CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL=@cf/meta/llama-4-scout-17b-16e-instruct
 CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS=60
 QDRANT_URL=http://qdrant:6333
@@ -372,11 +366,9 @@ QDRANT_URL=http://qdrant:6333
 QDRANT_API_KEY=TBD_OPTIONAL
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
-CLOUDFLARE_SECONDARY_ACCOUNT_ID=TBD_OPTIONAL
-CLOUDFLARE_SECONDARY_API_TOKEN=TBD_OPTIONAL
-CLOUDFLARE_TERTIARY_ACCOUNT_ID=TBD_OPTIONAL
-CLOUDFLARE_TERTIARY_API_TOKEN=TBD_OPTIONAL
 CLOUDFLARE_WORKERS_AI_EMBEDDING_MODEL=@cf/qwen/qwen3-embedding-0.6b
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_ACCOUNT_ID=TBD_OPTIONAL
+CLOUDFLARE_WORKERS_AI_EMBEDDING_SECONDARY_API_TOKEN=TBD_OPTIONAL
 QDRANT_COLLECTION_NAME=ringkas_chunks_cf_qwen3_embedding_v2
 QDRANT_DENSE_VECTOR_SIZE=1024
 PDF_STORAGE_PATH=/data/ringkas/pdfs
@@ -1023,28 +1015,21 @@ However, the system must still have a sufficiency rule:
 
 | Role | Provider |
 |---|---|
-| Primary generation | Cloudflare Workers AI |
-| Fallback generation | Cloudflare secondary/tertiary accounts, then NVIDIA NIM |
-| On-request only (FREE) | OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` — hanya jika eksplisit diminta, bukan fallback otomatis |
-
-Cloudflare generation account failover is ordered as primary, secondary, then
-tertiary. Each configured account uses the same requested model and the same
-request/response contract. Rate-limit, authentication, timeout, transport, and
-provider 5xx failures may advance to the next Cloudflare account. If all
-configured Cloudflare accounts fail, the outer generation order proceeds to the
-NVIDIA fallbacks below.
+| Primary generation | NVIDIA NIM |
+| Fallback generation | Cloudflare Workers AI |
+| On-request only (FREE) | OpenCode Zen FREE models (mis. DeepSeek V4 Flash Free) — hanya jika eksplisit diminta, bukan fallback otomatis |
 
 The MVP locks generation attempts in this order:
 
-1. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
-2. `openai/gpt-oss-120b`
-3. `google/gemma-4-31b-it`
-4. `meta/llama-3.2-11b-vision-instruct`
-5. `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`
-6. `openai/gpt-oss-20b`
-7. `@cf/meta/llama-4-scout-17b-16e-instruct`
+1. `nvidia/nemotron-3-nano-30b-a3b`
+2. `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
+3. `mistralai/mistral-small-4-119b-2603`
+4. `nvidia/nemotron-mini-4b-instruct`
+5. `@cf/meta/llama-4-scout-17b-16e-instruct`
 
-The first model is the Cloudflare primary after removal of the unavailable NVIDIA model. The next five are NVIDIA NIM reserve models and the last is the experimental Cloudflare reserve. Model FREE OpenCode Zen `mimo-v2.5-free` dan `muse-spark-1.2` tidak termasuk dalam urutan terkunci ini dan hanya boleh dipakai jika eksplisit diminta (on-request). All attempts remain subject to the grounding
+The first model is the NVIDIA NIM primary, the second is the Cloudflare
+cross-provider fallback, the next two are NVIDIA reserve models, and the last is
+an experimental Cloudflare reserve. Model FREE dari OpenCode Zen tidak termasuk dalam urutan terkunci ini dan hanya boleh dipakai jika eksplisit diminta (on-request). All attempts remain subject to the grounding
 and citation guard.
 
 ### 20.2 Prompt Rules
@@ -1382,14 +1367,12 @@ Note:
 | Item | Status | Notes |
 |---|---|---|
 | Domain and HTTPS | TBD | Caddy recommended if no preference |
-| NVIDIA NIM generation model | Locked fallback | `openai/gpt-oss-120b`; used after Cloudflare primary |
+| NVIDIA NIM generation model | Locked | `nvidia/nemotron-3-nano-30b-a3b`; hosted preview availability verified |
 | Cloudflare Workers AI embedding secondary/tertiary accounts | Approved contract, implementation complete | Optional ordered account-level failover using the exact same `@cf/qwen/qwen3-embedding-0.6b` model and independently verified contract/dimension |
-| NVIDIA NIM secondary generation model | Locked reserve | `google/gemma-4-31b-it`; ordered after the NIM fallback model |
-| NVIDIA NIM tertiary generation model | Locked reserve | `meta/llama-3.2-11b-vision-instruct`; ordered after the NIM secondary model |
-| NVIDIA NIM quaternary generation model | Locked reserve | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`; ordered after the NIM tertiary model |
-| NVIDIA NIM quinary generation model | Locked reserve | `openai/gpt-oss-20b`; ordered after the NIM quaternary model |
+| NVIDIA NIM secondary generation model | Locked reserve | `mistralai/mistral-small-4-119b-2603`; ordered after the Cloudflare fallback |
+| NVIDIA NIM lightweight generation model | Locked reserve | `nvidia/nemotron-mini-4b-instruct`; ordered after the NIM secondary model |
 | Cloudflare Workers AI embedding model | Approved and dimension-locked | `@cf/qwen/qwen3-embedding-0.6b`; live-verified vector dimension `1024` |
-| Cloudflare Workers AI generation primary model | Locked | `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; account endpoint availability verified |
+| Cloudflare Workers AI generation fallback model | Locked | `@cf/meta/llama-3.3-70b-instruct-fp8-fast`; account endpoint availability verified |
 | Cloudflare Workers AI experimental generation model | Experimental reserve | `@cf/meta/llama-4-scout-17b-16e-instruct`; requires evaluation before promotion |
 | Registered user daily quota | TBD | after provider limit estimation |
 | Session vs JWT | TBD | depends on deployment/domain setup |
