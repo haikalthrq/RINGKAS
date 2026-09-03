@@ -233,7 +233,47 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 @media (max-width: 640px) {
-  .site-header-inner { align-items: stretch; min-height: 64px; flex-direction: column; gap: 8px; padding: 10px 16px; }.brand-block small { display: none; }.nav { justify-content: flex-start; gap: 0; }.nav-link { flex: 0 0 auto; min-height: 44px; padding: 7px 9px; font-size: .78rem; }.session-note { padding: 0 16px 8px; }.page { padding: 24px 16px 48px; }.page-card { padding: 24px; }.page-card h1 { font-size: 1.9rem; }.chat-topbar { min-height: 64px; padding: 10px 12px; }.chat-topbar-meta { gap: 8px; }.scope-badge { max-width: 32px; overflow: hidden; font-size: 0; }.scope-dot { width: 10px; height: 10px; flex: 0 0 auto; }.chat-topbar-kicker { font-size: .6rem; }.chat-topbar-title h1 { font-size: .85rem; }.chat-content { padding: 32px 16px 38px; }.chat-empty { padding-top: 18px; }.chat-empty h2 { font-size: 2.1rem; }.empty-description { font-size: .9rem; }.prompt-list { margin-top: 28px; }.prompt-list button { min-height: 56px; }.message-list { gap: 28px; }.message-row-assistant { gap: 9px; }.assistant-avatar { width: 28px; height: 28px; border-radius: 8px; }.assistant-answer { font-size: .95rem; line-height: 1.7; }.user-message { max-width: 88%; }.chat-request-error, .assistant-pending { margin-left: 37px; }.chat-request-error { display: grid; gap: 8px; }.chat-composer-wrap { padding: 10px 12px max(10px, env(safe-area-inset-bottom)); }.chat-composer { padding-left: 13px; }.composer-hint span:first-child { display: none; }.composer-disclaimer { font-size: .63rem; }.source-drawer { width: 100%; }.source-drawer-header, .source-drawer-body { padding-inline: 18px; }.filter-grid, .metadata-list { grid-template-columns: 1fr; }
+  .site-header-inner { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; min-height: 56px; padding: 8px 14px; gap: 6px 10px; }
+  .brand-group { flex: 0 0 auto; }
+  .brand-divider, .brand-bps-credit { display: none; }
+  .nav { display: flex; align-items: center; gap: 2px; margin-left: auto; flex-wrap: nowrap; }
+  .nav-link { flex: 0 0 auto; min-height: 36px; padding: 6px 8px; font-size: .8rem; }
+  .header-language-control { margin: 0 2px; }
+  .language-pill-display { min-height: 34px; padding: 3px 8px; gap: 5px; font-size: .76rem; }
+  .user-menu-container { margin-left: 2px; }
+  .user-menu-trigger { min-height: 34px; padding: 2px; border-radius: 50%; }
+  .user-pill-email, .user-chevron { display: none; }
+  .user-avatar { width: 30px; height: 30px; font-size: .8rem; }
+  .session-note { padding: 0 16px 8px; }
+  .page { padding: 24px 16px 48px; }
+  .page-card { padding: 24px; }
+  .page-card h1 { font-size: 1.9rem; }
+  .chat-topbar { min-height: 52px; padding: 8px 12px; }
+  .chat-topbar-meta { gap: 8px; }
+  .scope-badge { max-width: 32px; overflow: hidden; font-size: 0; }
+  .scope-dot { width: 10px; height: 10px; flex: 0 0 auto; }
+  .chat-topbar-kicker { font-size: .6rem; }
+  .chat-topbar-title h1 { font-size: .85rem; }
+  .chat-content { padding: 20px 12px 24px; }
+  .chat-empty { padding-top: 12px; }
+  .chat-empty h2 { font-size: 1.9rem; }
+  .empty-description { font-size: .88rem; }
+  .prompt-list { margin-top: 20px; }
+  .prompt-list button { min-height: 48px; }
+  .message-list { gap: 24px; }
+  .message-row-assistant { gap: 9px; }
+  .assistant-avatar { width: 28px; height: 28px; border-radius: 8px; }
+  .assistant-answer { font-size: .92rem; line-height: 1.65; }
+  .user-message { max-width: 88%; }
+  .chat-request-error, .assistant-pending { margin-left: 37px; }
+  .chat-request-error { display: grid; gap: 8px; }
+  .chat-composer-wrap { padding: 8px 10px max(10px, env(safe-area-inset-bottom)); }
+  .chat-composer { padding-left: 12px; }
+  .composer-hint span:first-child { display: none; }
+  .composer-disclaimer { font-size: .63rem; }
+  .source-drawer { width: 100%; }
+  .source-drawer-header, .source-drawer-body { padding-inline: 18px; }
+  .filter-grid, .metadata-list { grid-template-columns: 1fr; }
 }
 
 @media (pointer: coarse) {
@@ -321,8 +361,7 @@ h1, h2, h3 { text-wrap: balance; }
   .home-actions > * { width: 100%; }
   .home-copy .home-access-note { font-size: .78rem; }
   .home-visual { width: 100%; }
-  .home-visual::before { top: -10px; right: -6px; width: 44px; height: 44px; }
-  .home-visual::after { bottom: -8px; left: -6px; width: 40px; height: 40px; }
+  .home-visual::before, .home-visual::after { display: none; }
   .evidence-preview { min-height: 360px; padding: 20px; }
   .preview-top { font-size: .58rem; }
   .preview-question { font-size: 1.25rem; }
