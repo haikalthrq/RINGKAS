@@ -1,5 +1,6 @@
 # RINGKAS
-**Retrieval Informasi Nasional Generatif untuk Kajian Arsip Statistik**
+**National Generative Information Retrieval for Statistical Archives**  
+*(Retrieval Informasi Nasional Generatif untuk Kajian Arsip Statistik)*
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -7,26 +8,25 @@
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
 [![Qdrant](https://img.shields.io/badge/Vector%20DB-Qdrant-red.svg)](https://qdrant.tech/)
 
-> **Rujuk data statistik langsung ke dokumen aslinya.**  
-> *Ground statistical questions in official BPS publications with exact page, table, and paragraph citations.*
+> **Ground statistical questions in official publications with exact page, table, and paragraph citations.**
 
 ---
 
-## 📌 Sekilas Tentang RINGKAS
+## 📌 Overview
 
-**RINGKAS** adalah platform pencarian dan tanya-jawab cerdas berbasis **Citation-First RAG** (*Retrieval-Augmented Generation*) yang dirancang khusus untuk arsip publikasi **Badan Pusat Statistik (BPS)** (dimulai dari korpus BPS Provinsi DKI Jakarta).
+**RINGKAS** is an open-source, **citation-first** Retrieval-Augmented Generation (RAG) platform tailored for official publications from Statistics Indonesia (*Badan Pusat Statistik* / BPS), starting with the BPS DKI Jakarta regional corpus.
 
-Tantangan terbesar penggunaan AI generatif pada data publik adalah **halusinasi statistik**—model sering kali mengarang angka, memutarbalikkan periode, atau salah menyebutkan satuan. RINGKAS menyelesaikan masalah ini dengan prinsip ketat:
+The greatest challenge of using generative AI on public statistical records is **hallucination**—models frequently fabricate figures, mix up time periods, confuse regions, or invent indicator definitions. RINGKAS prevents this through strict grounding constraints:
 
-- **Wajib Sitasi:** Setiap klaim substantif harus menyertakan kartu sitasi dokumen resmi BPS (judul publikasi, tahun rilis, nomor halaman, dan cuplikan teks asli).
-- **Anti-Spekulasi:** Jika bukti dokumen yang relevan tidak mencukupi (*insufficient evidence*), sistem secara eksplisit menolak berspekulasi alih-alih mengarang jawaban.
-- **Tautan Verifikasi Langsung:** Pengguna dapat memverifikasi langsung halaman rujukan melalui pranala ke arsip resmi BPS.
+- **Mandatory Citations:** Every substantive claim must cite official BPS publications, providing the exact publication title, release year, page numbers, and original text excerpts.
+- **Refusal on Insufficient Evidence:** If retrieved evidence does not support a clear, verifiable answer, the system explicitly refuses to guess instead of inventing data.
+- **Direct Source Verification:** Users can inspect source references and navigate directly to official BPS document links.
 
 ---
 
-## 🏛️ Arsitektur Sistem
+## 🏛️ System Architecture
 
-RINGKAS menerapkan arsitektur modular yang memisahkan frontend publik, backend bisnis, dan engine pemrosesan RAG internal:
+RINGKAS enforces a clean modular architecture separating the public web interface, domain backend, and internal RAG services:
 
 ```text
                        ┌─────────────────────────┐
@@ -48,7 +48,7 @@ RINGKAS menerapkan arsitektur modular yang memisahkan frontend publik, backend b
                              │      └─────────────────────────┘
                              ▼
                 ┌────────────────────────┐
-                │    RAG Internal Hub    │
+                │    Internal RAG Hub    │
                 ├────────────────────────┤
                 │ • rag-query (Retrieval)│ ──► Qdrant Vector DB (Dense 1024-d)
                 │ • rag-worker (Ingest & │ ──► PyMuPDF + Chunking Engine
@@ -56,90 +56,90 @@ RINGKAS menerapkan arsitektur modular yang memisahkan frontend publik, backend b
                 └────────────────────────┘
 ```
 
-### Komponen Utama
+### Core Components
 
-| Komponen | Direktori | Teknologi | Peran & Tanggung Jawab |
+| Component | Path | Technology | Role & Responsibility |
 |---|---|---|---|
-| **Frontend Web** | `apps/web` | Next.js 16, React, TypeScript | Antarmuka pengguna responsif (desktop, tablet, HP) dengan hamburger drawer, perutean dwibahasa (ID/EN), pratinjau kartu sitasi, dan ruang riset interaktif. |
-| **Main API** | `apps/api` | ASP.NET Core (.NET 10), EF Core | Satu-satunya gerbang backend publik. Mengelola otentikasi (Cookie + OAuth Google), peran pengguna, kontrol kuota, orkestrasi chat, sitasi, dan API ingestion. |
-| **Vector Database** | `qdrant` | Qdrant | Penyimpanan dan pencarian dense vector chunk publikasi (dimensi 1024 via Cloudflare `@cf/qwen/qwen3-embedding-0.6b`). |
-| **Relational Database** | `postgres` | PostgreSQL 16 | Penyimpanan akun ASP.NET Identity, sesi chat, pesan, metadata dokumen, status job ingestion, dan log audit. |
-| **RAG Query Engine** | `services/rag-worker` (`rag-query`) | Python 3.12, FastAPI | Layanan privat internal untuk pencarian dense retrieval dan perankingan chunk teks dari Qdrant. |
-| **Ingestion Worker** | `services/rag-worker` | Python 3.12, PyMuPDF, `uv` | Mengunduh PDF resmi BPS, parsing teks halaman per halaman, memecah chunk secara rekursif (500–800 token), dan mengindeks embedding. |
+| **Frontend Web** | `apps/web` | Next.js 16, React, TypeScript | Presentation layer built with App Router. Features a mobile drawer navigation, instant bilingual (ID/EN) switching, citation cards, and an interactive chat workspace. |
+| **Main API** | `apps/api` | ASP.NET Core (.NET 10), EF Core | The single public backend gateway. Manages authentication (Cookie + Google OAuth), user roles, quota enforcement, chat orchestration, citations, and admin ingestion endpoints. |
+| **Vector Database** | `qdrant` | Qdrant | Stores and queries document chunk embeddings (1024-dimensional dense vectors via Cloudflare Workers AI `@cf/qwen/qwen3-embedding-0.6b`). |
+| **Relational Database** | `postgres` | PostgreSQL 16 | Stores ASP.NET Identity users, chat sessions, message histories, document/chunk metadata, ingestion job queues, and audit logs. |
+| **RAG Query Engine** | `services/rag-worker` (`rag-query`) | Python 3.12, FastAPI | Internal private HTTP service inside the Docker network for dense retrieval and chunk ranking from Qdrant. |
+| **Ingestion Worker** | `services/rag-worker` | Python 3.12, PyMuPDF, `uv` | Downloads official BPS PDFs, extracts text page-by-page, performs recursive text chunking (500–800 tokens), and indexes embeddings. |
 
-> **Catatan Keamanan:** Next.js tidak pernah mengakses database atau Qdrant secara langsung. Layanan Python bersifat internal dan hanya dapat diakses oleh ASP.NET Core melalui token internal.
+> **Security Boundary:** Next.js never accesses PostgreSQL or Qdrant directly. The Python services are strictly internal and only accessible by ASP.NET Core through internal bearer tokens.
 
 ---
 
-## ✨ Fitur Unggulan
+## ✨ Key Features
 
-1. **Evidence-First Citations:** Setiap jawaban dilengkapi kartu sumber yang dapat diklik untuk melihat judul publikasi, tahun, halaman spesifik, dan kutipan paragraf sumbernya.
-2. **100% Responsif & Ergonomis:** Tampilan optimal di semua resolusi (ponsel 360px, tablet 768px, hingga desktop lebar) dengan navigasi satu baris dan panel laci samping (*drawer menu*).
-3. **Dukungan Dwibahasa (ID / EN):** Pengalihan bahasa instan dari header dengan penyesuaian terminologi statistik yang akurat.
+1. **Evidence-First Citations:** Interactive source cards showing publication title, year, exact page numbers, and verified paragraph excerpts.
+2. **Fully Responsive Mobile Experience:** Compact single-row navbar with a slide-over mobile drawer, touch-friendly tap targets, and generous spacing across all screen sizes.
+3. **Bilingual Support (Indonesian & English):** Switch interface language on the fly with accurate statistical terminology.
 4. **Multi-tier LLM Provider & Failover:**
    - **Primary:** `nvidia/nemotron-3-nano-30b-a3b`
    - **Secondary / Fallback:** `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
    - **Experimental:** `mistralai/mistral-small-4-119b-2603`
-5. **Pipeline Ingestion Mandiri:** Panel admin terproteksi untuk memicu pengindeksan publikasi BPS baru berdasarkan tahun dan kata kunci.
+5. **Self-Service Admin Ingestion Pipeline:** Authorized admins can trigger document downloads and vector indexing by region, year range, and keyword directly via UI or API.
 
 ---
 
-## 🚀 Panduan Instalasi Lokal (Quickstart)
+## 🚀 Quickstart Guide
 
-### Prasyarat
+### Prerequisites
 - [Docker](https://www.docker.com/) & Docker Compose
-- [.NET 10 SDK](https://dotnet.microsoft.com/) dan alat `dotnet-ef`
-- [Python 3.12+](https://www.python.org/) dan [uv](https://astral.sh/uv) (opsional, untuk menjalankan test worker)
-- [Node.js 20+](https://nodejs.org/) (opsional, untuk pengembangan web lokal)
+- [.NET 10 SDK](https://dotnet.microsoft.com/) with `dotnet-ef` tool
+- [Python 3.12+](https://www.python.org/) with [uv](https://astral.sh/uv) (optional, for local worker testing)
+- [Node.js 20+](https://nodejs.org/) (optional, for standalone frontend development)
 
-### 1. Klon Repositori & Persiapan Konfigurasi
-```powershell
+### 1. Clone & Configure Environment
+```bash
 git clone https://github.com/haikalthrq/RINGKAS.git
 cd RINGKAS
 
-# Salin konfigurasi environment
-Copy-Item .env.example .env
+# Copy example environment configuration
+cp .env.example .env
 ```
 
-Buka berkas `.env` dan lengkapi konfigurasi utama (API Key tidak boleh dikomit ke Git):
+Open `.env` and fill in the required keys (never commit secrets or API tokens to Git):
 - `DATABASE_URL` / `POSTGRES_*`
-- `CLOUDFLARE_ACCOUNT_ID` dan `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`
 - `NVIDIA_NIM_API_KEY`
-- `BPS_API_KEY` (jika mengaktifkan sinkronisasi langsung dari portal BPS)
+- `BPS_API_KEY` (if querying the live BPS Web API)
 
-### 2. Jalankan Migrasi Database
-Jalankan migrasi EF Core untuk menyiapkan skema tabel di PostgreSQL:
-```powershell
+### 2. Run Database Migrations
+Apply EF Core migrations to prepare the PostgreSQL schema:
+```bash
 dotnet ef database update --project apps/api/Ringkas.Api.csproj --startup-project apps/api/Ringkas.Api.csproj
 ```
 
-### 3. Jalankan Aplikasi dengan Docker Compose
-```powershell
+### 3. Launch with Docker Compose
+```bash
 docker compose --env-file .env -f infra/docker-compose.yml up -d --build
 ```
 
-Periksa apakah seluruh kontainer telah berjalan:
-```powershell
+Verify service status:
+```bash
 docker compose --env-file .env -f infra/docker-compose.yml ps
 ```
 
-Buka peramban Anda di:  
+Open your browser at:  
 👉 **`http://localhost:3000`**
 
 ---
 
-## 🔑 Pengelolaan Akun & Peran Admin
+## 🔑 User Accounts & Admin Bootstrap
 
-Secara bawaan, registrasi publik memberikan peran `user`. Peran `admin` diperlukan untuk mengakses panel dan API ingestion dokumen.
+Public registration assigns the standard `user` role. Accessing the document ingestion dashboard requires the `admin` role.
 
-### 1. Daftarkan Akun Baru
-Daftar melalui antarmuka web di `/register` atau via HTTP:
-```powershell
-curl.exe -s -c admin.cookies -H "Content-Type: application/json" -d '{"email":"admin@ringkas.local","password":"Password123!"}' http://localhost:3000/api/auth/register
+### 1. Register a Local Account
+Create an account via the web UI at `/register` or using curl:
+```bash
+curl -s -c admin.cookies -H "Content-Type: application/json" -d '{"email":"admin@ringkas.local","password":"Password123!"}' http://localhost:3000/api/auth/register
 ```
 
-### 2. Promosikan Akun Menjadi Admin (via PostgreSQL)
-Jalankan query SQL berikut langsung di database:
+### 2. Promote Account to Admin (via PostgreSQL)
+Execute this SQL statement directly on your PostgreSQL database:
 ```sql
 BEGIN;
 INSERT INTO "AspNetUserRoles" ("UserId", "RoleId")
@@ -151,67 +151,66 @@ ON CONFLICT DO NOTHING;
 COMMIT;
 ```
 
-Setelah dipromosikan, lakukan login ulang agar cookie sesi memuat klaim peran `admin`.
+Log in again after promotion so the session cookie includes the `admin` role claim.
 
 ---
 
-## 📥 Memicu Pipeline Ingestion Dokumen BPS
+## 📥 Ingesting BPS Publications
 
-Untuk mengindeks dokumen publikasi BPS baru:
+To index new BPS statistical publications:
 
-1. Jalankan worker ingestion di profil Compose:
-   ```powershell
+1. Start the ingestion worker using the Compose profile:
+   ```bash
    docker compose --env-file .env -f infra/docker-compose.yml --profile ingestion up -d rag-worker
    ```
-2. Kirim permintaan job melalui API Admin (atau buka menu `/admin` di web):
-   ```powershell
-   curl.exe -s -b admin.cookies -H "Content-Type: application/json" -d '{"region":"DKI Jakarta","year_start":2023,"year_end":2025,"max_documents":1,"force_reprocess":false}' http://localhost:3000/api/admin/ingestion/jobs
+2. Trigger an ingestion job via the Admin API (or navigate to `/admin` in the web UI):
+   ```bash
+   curl -s -b admin.cookies -H "Content-Type: application/json" -d '{"region":"DKI Jakarta","year_start":2023,"year_end":2025,"max_documents":1,"force_reprocess":false}' http://localhost:3000/api/admin/ingestion/jobs
    ```
-3. Worker akan otomatis mengunduh PDF, mengekstrak teks dengan PyMuPDF, memotong chunk, membuat embedding, dan menyimpan vektor ke Qdrant.
+3. The worker downloads the publication PDF, extracts text using PyMuPDF, chunks content, computes embeddings, and indexes vectors into Qdrant.
 
 ---
 
-## 🧪 Pengujian & Verifikasi (Testing)
+## 🧪 Testing & Verification
 
-Untuk memastikan keandalan kode sebelum commit:
+Run local verification suites:
 
-```powershell
-# 1. Jalankan Unit Test Backend ASP.NET Core
+```bash
+# 1. Run ASP.NET Core API Unit Tests
 dotnet test tests/api/Ringkas.Api.Tests.csproj
 
-# 2. Jalankan Test Evaluasi RAG Worker & Dataset
+# 2. Run Python RAG Worker & Evaluation Tests
 uv run --project services/rag-worker --extra test --frozen pytest services/rag-worker/tests/test_evaluation_dataset.py
 
-# 3. Jalankan Pengujian Build Next.js
-cd apps/web
-npm run build
+# 3. Test Next.js Production Build
+cd apps/web && npm run build
 ```
 
 ---
 
-## 🌐 Panduan Deployment Produksi (VPS)
+## 🌐 Production VPS Deployment
 
-Untuk implementasi di server VPS publik:
+For production deployments on a VPS:
 
-1. Gunakan file overlay produksi `infra/docker-compose.production.yml`:
+1. Use the production overlay `infra/docker-compose.production.yml`:
    ```bash
    docker compose --env-file .env.production -f infra/docker-compose.yml -f infra/docker-compose.production.yml up -d --build
    ```
-2. Overlay ini otomatis mengunci port database (PostgreSQL dan Qdrant) agar tidak terbuka ke publik dan hanya mengikat port web ke `127.0.0.1`.
-3. Pasang reverse proxy terluar (seperti Nginx atau Caddy) dengan sertifikat SSL/TLS untuk meneruskan trafik domain ke aplikasi Next.js.
-4. Lakukan pencadangan berkala menggunakan skrip di `scripts/backup/backup.sh`.
+2. The overlay closes public ports for PostgreSQL and Qdrant, and binds Next.js to loopback `127.0.0.1:${WEB_PORT}`.
+3. Configure an external TLS reverse proxy (e.g., Nginx, Caddy) to terminate SSL and forward traffic to the Next.js port.
+4. Schedule periodic backups using `scripts/backup/backup.sh`.
 
 ---
 
-## ⚠️ Batasan Sistem (Known Limitations)
+## ⚠️ Known Limitations
 
-- **Fokus Teks Digital (Text-First):** Pemrosesan dokumen mengandalkan lapisan teks digital asli menggunakan PyMuPDF. Dokumen pindaian (*scanned PDF*) tanpa teks atau OCR belum didukung pada versi MVP ini.
-- **Tabel Kompleks:** Ekstraksi data tabular bertingkat dilakukan dengan pendekatan terbaik (*best-effort*) berbasis teks.
-- **Batasan Wilayah Awal:** Korpus fokus awal mencakup publikasi resmi BPS Provinsi DKI Jakarta.
+- **Text-First MVP:** Document processing relies on clean digital text layers via PyMuPDF. Scanned PDFs (image-only without OCR) are unsupported in this release.
+- **Complex Tables:** Multi-span and nested table extraction is handled on a best-effort textual basis.
+- **Corpus Scope:** The initial release focuses on publications from BPS Provinsi DKI Jakarta.
 
 ---
 
-## 📄 Atribusi & Lisensi
+## 📄 Attribution & License
 
-- Publikasi dan data statistik bersumber dari arsip resmi [Badan Pusat Statistik (BPS) Republik Indonesia](https://www.bps.go.id/).
-- Dikembangkan sebagai inisiatif aksesibilitas data terbuka dan penelitian sains data terverifikasi.
+- Statistical publications and archives are sourced from [Badan Pusat Statistik (BPS) Republik Indonesia](https://www.bps.go.id/).
+- Released under the [MIT License](LICENSE).
