@@ -419,13 +419,6 @@ export function ChatWorkspace() {
           </div>
           <div className="chat-topbar-meta">
             <span className="scope-badge"><span className="scope-dot" aria-hidden="true" />{labels.scope}</span>
-            <label className="language-control">
-              <span className="sr-only">{labels.language}</span>
-              <select value={language} aria-label={labels.language} onChange={(event) => changeLanguage(event.target.value as InterfaceLanguage)}>
-                <option value="id">ID</option>
-                <option value="en">EN</option>
-              </select>
-            </label>
           </div>
         </header>
 
