@@ -164,6 +164,8 @@ services:
       REGISTERED_DAILY_QUOTA: ${REGISTERED_DAILY_QUOTA:-}
       PDF_STORAGE_PATH: ${PDF_STORAGE_PATH:-/data/ringkas/pdfs}
       DATA_PROTECTION_KEYS_PATH: ${DATA_PROTECTION_KEYS_PATH:-/data/ringkas/keys}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     volumes:
       - ${RINGKAS_DATA_ROOT:-../data}/pdfs:/data/ringkas/pdfs:ro
       - ${RINGKAS_DATA_ROOT:-../data}/keys:/data/ringkas/keys

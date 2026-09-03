@@ -415,7 +415,6 @@ export function ChatWorkspace() {
             <MenuIcon />
           </button>
           <div className="chat-topbar-title">
-            <span className="chat-topbar-kicker">RINGKAS / BPS</span>
             <h1>{labels.workspace}</h1>
           </div>
           <div className="chat-topbar-meta">
@@ -511,14 +510,10 @@ function ChatSidebar(props: {
 
   return (
     <aside className={`chat-sidebar${props.isOpen ? " is-open" : ""}`} aria-label={props.labels.history} aria-hidden={props.isWideScreen === false && !props.isOpen} inert={props.isWideScreen === false && !props.isOpen ? true : undefined}>
-      <div className="sidebar-brand">
-        <Link className="workspace-brand" href="/" onClick={props.onClose}>
-          <span className="workspace-brand-mark" aria-hidden="true">R</span>
-          <span><strong>RINGKAS</strong><small>{props.labels.scope}</small></span>
-        </Link>
+      <div className="sidebar-action-header">
+        <button className="new-chat-button" type="button" onClick={props.onNewChat}><PlusIcon />{props.labels.newChat}</button>
         <button className="icon-button sidebar-close-button" type="button" aria-label={props.labels.closeMenu} ref={props.closeButtonRef} onClick={props.onClose}><CloseIcon /></button>
       </div>
-      <button className="new-chat-button" type="button" onClick={props.onNewChat}><PlusIcon />{props.labels.newChat}</button>
       <div className="sidebar-section-heading"><span>{props.labels.history}</span><span className="history-count">{props.isAuthenticated ? props.sessions.length : "-"}</span></div>
       <div className="history-list" aria-live="polite">
         {props.authLoading || props.isLoading ? <HistorySkeleton labels={props.labels} /> : null}

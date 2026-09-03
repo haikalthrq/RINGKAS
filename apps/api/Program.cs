@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -48,10 +49,34 @@ if (googleOAuthSettings.IsConfigured)
             options.ClientSecret = googleOAuthSettings.ClientSecret!;
             options.CallbackPath = GoogleOAuthSettings.ProviderCallbackPath;
             options.SignInScheme = IdentityConstants.ExternalScheme;
+            options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+            options.CorrelationCookie.SecurePolicy = builder.Environment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
+            options.CorrelationCookie.HttpOnly = true;
+            options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+            options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
+            options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
             options.ClaimActions.MapJsonKey(GoogleOAuthSettings.EmailVerifiedClaimType, "email_verified");
             options.ClaimActions.MapJsonKey(GoogleOAuthSettings.EmailVerifiedClaimType, "verified_email");
+            options.Events.OnRemoteFailure = context =>
+            {
+                var failure = context.Failure?.Message ?? "remote_failure";
+                context.Response.Redirect($"/login?error=provider_error&detail={Uri.EscapeDataString(failure)}");
+                context.HandleResponse();
+                return Task.CompletedTask;
+            };
         });
 }
+
+builder.Services.ConfigureExternalCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
+});
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -100,6 +125,14 @@ builder.Services.AddInternalRetrieval();
 builder.Services.AddTransient<ChatService>();
 
 var app = builder.Build();
+
+var forwardedHeadersOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
+};
+forwardedHeadersOptions.KnownIPNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthentication();

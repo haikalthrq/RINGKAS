@@ -18,12 +18,12 @@ public static class AuthEndpoints
 
         group.MapPost("/register", RegisterAsync).AllowAnonymous();
         group.MapPost("/login", LoginAsync).AllowAnonymous();
-        group.MapPost("/logout", LogoutAsync).AllowAnonymous();
-        group.MapGet("/me", MeAsync).AllowAnonymous();
+        group.MapPost("/logout", LogoutAsync).AllowAnonymous().DisableRateLimiting();
+        group.MapGet("/me", MeAsync).AllowAnonymous().DisableRateLimiting();
         group.MapPost("/email-verification/request", RequestEmailVerificationAsync).AllowAnonymous();
         group.MapPost("/email-verification/confirm", ConfirmEmailVerificationAsync).AllowAnonymous();
-        group.MapGet("/google", GoogleOAuthStartAsync).AllowAnonymous();
-        group.MapGet("/google/callback", GoogleOAuthCallbackAsync).AllowAnonymous();
+        group.MapGet("/google", GoogleOAuthStartAsync).AllowAnonymous().DisableRateLimiting();
+        group.MapGet("/google/callback", GoogleOAuthCallbackAsync).AllowAnonymous().DisableRateLimiting();
 
         return endpoints;
     }
@@ -122,19 +122,23 @@ public static class AuthEndpoints
 
     private static async Task<IResult> GoogleOAuthStartAsync(
         HttpContext httpContext,
-        GoogleOAuthSettings googleOAuthSettings)
+        GoogleOAuthSettings googleOAuthSettings,
+        SignInManager<ApplicationUser> signInManager)
     {
+        var returnUrl = GetSafeReturnUrl(httpContext.Request.Query["returnUrl"].ToString());
         if (!googleOAuthSettings.IsConfigured)
         {
-            return GoogleOAuthDisabledResult();
+            return GoogleOAuthErrorRedirect(returnUrl, "disabled");
         }
 
-        var returnUrl = GetSafeReturnUrl(httpContext.Request.Query["returnUrl"].ToString());
         var callbackUrl = QueryHelpers.AddQueryString("/api/auth/google/callback", "returnUrl", returnUrl);
+        var properties = signInManager.ConfigureExternalAuthenticationProperties(
+            GoogleDefaults.AuthenticationScheme,
+            callbackUrl);
 
         await httpContext.ChallengeAsync(
             GoogleDefaults.AuthenticationScheme,
-            new AuthenticationProperties { RedirectUri = callbackUrl });
+            properties);
 
         return Results.Empty;
     }
@@ -145,24 +149,47 @@ public static class AuthEndpoints
         string? remoteError,
         GoogleOAuthSettings googleOAuthSettings,
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        SignInManager<ApplicationUser> signInManager,
+        ILoggerFactory loggerFactory)
     {
+        var logger = loggerFactory.CreateLogger("GoogleOAuthCallback");
+        var safeReturnUrl = GetSafeReturnUrl(returnUrl);
         if (!googleOAuthSettings.IsConfigured)
         {
-            return GoogleOAuthDisabledResult();
+            return GoogleOAuthErrorRedirect(safeReturnUrl, "disabled");
         }
-
-        var safeReturnUrl = GetSafeReturnUrl(returnUrl);
         var providerError = remoteError ?? httpContext.Request.Query["error"].ToString();
         if (!string.IsNullOrWhiteSpace(providerError))
         {
+            logger.LogWarning("Google OAuth provider error: {Error}", providerError);
             return GoogleOAuthErrorRedirect(safeReturnUrl, "provider_error");
         }
 
         var externalLoginInfo = await signInManager.GetExternalLoginInfoAsync();
+        if (externalLoginInfo is null)
+        {
+            var authResult = await httpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            if (authResult.Succeeded && authResult.Principal is not null)
+            {
+                var providerKey = authResult.Principal.FindFirstValue(ClaimTypes.NameIdentifier) ??
+                                  authResult.Principal.FindFirstValue("sub") ??
+                                  authResult.Principal.FindFirstValue("id");
+                if (!string.IsNullOrWhiteSpace(providerKey))
+                {
+                    logger.LogInformation("Constructed ExternalLoginInfo from AuthenticateAsync fallback with providerKey: {Key}", providerKey);
+                    externalLoginInfo = new ExternalLoginInfo(
+                        authResult.Principal,
+                        GoogleDefaults.AuthenticationScheme,
+                        providerKey,
+                        GoogleDefaults.DisplayName);
+                }
+            }
+        }
+
         if (externalLoginInfo is null ||
             !string.Equals(externalLoginInfo.LoginProvider, GoogleDefaults.AuthenticationScheme, StringComparison.Ordinal))
         {
+            logger.LogWarning("External login info missing or provider mismatch after fallback. Provider: {Provider}", externalLoginInfo?.LoginProvider);
             return GoogleOAuthErrorRedirect(safeReturnUrl, "login_failed");
         }
 
@@ -194,9 +221,34 @@ public static class AuthEndpoints
             return GoogleOAuthErrorRedirect(safeReturnUrl, "email_unverified");
         }
 
-        if (await userManager.FindByEmailAsync(email) is not null)
+        var existingUser = await userManager.FindByEmailAsync(email);
+        if (existingUser is not null)
         {
-            return GoogleOAuthErrorRedirect(safeReturnUrl, "account_exists");
+            var logins = await userManager.GetLoginsAsync(existingUser);
+            if (!logins.Any(l => string.Equals(l.LoginProvider, externalLoginInfo.LoginProvider, StringComparison.Ordinal)))
+            {
+                var addLoginResult = await userManager.AddLoginAsync(
+                    existingUser,
+                    new UserLoginInfo(
+                        externalLoginInfo.LoginProvider,
+                        externalLoginInfo.ProviderKey,
+                        externalLoginInfo.ProviderDisplayName));
+
+                if (!addLoginResult.Succeeded)
+                {
+                    logger.LogWarning("Failed to link Google login to existing user {Email}", email);
+                    return GoogleOAuthErrorRedirect(safeReturnUrl, "account_creation_failed");
+                }
+            }
+
+            if (!existingUser.EmailConfirmed)
+            {
+                existingUser.EmailConfirmed = true;
+                await userManager.UpdateAsync(existingUser);
+            }
+
+            await signInManager.SignInAsync(existingUser, isPersistent: false);
+            return Results.LocalRedirect(safeReturnUrl);
         }
 
         var user = new ApplicationUser
