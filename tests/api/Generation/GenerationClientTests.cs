@@ -430,7 +430,7 @@ public sealed class GenerationClientTests
         ]);
         var configuration = Configuration(
             secondaryModel: "mistral-model",
-            lightweightModel: "mini-model",
+            tertiaryModel: "glm-model",
             experimentalModel: "llama4-model");
         var primary = new NvidiaNimGenerationClient(new HttpClient(new DelegateHandler((request, _) =>
         {
@@ -447,7 +447,7 @@ public sealed class GenerationClientTests
 
         Assert.Equal(GenerationProvider.CloudflareWorkersAi, result.Provider);
         Assert.Equal("llama4-model", result.Model);
-        Assert.Equal(["nvidia-model", "mistral-model", "mini-model"], nvidiaModels);
+        Assert.Equal(["nvidia-model", "mistral-model", "glm-model"], nvidiaModels);
         Assert.Equal(["cloudflare-model", "llama4-model"], cloudflareModels);
     }
 
@@ -475,7 +475,7 @@ public sealed class GenerationClientTests
         string? cloudflareModel = null,
         string? cloudflareTimeout = null,
         string? secondaryModel = null,
-        string? lightweightModel = null,
+        string? tertiaryModel = null,
         string? experimentalModel = null) =>
         new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -489,7 +489,7 @@ public sealed class GenerationClientTests
             ["CLOUDFLARE_WORKERS_AI_GENERATION_MODEL"] = includeCloudflare ? cloudflareModel ?? "cloudflare-model" : null,
             ["CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS"] = includeCloudflare ? cloudflareTimeout ?? "10" : null,
             ["NVIDIA_NIM_GENERATION_SECONDARY_MODEL"] = secondaryModel,
-            ["NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL"] = lightweightModel,
+            ["NVIDIA_NIM_GENERATION_TERTIARY_MODEL"] = tertiaryModel,
             ["CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL"] = experimentalModel
         }).Build();
 

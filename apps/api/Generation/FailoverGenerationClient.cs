@@ -13,11 +13,11 @@ public sealed class FailoverGenerationClient(
 
         var attempts = new List<(IGenerationClient Client, string? Model)>
         {
-            (primary, null),
-            (fallback, null)
+            (primary, null)
         };
         AddConfiguredAttempt(attempts, primary, "NVIDIA_NIM_GENERATION_SECONDARY_MODEL");
-        AddConfiguredAttempt(attempts, primary, "NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL");
+        AddConfiguredAttempt(attempts, primary, "NVIDIA_NIM_GENERATION_TERTIARY_MODEL");
+        attempts.Add((fallback, null));
         AddConfiguredAttempt(attempts, fallback, "CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL");
 
         GenerationException? firstFailure = null;
