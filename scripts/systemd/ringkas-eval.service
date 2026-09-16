@@ -1,0 +1,15 @@
+[Unit]
+Description=RINGKAS Evaluation Pipeline Runner
+After=docker.service
+
+[Service]
+Type=oneshot
+User=uniserver
+WorkingDirectory=/home/uniserver/ringkas-eval-runtime
+ExecStart=/usr/bin/bash /home/uniserver/ringkas-eval-runtime/evaluations/scripts/run_t_eval_0003_background.sh
+StandardOutput=append:/home/uniserver/ringkas-eval-runtime/evaluations/pipeline.log
+StandardError=append:/home/uniserver/ringkas-eval-runtime/evaluations/pipeline.log
+Environment=HOME=/home/uniserver
+
+[Install]
+WantedBy=multi-user.target

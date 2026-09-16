@@ -1,8 +1,10 @@
 import json, urllib.request, os, time, pathlib, re
 
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+
 # Load env
 env = {}
-with open("/home/haikalthoriqa/RINGKAS/.env") as f:
+with (ROOT / ".env").open() as f:
     for line in f:
         if "=" in line and not line.strip().startswith("#"):
             k,v = line.strip().split("=",1)
@@ -13,8 +15,8 @@ NVIDIA_KEY = env.get("NVIDIA_NIM_API_KEY")
 NVIDIA_MODEL = env.get("NVIDIA_NIM_GENERATION_MODEL", "nvidia/nemotron-3-nano-30b-a3b")
 NVIDIA_BASE = env.get("NVIDIA_NIM_GENERATION_BASE_URL", "https://integrate.api.nvidia.com/v1")
 
-dataset_path = pathlib.Path("/home/haikalthoriqa/RINGKAS/evaluation/evaluation_dataset.json")
-responses_path = pathlib.Path("/home/haikalthoriqa/RINGKAS/evaluation/responses.json")
+dataset_path = ROOT / "evaluations" / "evaluation_dataset.json"
+responses_path = ROOT / "evaluations" / "responses.json"
 
 dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
 records = dataset["records"][:20]
@@ -52,7 +54,7 @@ req = urllib.request.Request('http://127.0.0.1:8081/retrieve', data=json.dumps({
 with urllib.request.urlopen(req, timeout=30) as resp:
     print(resp.read().decode())
 """]
-    result = subprocess.run(cmd, capture_output=True, text=True, cwd="/home/haikalthoriqa/RINGKAS", timeout=40)
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT, timeout=40)
     if result.returncode != 0:
         raise RuntimeError(f"retrieve failed: {result.stderr[:500]}")
     return json.loads(result.stdout)

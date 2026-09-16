@@ -1,9 +1,11 @@
 import json, urllib.request, os, time, re
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[2]
+
 # Load key
 key = None
-with open("/home/haikalthoriqa/RINGKAS/.env") as f:
+with (ROOT / ".env").open() as f:
     for line in f:
         if line.startswith("NVIDIA_NIM_API_KEY="):
             key = line.strip().split("=",1)[1]
@@ -11,7 +13,7 @@ with open("/home/haikalthoriqa/RINGKAS/.env") as f:
 if not key:
     raise SystemExit("no key")
 
-dataset_path = Path("/home/haikalthoriqa/RINGKAS/evaluation/evaluation_dataset.json")
+dataset_path = ROOT / "evaluations" / "evaluation_dataset.json"
 dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
 
 # Only improve first 20
@@ -82,7 +84,7 @@ Jangan tambahkan penjelasan lain di luar JSON."""
 # Validate and save
 from pathlib import Path as P
 import sys
-sys.path.insert(0, "/home/haikalthoriqa/RINGKAS/services/rag-worker")
+sys.path.insert(0, str(ROOT / "services" / "rag-worker"))
 from ringkas_worker.evaluation_dataset import EvaluationDataset
 try:
     EvaluationDataset.model_validate(dataset)
