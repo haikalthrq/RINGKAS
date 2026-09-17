@@ -185,6 +185,12 @@ uv run --project services/rag-worker --extra test --frozen pytest services/rag-w
 cd apps/web && npm run build
 ```
 
+### RAGAS Baseline
+
+Response generation and automated audit operate on 1000 verified evaluation records. The live RAGAS baseline evaluates a deterministic, as-balanced-as-possible stratified subset of 100 of those responses. It uses one Cloudflare Workers AI evaluator model, configured by `RAGAS_LLM_MODEL` (default `@cf/openai/gpt-oss-120b`), with optional primary/secondary/tertiary account failover for eligible upstream failures only.
+
+Set the positive `RAGAS_LLM_TIMEOUT_SECONDS`, `RAGAS_LLM_MAX_RETRIES`, `RAGAS_LLM_MAX_WORKERS`, `RAGAS_LLM_BATCH_SIZE`, `RAGAS_LLM_PREFLIGHT_SAMPLES`, `RAGAS_LLM_MAX_TOKENS`, and `RAGAS_LLM_TEMPERATURE` values in `.env`. The default examples use a 120-second timeout, two retries, one worker, 32,000 output tokens, a 20-sample preflight, and 25-sample atomic checkpoint batches. A report is completed only when all 100 samples have finite faithfulness, context precision, and context recall scores; these remain baseline metrics, not proof of comprehensive accuracy.
+
 ---
 
 ## Production VPS Deployment

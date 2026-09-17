@@ -1,15 +1,15 @@
 # Evaluations
 
-Folder ini berisi **semua** artefak evaluasi RINGKAS (staging) — dataset, respons, laporan, serta kode/skrip. **100% otomatis** per `AGENTS.md:277` terbaru (`0f2ce41`, expandable).
+Folder ini berisi artefak evaluasi RINGKAS (staging): dataset, respons, laporan, dan skrip.
 
 ## Struktur
 ```
 evaluations/
   README.md
   evaluation_dataset.json      # 1000 records ready, verified, 6 tipe (167/167/167/167/166/166) — 100% grounded dari dokumen asli
-  responses.json               # 20 respons RAG aktual (q-0001..q-0020) via direct rag-query + NVIDIA NIM (contoh untuk 1000)
-  ragas_report.json            # hasil harness live (blocked) + baseline alternatif
-  automated_audit_report.csv   # 20 baris audit otomatis (pengganti manual_audit_template.csv)
+  responses.json               # 1000 respons RAG yang linked ke dataset terverifikasi
+  ragas_report.json            # laporan baseline RAGAS Cloudflare, atau blocked report tersanitasi
+  automated_audit_report.csv   # audit otomatis atas 1000 respons
   metrics_summary.md           # ringkasan baseline otomatis
   scripts/
     generate_dataset.py        # generate 1000 verified dari corpus PostgreSQL (tanpa fiktif)
@@ -17,7 +17,7 @@ evaluations/
     improve_dataset_llm.py     # perbaikan Q dengan LLM (opsional)
     run_ragas.sh               # wrapper harness live
   src/
-    ragas_harness.py           # copy dari services/rag-worker
+    ragas_harness.py           # compatibility entry point ke harness services/rag-worker
     evaluation_dataset.py      # validator Pydantic (support 100 & 1000, IDs q-0001..q-1000)
 ```
 
@@ -26,17 +26,21 @@ evaluations/
 # 1. Generate dataset 1000 (jika perlu)
 sudo docker compose --env-file .env -f infra/docker-compose.yml -f infra/docker-compose.production.yml run --rm --no-deps --volume "$PWD/evaluations:/evaluation:rw" --entrypoint python rag-query /evaluation/scripts/generate_dataset.py
 
-# 2. Generate responses (contoh 20, butuh WEB_PORT=3001 aktif; untuk 1000 ubah slice)
+# 2. Generate seluruh 1000 responses (membutuhkan staging RAG aktif)
 bash evaluations/scripts/generate_responses.py
 
-# 3. RAGAS live (butuh RAGAS_LLM_* env)
+# 3. RAGAS live: memilih 100 response verified secara stratified dan deterministik
 bash evaluations/scripts/run_ragas.sh
 ```
 
-## Status Saat Ini
-- Dataset: **1000** ready, semua `verified`, semua tipe ter-cover (167/167/167/167/166/166), IDs `q-0001..q-1000`, **tanpa pertanyaan fiktif** (setiap `reference_answer` adalah substring `excerpt` asli atau `title`, `evidence` lengkap dari chunk asli)
-- Responses: 20 contoh (q-0001..q-0020) via staging RAG, avg 9 konteks, avg 1881 chars — untuk 1000, jalankan skrip dengan slice 1000
-- RAGAS: harness `sample` lulus, `live` blocked (ragas 0.4.3 incompat) — baseline alternatif di `metrics_summary.md`
-- Audit: 100% otomatis via `automated_audit_report.csv` (20 baris); `manual_audit_template.csv` telah dihapus per `AGENTS.md:277`.
+## RAGAS Live Baseline
+
+Live RAGAS requires a ready 1000-record dataset and 1000 linked verified responses. It evaluates exactly 100 samples, balanced across question types as far as their available counts allow. The selection uses stable question-ID hashes and the report includes the selected IDs and their hash.
+
+The evaluator is one model for the entire baseline: `RAGAS_LLM_MODEL`, default `@cf/openai/gpt-oss-120b`. It calls the Cloudflare Workers AI OpenAI-compatible account endpoint. Primary, secondary, and tertiary Cloudflare accounts may fail over only for authentication, timeout, rate-limit, server, or transport failures; every account uses the same model.
+
+All `RAGAS_LLM_*` numeric values must be positive. Defaults in the environment examples are: timeout 120 seconds, retries 2, one worker, batch size 25, preflight 20, output cap 32,000, and temperature 0.1. The client timeout cancels each request. Preflight scores its configured samples progressively and stops the baseline if any required metric is missing or non-finite.
+
+The harness atomically checkpoints completed batches beside `responses.json`. A resume is allowed only when the model, provider, output cap, timeout, retry count, worker count, batch size, RAGAS version, temperature, and selected sample IDs exactly match. `completed` is emitted only when all 100 samples have finite `faithfulness`, `context_precision`, and `context_recall` values. The 1000-response automated audit remains separate from this 100-sample RAGAS baseline.
 
 Lihat `metrics_summary.md` untuk hasil otomatis pertama.

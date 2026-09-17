@@ -19,7 +19,7 @@ dataset_path = ROOT / "evaluations" / "evaluation_dataset.json"
 responses_path = ROOT / "evaluations" / "responses.json"
 
 dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
-records = dataset["records"][:20]
+records = dataset["records"]
 
 # System prompt from GroundedPromptTemplate
 SYSTEM_PROMPT = """You are RINGKAS, a grounded assistant for Indonesian statistical archives.

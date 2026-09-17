@@ -6,15 +6,15 @@ change task statuses.
 
 ## Evaluation Artifacts
 
-- `services/rag-worker/evaluation_dataset.json` contains exactly 100 stable slots (`q-001` through `q-100`), pending until human verification.
+- The fixture dataset at `services/rag-worker/evaluation_dataset.json` contains 100 stable sample slots (`q-001` through `q-100`) for no-secret harness validation.
 - `services/rag-worker/ringkas_worker/evaluation_dataset.py` validates grounded evidence records.
-- `services/rag-worker/manual_audit_template.csv` contains exactly 20 pending rows linked to `q-001` through `q-020`.
-- `services/rag-worker/ringkas_worker/ragas_harness.py` has a deterministic no-secret fixture path and an explicit live RAGAS path.
+- Live response generation and automated audit use 1000 linked verified records. The live RAGAS baseline evaluates a deterministic stratified 100-record subset, balanced by question type where possible.
+- `services/rag-worker/ringkas_worker/ragas_harness.py` has a deterministic no-secret fixture path and an explicit resumable Cloudflare live RAGAS path.
 
 The sample harness validates only its synthetic fixture and emits no metric
 values. The initial MVP baseline label is reserved for a completed live RAGAS
-evaluation. Manual audit is not complete until a human fills the 20 pending
-rows.
+evaluation with finite faithfulness, context precision, and context recall for
+all selected samples. Automated scores remain baseline-only.
 
 ## Quotas And Abuse Protection
 
@@ -85,6 +85,18 @@ NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL
 CLOUDFLARE_WORKERS_AI_GENERATION_TIMEOUT_SECONDS
 CLOUDFLARE_WORKERS_AI_EXPERIMENTAL_MODEL
+RAGAS_LLM_MODEL
+RAGAS_LLM_TIMEOUT_SECONDS
+RAGAS_LLM_MAX_RETRIES
+RAGAS_LLM_MAX_WORKERS
+RAGAS_LLM_BATCH_SIZE
+RAGAS_LLM_PREFLIGHT_SAMPLES
+RAGAS_LLM_MAX_TOKENS
+RAGAS_LLM_TEMPERATURE
+CLOUDFLARE_SECONDARY_ACCOUNT_ID
+CLOUDFLARE_SECONDARY_API_TOKEN
+CLOUDFLARE_TERTIARY_ACCOUNT_ID
+CLOUDFLARE_TERTIARY_API_TOKEN
 GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET
 AUTH_SECRET
