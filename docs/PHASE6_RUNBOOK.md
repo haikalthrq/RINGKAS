@@ -89,7 +89,6 @@ RAGAS_LLM_MODEL
 RAGAS_LLM_TIMEOUT_SECONDS
 RAGAS_LLM_MAX_RETRIES
 RAGAS_LLM_MAX_WORKERS
-RAGAS_LLM_BATCH_SIZE
 RAGAS_LLM_PREFLIGHT_SAMPLES
 RAGAS_LLM_MAX_TOKENS
 RAGAS_LLM_TEMPERATURE
@@ -103,6 +102,15 @@ AUTH_SECRET
 GUEST_PROMPT_QUOTA
 REGISTERED_DAILY_QUOTA
 ```
+
+The live RAGAS harness runs exactly one metric for one sample in each spawned
+child process. `RAGAS_LLM_TIMEOUT_SECONDS` is enforced by the parent as a hard
+wall-clock timeout, and `RAGAS_LLM_MAX_RETRIES` is the number of attempts per
+Cloudflare account before same-model account failover. Keep
+`RAGAS_LLM_MAX_WORKERS=1` and `RAGAS_LLM_PREFLIGHT_SAMPLES=20`; other values are
+rejected. The checkpoint is updated after every finite metric. Preflight is
+valid only with 60 finite metrics, while the completed baseline requires all
+300 metrics for the deterministic 100-sample selection.
 
 The accepted live embedding dimension is `1024` for the approved
 `@cf/qwen/qwen3-embedding-0.6b` model. Secondary and tertiary Cloudflare accounts

@@ -3,8 +3,10 @@ from __future__ import annotations
 import argparse
 import asyncio
 import hashlib
+import importlib.util
 import json
 import math
+import multiprocessing
 import os
 import tempfile
 from dataclasses import dataclass
@@ -18,13 +20,11 @@ from ringkas_worker.evaluation_dataset import DATASET_CAPACITY_EXPANDED, DATASET
 
 DEFAULT_FIXTURE_PATH = Path(__file__).resolve().parents[1] / "evaluation_sample_responses.json"
 DEFAULT_MODEL = "@cf/openai/gpt-oss-120b"
-DEFAULT_BATCH_SIZE = 25
 DEFAULT_PREFLIGHT_SAMPLES = 20
 DEFAULT_TIMEOUT_SECONDS = 120
 DEFAULT_MAX_RETRIES = 2
 DEFAULT_MAX_WORKERS = 1
 DEFAULT_TEMPERATURE = 0.1
-ROUTER_BASE_URL = "https://api.cloudflare.com/client/v4/accounts/evaluator/ai/v1"
 BASELINE_LABEL = "initial MVP baseline"
 FIXTURE_LABEL = "deterministic harness validation"
 LIVE_LABEL = "live RAGAS evaluation"
@@ -43,7 +43,6 @@ class LiveConfig:
     timeout_seconds: int
     max_retries: int
     max_workers: int
-    batch_size: int
     preflight_samples: int
     max_tokens: int
     temperature: float
@@ -51,75 +50,24 @@ class LiveConfig:
 
     def fingerprint(self, ragas_version: str) -> dict[str, Any]:
         return {
+            "execution_architecture": "spawned_single_metric_v1",
             "model": self.model,
             "provider": "cloudflare_workers_ai_openai_compatible",
-            "output_cap": self.max_tokens,
+            "max_tokens": self.max_tokens,
             "timeout_seconds": self.timeout_seconds,
             "max_retries": self.max_retries,
             "max_workers": self.max_workers,
-            "batch_size": self.batch_size,
             "ragas_version": ragas_version,
             "temperature": self.temperature,
         }
 
 
-class CloudflareEvaluatorTransportError(httpx.RequestError):
-    """A provider-neutral failure after every configured account was attempted."""
-
-
-class CloudflareFailoverTransport(httpx.AsyncBaseTransport):
-    """Route one OpenAI-compatible request through the configured CF accounts."""
-
-    def __init__(
-        self,
-        accounts: tuple[CloudflareAccount, ...],
-        timeout_seconds: float,
-        *,
-        transport: httpx.AsyncBaseTransport | None = None,
-    ) -> None:
-        self._accounts = accounts
-        self._timeout_seconds = timeout_seconds
-        self._transport = transport or httpx.AsyncHTTPTransport(retries=0)
-
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        body = await request.aread()
-        router_path = httpx.URL(ROUTER_BASE_URL).raw_path.rstrip(b"/")
-        if not request.url.raw_path.startswith(router_path):
-            raise CloudflareEvaluatorTransportError("Cloudflare evaluator request failed", request=request)
-        endpoint_path = request.url.raw_path[len(router_path) :]
-        for account in self._accounts:
-            headers = request.headers.copy()
-            headers["authorization"] = f"Bearer {account.api_token}"
-            headers.pop("host", None)
-            account_url = httpx.URL(_cloudflare_base_url(account.account_id))
-            routed_request = httpx.Request(
-                request.method,
-                account_url.copy_with(raw_path=account_url.raw_path.rstrip(b"/") + endpoint_path),
-                headers=headers,
-                content=body,
-                extensions=request.extensions,
-            )
-            try:
-                response = await asyncio.wait_for(
-                    self._transport.handle_async_request(routed_request), timeout=self._timeout_seconds
-                )
-            except (asyncio.TimeoutError, httpx.RequestError, OSError):
-                continue
-            if response.status_code in {401, 403, 408, 429} or 500 <= response.status_code <= 599:
-                await response.aclose()
-                continue
-            if response.is_error:
-                await response.aclose()
-                return httpx.Response(
-                    response.status_code,
-                    json={"error": {"message": "Cloudflare evaluator request failed"}},
-                    request=request,
-                )
-            return response
-        raise CloudflareEvaluatorTransportError("Cloudflare evaluator request failed", request=request)
-
-    async def aclose(self) -> None:
-        await self._transport.aclose()
+@dataclass(frozen=True)
+class MetricProcessConfig:
+    model: str
+    timeout_seconds: int
+    max_tokens: int
+    temperature: float
 
 
 def _load_responses(path: Path) -> list[dict[str, Any]]:
@@ -194,17 +142,21 @@ def _live_config() -> LiveConfig:
             accounts.append(CloudflareAccount(account_id, api_token))
     if not accounts:
         raise ValueError("CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are required")
-    return LiveConfig(
+    config = LiveConfig(
         model=os.getenv("RAGAS_LLM_MODEL", DEFAULT_MODEL).strip(),
         timeout_seconds=_positive_env("RAGAS_LLM_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS),
         max_retries=_positive_env("RAGAS_LLM_MAX_RETRIES", DEFAULT_MAX_RETRIES),
         max_workers=_positive_env("RAGAS_LLM_MAX_WORKERS", DEFAULT_MAX_WORKERS),
-        batch_size=_positive_env("RAGAS_LLM_BATCH_SIZE", DEFAULT_BATCH_SIZE),
         preflight_samples=_positive_env("RAGAS_LLM_PREFLIGHT_SAMPLES", DEFAULT_PREFLIGHT_SAMPLES),
         max_tokens=_positive_env("RAGAS_LLM_MAX_TOKENS"),
         temperature=_positive_float_env("RAGAS_LLM_TEMPERATURE", DEFAULT_TEMPERATURE),
         accounts=tuple(accounts),
     )
+    if config.max_workers != 1:
+        raise ValueError("RAGAS_LLM_MAX_WORKERS must be 1 for supervised metric execution")
+    if config.preflight_samples != DEFAULT_PREFLIGHT_SAMPLES:
+        raise ValueError(f"RAGAS_LLM_PREFLIGHT_SAMPLES must be {DEFAULT_PREFLIGHT_SAMPLES}")
+    return config
 
 
 def _stratified_samples(dataset: EvaluationDataset, responses: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -270,24 +222,42 @@ def _write_checkpoint(path: Path, payload: dict[str, Any]) -> None:
     os.replace(temporary_name, path)
 
 
-def _finite_metrics(rows: list[dict[str, Any]], expected_ids: set[str]) -> bool:
-    if len(rows) != len(expected_ids):
+def _finite_value(value: Any) -> bool:
+    if isinstance(value, bool):
         return False
-    found_ids: set[str] = set()
-    for row in rows:
-        if not isinstance(row, dict) or not isinstance(row.get("question_id"), str):
-            return False
-        found_ids.add(row["question_id"])
-        for metric in METRIC_NAMES:
-            value = row.get(metric)
-            if isinstance(value, bool):
-                return False
-            try:
-                if not math.isfinite(float(value)):
-                    return False
-            except (TypeError, ValueError):
-                return False
-    return found_ids == expected_ids
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError):
+        return False
+
+
+def _validated_partial_metrics(value: Any, selected_ids: set[str]) -> dict[str, dict[str, float]]:
+    if not isinstance(value, dict):
+        raise ValueError("RAGAS checkpoint contains invalid partial metrics.")
+    partial: dict[str, dict[str, float]] = {}
+    for question_id, metrics in value.items():
+        if question_id not in selected_ids or not isinstance(metrics, dict):
+            raise ValueError("RAGAS checkpoint contains invalid partial metrics.")
+        if not set(metrics).issubset(METRIC_NAMES):
+            raise ValueError("RAGAS checkpoint contains invalid partial metrics.")
+        partial[question_id] = {}
+        for metric_name, metric_value in metrics.items():
+            if not _finite_value(metric_value):
+                raise ValueError("RAGAS checkpoint contains incomplete or non-finite metrics.")
+            partial[question_id][metric_name] = float(metric_value)
+    return partial
+
+
+def _finite_metric_count(partial: dict[str, dict[str, float]]) -> int:
+    return sum(len(metrics) for metrics in partial.values())
+
+
+def _complete_rows(partial: dict[str, dict[str, float]], question_ids: list[str]) -> list[dict[str, Any]]:
+    return [
+        {"question_id": question_id, **partial[question_id]}
+        for question_id in question_ids
+        if question_id in partial and set(partial[question_id]) == set(METRIC_NAMES)
+    ]
 
 
 def _status_code(error: Exception) -> int | None:
@@ -314,17 +284,15 @@ def _cloudflare_base_url(account_id: str) -> str:
     return f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1"
 
 
-def _evaluate_batch(components: tuple[Any, ...], samples: list[dict[str, Any]], config: LiveConfig) -> list[dict[str, Any]]:
-    AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, faithfulness, context_precision, context_recall, RunConfig = components
-    transport = CloudflareFailoverTransport(config.accounts, config.timeout_seconds)
-    http_client = httpx.AsyncClient(transport=transport, timeout=None)
-    # The transport owns credentials and account routing so SDK errors cannot disclose either.
+def _evaluate_one_metric(
+    sample: dict[str, Any], metric_name: str, config: MetricProcessConfig, account: CloudflareAccount
+) -> float:
+    AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, metrics, RunConfig = _load_ragas_components()
     client = AsyncOpenAI(
-        api_key="not-used",
-        base_url=ROUTER_BASE_URL,
+        api_key=account.api_token,
+        base_url=_cloudflare_base_url(account.account_id),
         timeout=config.timeout_seconds,
         max_retries=0,
-        http_client=http_client,
     )
     try:
         evaluator_llm = llm_factory(
@@ -335,37 +303,128 @@ def _evaluate_batch(components: tuple[Any, ...], samples: list[dict[str, Any]], 
             max_tokens=config.max_tokens,
         )
         result = evaluate(
-            dataset=RagasEvaluationDataset.from_list(samples),
-            metrics=[faithfulness, context_precision, context_recall],
+            dataset=RagasEvaluationDataset.from_list([sample]),
+            metrics=[metrics[metric_name]],
             llm=evaluator_llm,
             run_config=RunConfig(
                 timeout=config.timeout_seconds,
-                max_retries=config.max_retries,
-                max_workers=config.max_workers,
+                # One Ragas attempt; parent-owned retries control account sequencing.
+                max_retries=1,
+                max_workers=1,
             ),
+            raise_exceptions=True,
+            show_progress=False,
         )
         rows = result.to_pandas().to_dict(orient="records")
-        for sample, row in zip(samples, rows, strict=True):
-            row["question_id"] = sample["question_id"]
-        return rows
+        if len(rows) != 1:
+            raise ValueError("RAGAS metric result count was invalid")
+        return float(rows[0][metric_name])
     finally:
         asyncio.run(client.close())
 
 
-def _evaluate_with_failover(
-    components: tuple[Any, ...], samples: list[dict[str, Any]], config: LiveConfig
-) -> list[dict[str, Any]]:
-    expected_ids = {sample["question_id"] for sample in samples}
-    for _ in range(config.max_retries):
+def _metric_child(
+    send_connection: Any,
+    sample: dict[str, Any],
+    metric_name: str,
+    config: MetricProcessConfig,
+    account: CloudflareAccount,
+) -> None:
+    """Evaluate one metric without sending provider details or exceptions to the parent."""
+    try:
         try:
-            rows = _evaluate_batch(components, samples, config)
+            value = _evaluate_one_metric(sample, metric_name, config, account)
         except Exception as error:
-            if not _retryable_account_error(error):
-                raise
-            continue
-        if _finite_metrics(rows, expected_ids):
-            return rows
-    raise RuntimeError("all Cloudflare evaluator accounts failed")
+            failure = "retryable" if _retryable_account_error(error) else "nonretryable"
+            send_connection.send({"status": failure})
+        else:
+            send_connection.send({"status": "ok", "value": value})
+    finally:
+        send_connection.close()
+
+
+@dataclass(frozen=True)
+class MetricAttempt:
+    value: float | None = None
+    failure: str | None = None
+
+
+def _terminate_process(process: Any) -> None:
+    try:
+        process.terminate()
+        process.join(1)
+        if process.is_alive():
+            process.kill()
+            process.join(1)
+    except Exception:
+        return
+
+
+def _run_metric_attempt(
+    sample: dict[str, Any],
+    metric_name: str,
+    config: LiveConfig,
+    account: CloudflareAccount,
+    *,
+    process_context: Any = None,
+    worker_target: Any = _metric_child,
+) -> MetricAttempt:
+    context = process_context or multiprocessing.get_context("spawn")
+    receive_connection, send_connection = context.Pipe(duplex=False)
+    process_config = MetricProcessConfig(
+        model=config.model,
+        timeout_seconds=config.timeout_seconds,
+        max_tokens=config.max_tokens,
+        temperature=config.temperature,
+    )
+    process = context.Process(target=worker_target, args=(send_connection, sample, metric_name, process_config, account))
+    try:
+        process.start()
+    except Exception:
+        send_connection.close()
+        receive_connection.close()
+        return MetricAttempt(failure="process")
+    send_connection.close()
+    try:
+        process.join(config.timeout_seconds)
+    except Exception:
+        _terminate_process(process)
+        receive_connection.close()
+        return MetricAttempt(failure="process")
+    if process.is_alive():
+        _terminate_process(process)
+        receive_connection.close()
+        return MetricAttempt(failure="timeout")
+
+    try:
+        payload = receive_connection.recv() if receive_connection.poll() else None
+    except (EOFError, OSError):
+        payload = None
+    finally:
+        receive_connection.close()
+    if process.exitcode != 0 or not isinstance(payload, dict):
+        return MetricAttempt(failure="process")
+    if payload.get("status") == "ok" and _finite_value(payload.get("value")):
+        return MetricAttempt(value=float(payload["value"]))
+    if payload.get("status") in {"retryable", "nonretryable"}:
+        return MetricAttempt(failure=payload["status"])
+    return MetricAttempt(failure="nonfinite")
+
+
+def _evaluate_metric_with_failover(
+    sample: dict[str, Any],
+    metric_name: str,
+    config: LiveConfig,
+    attempt_runner: Any,
+) -> MetricAttempt:
+    for account in config.accounts:
+        for _ in range(config.max_retries):
+            result = attempt_runner(sample, metric_name, config, account)
+            if result.value is not None and _finite_value(result.value):
+                return result
+            if result.failure == "nonretryable":
+                return result
+    return MetricAttempt(failure="accounts_exhausted")
 
 
 def _ragas_version() -> str:
@@ -383,6 +442,7 @@ def run_live(
     checkpoint_path: Path | None = None,
     *,
     preflight_only: bool = False,
+    attempt_runner: Any = _run_metric_attempt,
 ) -> dict[str, Any]:
     try:
         dataset = load_dataset(dataset_path)
@@ -399,11 +459,6 @@ def run_live(
     except (OSError, json.JSONDecodeError):
         return _blocked("Evaluation inputs are unreadable.")
 
-    try:
-        components = _load_ragas_components()
-    except ImportError:
-        return _blocked("Optional RAGAS evaluation dependencies are unavailable.", len(samples))
-
     selected_ids, selected_hash = _selected_ids_hash(samples)
     fingerprint = config.fingerprint(_ragas_version())
     checkpoint_path = checkpoint_path or _checkpoint_path(responses_path)
@@ -419,39 +474,47 @@ def run_live(
     ):
         return _blocked("RAGAS checkpoint fingerprint does not match this baseline.", len(samples))
 
-    rows = list(checkpoint.get("metrics", [])) if checkpoint else []
-    if not _finite_metrics(rows, {row["question_id"] for row in rows}):
-        return _blocked("RAGAS checkpoint contains incomplete or non-finite metrics.", len(samples))
-    completed_ids = {row["question_id"] for row in rows}
+    try:
+        partial = _validated_partial_metrics(checkpoint.get("partial_metrics", {}), set(selected_ids)) if checkpoint else {}
+    except ValueError as error:
+        return _blocked(str(error), 0)
+    if attempt_runner is _run_metric_attempt and not _ragas_available():
+        return _blocked("Optional RAGAS evaluation dependencies are unavailable.", _finite_metric_count(partial))
+    preflight_ids = selected_ids[: config.preflight_samples]
+    preflight_complete = all(
+        set(partial.get(question_id, {})) == set(METRIC_NAMES) for question_id in preflight_ids
+    )
     state = {
         "fingerprint": fingerprint,
         "selected_sample_ids": selected_ids,
         "selected_sample_ids_hash": selected_hash,
-        "metrics": rows,
-        "preflight_complete": bool(checkpoint and checkpoint.get("preflight_complete")),
+        "partial_metrics": partial,
+        "preflight_complete": preflight_complete,
     }
 
-    if not state["preflight_complete"]:
+    if not preflight_complete:
         for sample in samples[: config.preflight_samples]:
-            if sample["question_id"] in completed_ids:
-                continue
-            try:
-                batch_rows = _evaluate_with_failover(components, [sample], config)
-            except Exception:
-                return _blocked("RAGAS evaluator preflight failed.", len(rows))
-            if not _finite_metrics(batch_rows, {sample["question_id"]}):
-                return _blocked("RAGAS evaluator preflight returned incomplete or non-finite metrics.", len(rows))
-            rows.extend(batch_rows)
-            completed_ids.add(sample["question_id"])
-        state["metrics"] = rows
+            question_metrics = partial.setdefault(sample["question_id"], {})
+            for metric_name in METRIC_NAMES:
+                if metric_name in question_metrics:
+                    continue
+                result = _evaluate_metric_with_failover(sample, metric_name, config, attempt_runner)
+                if result.value is None or not _finite_value(result.value):
+                    return _blocked("RAGAS evaluator preflight failed.", _finite_metric_count(partial))
+                question_metrics[metric_name] = float(result.value)
+                _write_checkpoint(checkpoint_path, state)
         state["preflight_complete"] = True
         _write_checkpoint(checkpoint_path, state)
 
     if preflight_only:
+        rows = _complete_rows(partial, preflight_ids)
+        if len(rows) != config.preflight_samples or _finite_metric_count(partial) < config.preflight_samples * len(METRIC_NAMES):
+            return _blocked("RAGAS evaluator preflight failed.", _finite_metric_count(partial))
         return {
             "evaluation_label": LIVE_LABEL,
             "status": "preflight_validated",
             "sample_count": len(rows),
+            "metric_count": config.preflight_samples * len(METRIC_NAMES),
             "resumed": resumed,
             "evaluator": {
                 "model": config.model,
@@ -467,22 +530,20 @@ def run_live(
             "metrics": sorted(rows, key=lambda row: row["question_id"]),
         }
 
-    pending = [sample for sample in samples if sample["question_id"] not in completed_ids]
-    for start in range(0, len(pending), config.batch_size):
-        batch = pending[start : start + config.batch_size]
-        try:
-            batch_rows = _evaluate_with_failover(components, batch, config)
-        except Exception:
-            return _blocked("RAGAS evaluator batch failed.", len(rows))
-        if not _finite_metrics(batch_rows, {sample["question_id"] for sample in batch}):
-            return _blocked("RAGAS evaluator returned incomplete or non-finite metrics.", len(rows))
-        rows.extend(batch_rows)
-        completed_ids.update(row["question_id"] for row in batch_rows)
-        state["metrics"] = rows
-        _write_checkpoint(checkpoint_path, state)
+    for sample in samples[config.preflight_samples :]:
+        question_metrics = partial.setdefault(sample["question_id"], {})
+        for metric_name in METRIC_NAMES:
+            if metric_name in question_metrics:
+                continue
+            result = _evaluate_metric_with_failover(sample, metric_name, config, attempt_runner)
+            if result.value is None or not _finite_value(result.value):
+                return _blocked("RAGAS evaluator failed.", _finite_metric_count(partial))
+            question_metrics[metric_name] = float(result.value)
+            _write_checkpoint(checkpoint_path, state)
 
-    if not _finite_metrics(rows, set(selected_ids)):
-        return _blocked("RAGAS baseline metrics are incomplete or non-finite.", len(rows))
+    rows = _complete_rows(partial, selected_ids)
+    if len(rows) != 100 or _finite_metric_count(partial) != 100 * len(METRIC_NAMES):
+        return _blocked("RAGAS baseline metrics are incomplete or non-finite.", _finite_metric_count(partial))
     return {
         "evaluation_label": BASELINE_LABEL,
         "status": "completed",
@@ -496,7 +557,6 @@ def run_live(
             "timeout_seconds": config.timeout_seconds,
             "max_retries": config.max_retries,
             "max_workers": config.max_workers,
-            "batch_size": config.batch_size,
             "preflight_samples": config.preflight_samples,
             "max_tokens": config.max_tokens,
             "temperature": config.temperature,
@@ -518,7 +578,16 @@ def _load_ragas_components() -> tuple[Any, ...]:
     from ragas.metrics._faithfulness import faithfulness
     from ragas.run_config import RunConfig
 
-    return AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, faithfulness, context_precision, context_recall, RunConfig
+    metrics = {
+        "faithfulness": faithfulness,
+        "context_precision": context_precision,
+        "context_recall": context_recall,
+    }
+    return AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, metrics, RunConfig
+
+
+def _ragas_available() -> bool:
+    return importlib.util.find_spec("ragas") is not None and importlib.util.find_spec("openai") is not None
 
 
 def main(argv: list[str] | None = None) -> int:

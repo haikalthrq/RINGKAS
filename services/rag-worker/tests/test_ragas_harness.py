@@ -1,8 +1,6 @@
-import asyncio
 import json
 from pathlib import Path
 
-import httpx
 import pytest
 
 import ringkas_worker.ragas_harness as harness
@@ -80,8 +78,7 @@ def _configure_live(monkeypatch) -> None:
     monkeypatch.setenv("RAGAS_LLM_TIMEOUT_SECONDS", "1")
     monkeypatch.setenv("RAGAS_LLM_MAX_RETRIES", "1")
     monkeypatch.setenv("RAGAS_LLM_MAX_WORKERS", "1")
-    monkeypatch.setenv("RAGAS_LLM_BATCH_SIZE", "25")
-    monkeypatch.setenv("RAGAS_LLM_PREFLIGHT_SAMPLES", "2")
+    monkeypatch.setenv("RAGAS_LLM_PREFLIGHT_SAMPLES", "20")
     monkeypatch.setenv("RAGAS_LLM_MAX_TOKENS", "128")
     monkeypatch.setenv("RAGAS_LLM_TEMPERATURE", "0.1")
 
@@ -103,20 +100,26 @@ def test_stratified_selection_is_deterministic_and_balanced(tmp_path: Path) -> N
     assert max(counts.values()) - min(counts.values()) <= 1
 
 
+def test_live_config_rejects_parallel_ragas_workers(monkeypatch) -> None:
+    _configure_live(monkeypatch)
+    monkeypatch.setenv("RAGAS_LLM_MAX_WORKERS", "2")
+
+    with pytest.raises(ValueError, match="must be 1"):
+        harness._live_config()
+
+
 def test_live_completes_with_metadata_using_offline_fakes(monkeypatch, tmp_path: Path) -> None:
     dataset_path, responses_path = _live_inputs(tmp_path)
     _configure_live(monkeypatch)
-    calls: list[int] = []
+    calls: list[tuple[str, str]] = []
 
-    def fake_evaluate(components, samples, config):
-        calls.append(len(samples))
-        return [{"question_id": sample["question_id"], **{metric: 1.0 for metric in harness.METRIC_NAMES}} for sample in samples]
+    def fake_attempt(sample, metric_name, config, account):
+        calls.append((sample["question_id"], metric_name))
+        return harness.MetricAttempt(value=1.0)
 
-    monkeypatch.setattr(harness, "_load_ragas_components", lambda: (object(),) * 8)
-    monkeypatch.setattr(harness, "_evaluate_batch", fake_evaluate)
     checkpoint = tmp_path / "checkpoint.json"
 
-    result = harness.run_live(dataset_path, responses_path, checkpoint)
+    result = harness.run_live(dataset_path, responses_path, checkpoint, attempt_runner=fake_attempt)
 
     assert result["status"] == "completed"
     assert result["sample_count"] == 100
@@ -125,25 +128,33 @@ def test_live_completes_with_metadata_using_offline_fakes(monkeypatch, tmp_path:
     assert result["evaluator"]["account_count"] == 1
     assert len(result["selected_sample_ids"]) == 100
     assert len(result["metrics"]) == 100
-    assert calls[:2] == [1, 1]
+    assert len(calls) == 300
+    assert calls[:3] == [(result["selected_sample_ids"][0], metric) for metric in harness.METRIC_NAMES]
+    saved = json.loads(checkpoint.read_text(encoding="utf-8"))
+    assert set(saved["fingerprint"]) == {
+        "execution_architecture",
+        "model",
+        "provider",
+        "max_tokens",
+        "timeout_seconds",
+        "max_retries",
+        "max_workers",
+        "ragas_version",
+        "temperature",
+    }
+    assert saved["selected_sample_ids"] == result["selected_sample_ids"]
+    assert saved["selected_sample_ids_hash"] == result["selected_sample_ids_hash"]
 
 
 def test_checkpoint_config_mismatch_blocks_resume(monkeypatch, tmp_path: Path) -> None:
     dataset_path, responses_path = _live_inputs(tmp_path)
     _configure_live(monkeypatch)
-    monkeypatch.setattr(harness, "_load_ragas_components", lambda: (object(),) * 8)
-    monkeypatch.setattr(
-        harness,
-        "_evaluate_batch",
-        lambda components, samples, config: [
-            {"question_id": sample["question_id"], **{metric: 1.0 for metric in harness.METRIC_NAMES}} for sample in samples
-        ],
-    )
+    fake_attempt = lambda sample, metric_name, config, account: harness.MetricAttempt(value=1.0)
     checkpoint = tmp_path / "checkpoint.json"
-    assert harness.run_live(dataset_path, responses_path, checkpoint)["status"] == "completed"
-    monkeypatch.setenv("RAGAS_LLM_BATCH_SIZE", "20")
+    assert harness.run_live(dataset_path, responses_path, checkpoint, attempt_runner=fake_attempt)["status"] == "completed"
+    monkeypatch.setenv("RAGAS_LLM_TIMEOUT_SECONDS", "2")
 
-    result = harness.run_live(dataset_path, responses_path, checkpoint)
+    result = harness.run_live(dataset_path, responses_path, checkpoint, attempt_runner=fake_attempt)
 
     assert result == {
         "status": "blocked",
@@ -152,75 +163,179 @@ def test_checkpoint_config_mismatch_blocks_resume(monkeypatch, tmp_path: Path) -
     }
 
 
-def test_non_finite_metric_fails_closed(monkeypatch, tmp_path: Path) -> None:
+def test_checkpoint_resumes_at_next_metric(monkeypatch, tmp_path: Path) -> None:
     dataset_path, responses_path = _live_inputs(tmp_path)
     _configure_live(monkeypatch)
-    monkeypatch.setattr(harness, "_load_ragas_components", lambda: (object(),) * 8)
-    monkeypatch.setattr(
-        harness,
-        "_evaluate_batch",
-        lambda components, samples, config: [
-            {"question_id": sample["question_id"], "faithfulness": float("nan"), "context_precision": 1.0, "context_recall": 1.0}
-            for sample in samples
-        ],
-    )
+    checkpoint = tmp_path / "checkpoint.json"
+    first_calls = 0
 
-    result = harness.run_live(dataset_path, responses_path, tmp_path / "checkpoint.json")
+    def interrupted(sample, metric_name, config, account):
+        nonlocal first_calls
+        first_calls += 1
+        return harness.MetricAttempt(value=1.0) if first_calls <= 4 else harness.MetricAttempt(failure="process")
+
+    first = harness.run_live(dataset_path, responses_path, checkpoint, preflight_only=True, attempt_runner=interrupted)
+    saved = json.loads(checkpoint.read_text(encoding="utf-8"))
+
+    resumed_calls: list[tuple[str, str]] = []
+
+    def succeeds(sample, metric_name, config, account):
+        resumed_calls.append((sample["question_id"], metric_name))
+        return harness.MetricAttempt(value=1.0)
+
+    second = harness.run_live(dataset_path, responses_path, checkpoint, preflight_only=True, attempt_runner=succeeds)
+
+    assert first["status"] == "blocked"
+    assert first["count"] == 4
+    assert sum(len(metrics) for metrics in saved["partial_metrics"].values()) == 4
+    assert saved["preflight_complete"] is False
+    assert second["status"] == "preflight_validated"
+    assert second["metric_count"] == 60
+    assert len(resumed_calls) == 56
+
+
+def test_preflight_requires_all_sixty_finite_metrics(monkeypatch, tmp_path: Path) -> None:
+    dataset_path, responses_path = _live_inputs(tmp_path)
+    _configure_live(monkeypatch)
+    calls = 0
+
+    def fails_last_metric(sample, metric_name, config, account):
+        nonlocal calls
+        calls += 1
+        if calls == 60:
+            return harness.MetricAttempt(value=float("nan"))
+        return harness.MetricAttempt(value=1.0)
+
+    result = harness.run_live(
+        dataset_path,
+        responses_path,
+        tmp_path / "checkpoint.json",
+        preflight_only=True,
+        attempt_runner=fails_last_metric,
+    )
 
     assert result == {
         "status": "blocked",
         "reason": "RAGAS evaluator preflight failed.",
-        "count": 0,
+        "count": 59,
     }
 
 
-class _RecordingTransport(httpx.AsyncBaseTransport):
-    def __init__(self, statuses: list[int]) -> None:
-        self.statuses = statuses
-        self.requests: list[httpx.Request] = []
+def test_full_mode_resumes_preflight_and_only_runs_remaining_eighty_samples(monkeypatch, tmp_path: Path) -> None:
+    dataset_path, responses_path = _live_inputs(tmp_path)
+    _configure_live(monkeypatch)
+    checkpoint = tmp_path / "checkpoint.json"
+    fake_attempt = lambda sample, metric_name, config, account: harness.MetricAttempt(value=1.0)
 
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        self.requests.append(request)
-        return httpx.Response(self.statuses.pop(0), request=request)
+    preflight = harness.run_live(
+        dataset_path, responses_path, checkpoint, preflight_only=True, attempt_runner=fake_attempt
+    )
+    remaining_calls: list[tuple[str, str]] = []
 
+    def finish(sample, metric_name, config, account):
+        remaining_calls.append((sample["question_id"], metric_name))
+        return harness.MetricAttempt(value=1.0)
 
-def test_cloudflare_transport_fails_over_on_retryable_status() -> None:
-    underlying = _RecordingTransport([429, 200])
-    transport = harness.CloudflareFailoverTransport(
-        (
-            harness.CloudflareAccount("primary", "token-primary"),
-            harness.CloudflareAccount("secondary", "token-secondary"),
-        ),
-        1,
-        transport=underlying,
+    completed = harness.run_live(dataset_path, responses_path, checkpoint, attempt_runner=finish)
+
+    assert preflight["status"] == "preflight_validated"
+    assert completed["status"] == "completed"
+    assert completed["resumed"] is True
+    assert len(remaining_calls) == 80 * len(harness.METRIC_NAMES)
+    assert {question_id for question_id, _ in remaining_calls}.isdisjoint(
+        row["question_id"] for row in preflight["metrics"]
     )
 
-    async def send() -> httpx.Response:
-        request = httpx.Request("POST", f"{harness.ROUTER_BASE_URL}/chat/completions", content=b"{}")
-        return await transport.handle_async_request(request)
 
-    response = asyncio.run(send())
+def test_metric_falls_back_to_next_account_after_all_primary_attempts(monkeypatch) -> None:
+    _configure_live(monkeypatch)
+    monkeypatch.setenv("CLOUDFLARE_SECONDARY_ACCOUNT_ID", "secondary")
+    monkeypatch.setenv("CLOUDFLARE_SECONDARY_API_TOKEN", "secondary-token")
+    monkeypatch.setenv("RAGAS_LLM_MAX_RETRIES", "2")
+    config = harness._live_config()
+    accounts: list[str] = []
 
-    assert response.status_code == 200
-    assert [request.url.path.split("/")[4] for request in underlying.requests] == ["primary", "secondary"]
-    assert [request.headers["authorization"] for request in underlying.requests] == ["Bearer token-primary", "Bearer token-secondary"]
-    asyncio.run(transport.aclose())
+    def fake_attempt(sample, metric_name, config, account):
+        accounts.append(account.account_id)
+        if account.account_id == "primary":
+            return harness.MetricAttempt(failure="timeout")
+        return harness.MetricAttempt(value=0.75)
 
-
-def test_cloudflare_transport_enforces_strict_timeout() -> None:
-    class SlowTransport(httpx.AsyncBaseTransport):
-        async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-            await asyncio.sleep(1)
-            return httpx.Response(200, request=request)
-
-    transport = harness.CloudflareFailoverTransport(
-        (harness.CloudflareAccount("primary", "token-primary"),), 0.001, transport=SlowTransport()
+    result = harness._evaluate_metric_with_failover(
+        {"question_id": "q-1"}, "faithfulness", config, fake_attempt
     )
 
-    async def send() -> None:
-        request = httpx.Request("POST", f"{harness.ROUTER_BASE_URL}/chat/completions", content=b"{}")
-        with pytest.raises(harness.CloudflareEvaluatorTransportError, match="Cloudflare evaluator request failed"):
-            await transport.handle_async_request(request)
+    assert result.value == 0.75
+    assert accounts == ["primary", "primary", "secondary"]
 
-    asyncio.run(send())
-    asyncio.run(transport.aclose())
+
+def test_nonfinite_metric_uses_next_account(monkeypatch) -> None:
+    _configure_live(monkeypatch)
+    monkeypatch.setenv("CLOUDFLARE_SECONDARY_ACCOUNT_ID", "secondary")
+    monkeypatch.setenv("CLOUDFLARE_SECONDARY_API_TOKEN", "secondary-token")
+    config = harness._live_config()
+
+    def fake_attempt(sample, metric_name, config, account):
+        return harness.MetricAttempt(value=float("nan") if account.account_id == "primary" else 0.5)
+
+    result = harness._evaluate_metric_with_failover({"question_id": "q-1"}, "context_recall", config, fake_attempt)
+
+    assert result.value == 0.5
+
+
+def test_hard_timeout_terminates_then_kills_child(monkeypatch) -> None:
+    _configure_live(monkeypatch)
+    config = harness._live_config()
+
+    class Connection:
+        def close(self):
+            pass
+
+    class HungProcess:
+        exitcode = None
+
+        def __init__(self):
+            self.alive = True
+            self.joins = []
+            self.terminated = False
+            self.killed = False
+
+        def start(self):
+            pass
+
+        def join(self, timeout):
+            self.joins.append(timeout)
+
+        def is_alive(self):
+            return self.alive
+
+        def terminate(self):
+            self.terminated = True
+
+        def kill(self):
+            self.killed = True
+            self.alive = False
+
+    process = HungProcess()
+
+    class Context:
+        def Pipe(self, duplex):
+            assert duplex is False
+            return Connection(), Connection()
+
+        def Process(self, target, args):
+            assert target is harness._metric_child
+            return process
+
+    result = harness._run_metric_attempt(
+        {"question_id": "q-1"},
+        "faithfulness",
+        config,
+        config.accounts[0],
+        process_context=Context(),
+    )
+
+    assert result.failure == "timeout"
+    assert process.terminated is True
+    assert process.killed is True
+    assert process.joins == [1, 1, 1]

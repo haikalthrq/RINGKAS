@@ -23,7 +23,7 @@ sudo docker compose --env-file .env -f infra/docker-compose.yml -f infra/docker-
   -e CLOUDFLARE_SECONDARY_ACCOUNT_ID -e CLOUDFLARE_SECONDARY_API_TOKEN \
   -e CLOUDFLARE_TERTIARY_ACCOUNT_ID -e CLOUDFLARE_TERTIARY_API_TOKEN \
   -e RAGAS_LLM_MODEL -e RAGAS_LLM_TIMEOUT_SECONDS -e RAGAS_LLM_MAX_RETRIES \
-  -e RAGAS_LLM_MAX_WORKERS -e RAGAS_LLM_BATCH_SIZE -e RAGAS_LLM_PREFLIGHT_SAMPLES \
+  -e RAGAS_LLM_MAX_WORKERS -e RAGAS_LLM_PREFLIGHT_SAMPLES \
   -e RAGAS_LLM_MAX_TOKENS -e RAGAS_LLM_TEMPERATURE \
   --entrypoint bash rag-query -c "
 pip install --no-cache-dir langchain-community==0.3.31 langchain-openai==0.3.35 ragas==0.4.3 --quiet
