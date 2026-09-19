@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import asyncio
 import hashlib
 import importlib.util
 import json
@@ -287,8 +286,8 @@ def _cloudflare_base_url(account_id: str) -> str:
 def _evaluate_one_metric(
     sample: dict[str, Any], metric_name: str, config: MetricProcessConfig, account: CloudflareAccount
 ) -> float:
-    AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, metrics, RunConfig = _load_ragas_components()
-    client = AsyncOpenAI(
+    OpenAI, RagasEvaluationDataset, evaluate, llm_factory, metrics, RunConfig = _load_ragas_components()
+    client = OpenAI(
         api_key=account.api_token,
         base_url=_cloudflare_base_url(account.account_id),
         timeout=config.timeout_seconds,
@@ -320,7 +319,7 @@ def _evaluate_one_metric(
             raise ValueError("RAGAS metric result count was invalid")
         return float(rows[0][metric_name])
     finally:
-        asyncio.run(client.close())
+        client.close()
 
 
 def _metric_child(
@@ -570,7 +569,7 @@ def run_live(
 
 
 def _load_ragas_components() -> tuple[Any, ...]:
-    from openai import AsyncOpenAI
+    from openai import OpenAI
     from ragas import EvaluationDataset as RagasEvaluationDataset, evaluate
     from ragas.llms import llm_factory
     from ragas.metrics._context_precision import context_precision
@@ -583,7 +582,7 @@ def _load_ragas_components() -> tuple[Any, ...]:
         "context_precision": context_precision,
         "context_recall": context_recall,
     }
-    return AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, metrics, RunConfig
+    return OpenAI, RagasEvaluationDataset, evaluate, llm_factory, metrics, RunConfig
 
 
 def _ragas_available() -> bool:
