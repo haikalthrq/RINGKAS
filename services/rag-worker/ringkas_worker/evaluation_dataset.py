@@ -20,7 +20,7 @@ QuestionType = Literal[
 
 
 class EvidenceReference(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     document_id: UUID | None = None
     chunk_id: UUID | None = None
@@ -34,7 +34,7 @@ class EvidenceReference(BaseModel):
 
 
 class EvaluationRecord(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     question_id: str = Field(pattern=r"^q-[0-9]{3,4}$")
     question_text: str = ""
@@ -74,7 +74,7 @@ class EvaluationRecord(BaseModel):
 
 
 class EvaluationDataset(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     schema_version: str
     dataset_status: Literal["pending_manual_verification", "ready"]

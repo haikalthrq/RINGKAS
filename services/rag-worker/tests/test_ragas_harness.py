@@ -1,5 +1,9 @@
+import asyncio
 import json
 from pathlib import Path
+
+import httpx
+import pytest
 
 import ringkas_worker.ragas_harness as harness
 from ringkas_worker.evaluation_dataset import APPROVED_QUESTION_TYPES
@@ -102,10 +106,10 @@ def test_stratified_selection_is_deterministic_and_balanced(tmp_path: Path) -> N
 def test_live_completes_with_metadata_using_offline_fakes(monkeypatch, tmp_path: Path) -> None:
     dataset_path, responses_path = _live_inputs(tmp_path)
     _configure_live(monkeypatch)
-    calls: list[tuple[str, int]] = []
+    calls: list[int] = []
 
-    def fake_evaluate(components, samples, config, account):
-        calls.append((account.account_id, len(samples)))
+    def fake_evaluate(components, samples, config):
+        calls.append(len(samples))
         return [{"question_id": sample["question_id"], **{metric: 1.0 for metric in harness.METRIC_NAMES}} for sample in samples]
 
     monkeypatch.setattr(harness, "_load_ragas_components", lambda: (object(),) * 8)
@@ -121,7 +125,7 @@ def test_live_completes_with_metadata_using_offline_fakes(monkeypatch, tmp_path:
     assert result["evaluator"]["account_count"] == 1
     assert len(result["selected_sample_ids"]) == 100
     assert len(result["metrics"]) == 100
-    assert calls[:2] == [("primary", 1), ("primary", 1)]
+    assert calls[:2] == [1, 1]
 
 
 def test_checkpoint_config_mismatch_blocks_resume(monkeypatch, tmp_path: Path) -> None:
@@ -131,7 +135,7 @@ def test_checkpoint_config_mismatch_blocks_resume(monkeypatch, tmp_path: Path) -
     monkeypatch.setattr(
         harness,
         "_evaluate_batch",
-        lambda components, samples, config, account: [
+        lambda components, samples, config: [
             {"question_id": sample["question_id"], **{metric: 1.0 for metric in harness.METRIC_NAMES}} for sample in samples
         ],
     )
@@ -155,7 +159,7 @@ def test_non_finite_metric_fails_closed(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         harness,
         "_evaluate_batch",
-        lambda components, samples, config, account: [
+        lambda components, samples, config: [
             {"question_id": sample["question_id"], "faithfulness": float("nan"), "context_precision": 1.0, "context_recall": 1.0}
             for sample in samples
         ],
@@ -170,21 +174,53 @@ def test_non_finite_metric_fails_closed(monkeypatch, tmp_path: Path) -> None:
     }
 
 
-def test_non_finite_metrics_advance_to_next_cloudflare_account(monkeypatch, tmp_path: Path) -> None:
-    dataset_path, responses_path = _live_inputs(tmp_path)
-    _configure_live(monkeypatch)
-    monkeypatch.setenv("CLOUDFLARE_SECONDARY_ACCOUNT_ID", "secondary")
-    monkeypatch.setenv("CLOUDFLARE_SECONDARY_API_TOKEN", "secondary-token")
-    calls: list[str] = []
+class _RecordingTransport(httpx.AsyncBaseTransport):
+    def __init__(self, statuses: list[int]) -> None:
+        self.statuses = statuses
+        self.requests: list[httpx.Request] = []
 
-    def fake_evaluate(_components, samples, _config, account):
-        calls.append(account.account_id)
-        if account.account_id == "primary":
-            return [{"question_id": sample["question_id"], "faithfulness": float("nan"), "context_precision": 1.0, "context_recall": 1.0} for sample in samples]
-        return [{"question_id": sample["question_id"], **{metric: 1.0 for metric in harness.METRIC_NAMES}} for sample in samples]
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(request)
+        return httpx.Response(self.statuses.pop(0), request=request)
 
-    monkeypatch.setattr(harness, "_evaluate_batch", fake_evaluate)
-    rows = harness._evaluate_with_failover((object(),) * 8, [{"question_id": "q-0001"}], harness._live_config())
 
-    assert rows[0]["faithfulness"] == 1.0
-    assert calls == ["primary", "secondary"]
+def test_cloudflare_transport_fails_over_on_retryable_status() -> None:
+    underlying = _RecordingTransport([429, 200])
+    transport = harness.CloudflareFailoverTransport(
+        (
+            harness.CloudflareAccount("primary", "token-primary"),
+            harness.CloudflareAccount("secondary", "token-secondary"),
+        ),
+        1,
+        transport=underlying,
+    )
+
+    async def send() -> httpx.Response:
+        request = httpx.Request("POST", f"{harness.ROUTER_BASE_URL}/chat/completions", content=b"{}")
+        return await transport.handle_async_request(request)
+
+    response = asyncio.run(send())
+
+    assert response.status_code == 200
+    assert [request.url.path.split("/")[4] for request in underlying.requests] == ["primary", "secondary"]
+    assert [request.headers["authorization"] for request in underlying.requests] == ["Bearer token-primary", "Bearer token-secondary"]
+    asyncio.run(transport.aclose())
+
+
+def test_cloudflare_transport_enforces_strict_timeout() -> None:
+    class SlowTransport(httpx.AsyncBaseTransport):
+        async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+            await asyncio.sleep(1)
+            return httpx.Response(200, request=request)
+
+    transport = harness.CloudflareFailoverTransport(
+        (harness.CloudflareAccount("primary", "token-primary"),), 0.001, transport=SlowTransport()
+    )
+
+    async def send() -> None:
+        request = httpx.Request("POST", f"{harness.ROUTER_BASE_URL}/chat/completions", content=b"{}")
+        with pytest.raises(harness.CloudflareEvaluatorTransportError, match="Cloudflare evaluator request failed"):
+            await transport.handle_async_request(request)
+
+    asyncio.run(send())
+    asyncio.run(transport.aclose())

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import hashlib
 import json
 import math
@@ -23,6 +24,7 @@ DEFAULT_TIMEOUT_SECONDS = 120
 DEFAULT_MAX_RETRIES = 2
 DEFAULT_MAX_WORKERS = 1
 DEFAULT_TEMPERATURE = 0.1
+ROUTER_BASE_URL = "https://api.cloudflare.com/client/v4/accounts/evaluator/ai/v1"
 BASELINE_LABEL = "initial MVP baseline"
 FIXTURE_LABEL = "deterministic harness validation"
 LIVE_LABEL = "live RAGAS evaluation"
@@ -59,6 +61,65 @@ class LiveConfig:
             "ragas_version": ragas_version,
             "temperature": self.temperature,
         }
+
+
+class CloudflareEvaluatorTransportError(httpx.RequestError):
+    """A provider-neutral failure after every configured account was attempted."""
+
+
+class CloudflareFailoverTransport(httpx.AsyncBaseTransport):
+    """Route one OpenAI-compatible request through the configured CF accounts."""
+
+    def __init__(
+        self,
+        accounts: tuple[CloudflareAccount, ...],
+        timeout_seconds: float,
+        *,
+        transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
+        self._accounts = accounts
+        self._timeout_seconds = timeout_seconds
+        self._transport = transport or httpx.AsyncHTTPTransport(retries=0)
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        body = await request.aread()
+        router_path = httpx.URL(ROUTER_BASE_URL).raw_path.rstrip(b"/")
+        if not request.url.raw_path.startswith(router_path):
+            raise CloudflareEvaluatorTransportError("Cloudflare evaluator request failed", request=request)
+        endpoint_path = request.url.raw_path[len(router_path) :]
+        for account in self._accounts:
+            headers = request.headers.copy()
+            headers["authorization"] = f"Bearer {account.api_token}"
+            headers.pop("host", None)
+            account_url = httpx.URL(_cloudflare_base_url(account.account_id))
+            routed_request = httpx.Request(
+                request.method,
+                account_url.copy_with(raw_path=account_url.raw_path.rstrip(b"/") + endpoint_path),
+                headers=headers,
+                content=body,
+                extensions=request.extensions,
+            )
+            try:
+                response = await asyncio.wait_for(
+                    self._transport.handle_async_request(routed_request), timeout=self._timeout_seconds
+                )
+            except (asyncio.TimeoutError, httpx.RequestError, OSError):
+                continue
+            if response.status_code in {401, 403, 408, 429} or 500 <= response.status_code <= 599:
+                await response.aclose()
+                continue
+            if response.is_error:
+                await response.aclose()
+                return httpx.Response(
+                    response.status_code,
+                    json={"error": {"message": "Cloudflare evaluator request failed"}},
+                    request=request,
+                )
+            return response
+        raise CloudflareEvaluatorTransportError("Cloudflare evaluator request failed", request=request)
+
+    async def aclose(self) -> None:
+        await self._transport.aclose()
 
 
 def _load_responses(path: Path) -> list[dict[str, Any]]:
@@ -253,12 +314,18 @@ def _cloudflare_base_url(account_id: str) -> str:
     return f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1"
 
 
-def _evaluate_batch(
-    components: tuple[Any, ...], samples: list[dict[str, Any]], config: LiveConfig, account: CloudflareAccount
-) -> list[dict[str, Any]]:
-    OpenAI, RagasEvaluationDataset, evaluate, llm_factory, Faithfulness, ContextPrecision, ContextRecall, RunConfig = components
-    # The client timeout cancels the HTTP request itself; RunConfig is retained for RAGAS scheduling.
-    client = OpenAI(api_key=account.api_token, base_url=_cloudflare_base_url(account.account_id), timeout=config.timeout_seconds, max_retries=0)
+def _evaluate_batch(components: tuple[Any, ...], samples: list[dict[str, Any]], config: LiveConfig) -> list[dict[str, Any]]:
+    AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, faithfulness, context_precision, context_recall, RunConfig = components
+    transport = CloudflareFailoverTransport(config.accounts, config.timeout_seconds)
+    http_client = httpx.AsyncClient(transport=transport, timeout=None)
+    # The transport owns credentials and account routing so SDK errors cannot disclose either.
+    client = AsyncOpenAI(
+        api_key="not-used",
+        base_url=ROUTER_BASE_URL,
+        timeout=config.timeout_seconds,
+        max_retries=0,
+        http_client=http_client,
+    )
     try:
         evaluator_llm = llm_factory(
             config.model,
@@ -269,7 +336,7 @@ def _evaluate_batch(
         )
         result = evaluate(
             dataset=RagasEvaluationDataset.from_list(samples),
-            metrics=[Faithfulness(llm=evaluator_llm), ContextPrecision(llm=evaluator_llm), ContextRecall(llm=evaluator_llm)],
+            metrics=[faithfulness, context_precision, context_recall],
             llm=evaluator_llm,
             run_config=RunConfig(
                 timeout=config.timeout_seconds,
@@ -282,25 +349,22 @@ def _evaluate_batch(
             row["question_id"] = sample["question_id"]
         return rows
     finally:
-        close = getattr(client, "close", None)
-        if callable(close):
-            close()
+        asyncio.run(client.close())
 
 
 def _evaluate_with_failover(
     components: tuple[Any, ...], samples: list[dict[str, Any]], config: LiveConfig
 ) -> list[dict[str, Any]]:
     expected_ids = {sample["question_id"] for sample in samples}
-    for account in config.accounts:
-        for _ in range(config.max_retries):
-            try:
-                rows = _evaluate_batch(components, samples, config, account)
-            except Exception as error:
-                if not _retryable_account_error(error):
-                    raise
-                continue
-            if _finite_metrics(rows, expected_ids):
-                return rows
+    for _ in range(config.max_retries):
+        try:
+            rows = _evaluate_batch(components, samples, config)
+        except Exception as error:
+            if not _retryable_account_error(error):
+                raise
+            continue
+        if _finite_metrics(rows, expected_ids):
+            return rows
     raise RuntimeError("all Cloudflare evaluator accounts failed")
 
 
@@ -313,7 +377,13 @@ def _ragas_version() -> str:
         return "unknown"
 
 
-def run_live(dataset_path: Path, responses_path: Path, checkpoint_path: Path | None = None) -> dict[str, Any]:
+def run_live(
+    dataset_path: Path,
+    responses_path: Path,
+    checkpoint_path: Path | None = None,
+    *,
+    preflight_only: bool = False,
+) -> dict[str, Any]:
     try:
         dataset = load_dataset(dataset_path)
         responses = _load_responses(responses_path)
@@ -377,6 +447,26 @@ def run_live(dataset_path: Path, responses_path: Path, checkpoint_path: Path | N
         state["preflight_complete"] = True
         _write_checkpoint(checkpoint_path, state)
 
+    if preflight_only:
+        return {
+            "evaluation_label": LIVE_LABEL,
+            "status": "preflight_validated",
+            "sample_count": len(rows),
+            "resumed": resumed,
+            "evaluator": {
+                "model": config.model,
+                "provider": "cloudflare_workers_ai_openai_compatible",
+                "account_count": len(config.accounts),
+                "timeout_seconds": config.timeout_seconds,
+                "max_retries": config.max_retries,
+                "max_workers": config.max_workers,
+                "max_tokens": config.max_tokens,
+                "temperature": config.temperature,
+            },
+            "selected_sample_ids_hash": selected_hash,
+            "metrics": sorted(rows, key=lambda row: row["question_id"]),
+        }
+
     pending = [sample for sample in samples if sample["question_id"] not in completed_ids]
     for start in range(0, len(pending), config.batch_size):
         batch = pending[start : start + config.batch_size]
@@ -420,13 +510,15 @@ def run_live(dataset_path: Path, responses_path: Path, checkpoint_path: Path | N
 
 
 def _load_ragas_components() -> tuple[Any, ...]:
-    from openai import OpenAI
+    from openai import AsyncOpenAI
     from ragas import EvaluationDataset as RagasEvaluationDataset, evaluate
     from ragas.llms import llm_factory
-    from ragas.metrics.collections import ContextPrecision, ContextRecall, Faithfulness
+    from ragas.metrics._context_precision import context_precision
+    from ragas.metrics._context_recall import context_recall
+    from ragas.metrics._faithfulness import faithfulness
     from ragas.run_config import RunConfig
 
-    return OpenAI, RagasEvaluationDataset, evaluate, llm_factory, Faithfulness, ContextPrecision, ContextRecall, RunConfig
+    return AsyncOpenAI, RagasEvaluationDataset, evaluate, llm_factory, faithfulness, context_precision, context_recall, RunConfig
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -435,10 +527,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dataset", type=Path, default=DATASET_PATH)
     parser.add_argument("--responses", type=Path, default=DEFAULT_FIXTURE_PATH)
     parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument("--preflight-only", action="store_true")
     args = parser.parse_args(argv)
-    result = run_sample(args.dataset, args.responses) if args.mode == "sample" else run_live(args.dataset, args.responses, args.checkpoint)
+    result = run_sample(args.dataset, args.responses) if args.mode == "sample" else run_live(
+        args.dataset,
+        args.responses,
+        args.checkpoint,
+        preflight_only=args.preflight_only,
+    )
     print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
-    return 0 if result["status"] in {"fixture_validated", "completed"} else 2
+    return 0 if result["status"] in {"fixture_validated", "preflight_validated", "completed"} else 2
 
 
 if __name__ == "__main__":
