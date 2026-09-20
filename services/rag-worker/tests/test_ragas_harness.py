@@ -283,59 +283,76 @@ def test_nonfinite_metric_uses_next_account(monkeypatch) -> None:
     assert result.value == 0.5
 
 
-def test_hard_timeout_terminates_then_kills_child(monkeypatch) -> None:
+def test_subprocess_worker_uses_private_ipc_and_returns_finite_value(monkeypatch, tmp_path: Path) -> None:
     _configure_live(monkeypatch)
     config = harness._live_config()
 
-    class Connection:
-        def close(self):
-            pass
+    class CompletedProcess:
+        pid = 123
 
-    class HungProcess:
-        exitcode = None
+        def wait(self, timeout):
+            assert timeout == config.timeout_seconds
+            return 0
 
-        def __init__(self):
-            self.alive = True
-            self.joins = []
-            self.terminated = False
-            self.killed = False
-
-        def start(self):
-            pass
-
-        def join(self, timeout):
-            self.joins.append(timeout)
-
-        def is_alive(self):
-            return self.alive
-
-        def terminate(self):
-            self.terminated = True
-
-        def kill(self):
-            self.killed = True
-            self.alive = False
-
-    process = HungProcess()
-
-    class Context:
-        def Pipe(self, duplex):
-            assert duplex is False
-            return Connection(), Connection()
-
-        def Process(self, target, args):
-            assert target is harness._metric_child
-            return process
+    def fake_popen(command, **kwargs):
+        assert command[:3] == [harness.sys.executable, "-m", "ringkas_worker.ragas_metric_worker"]
+        assert kwargs["start_new_session"] is True
+        assert kwargs["env"]["RINGKAS_RAGAS_ACCOUNT_ID"] == "primary"
+        assert kwargs["env"]["RINGKAS_RAGAS_API_TOKEN"] == "test-token"
+        input_path, output_path = map(Path, command[3:])
+        assert input_path.parent.parent == tmp_path
+        assert input_path.stat().st_mode & 0o777 == 0o600
+        assert output_path.stat().st_mode & 0o777 == 0o600
+        input_payload = input_path.read_text(encoding="utf-8")
+        assert "api_token" not in input_payload
+        assert "test-token" not in input_payload
+        output_path.write_text('{"status":"ok","value":0.5}', encoding="utf-8")
+        return CompletedProcess()
 
     result = harness._run_metric_attempt(
         {"question_id": "q-1"},
         "faithfulness",
         config,
         config.accounts[0],
-        process_context=Context(),
+        subprocess_runner=fake_popen,
+        ipc_directory=tmp_path,
+    )
+
+    assert result == harness.MetricAttempt(value=0.5)
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_hard_timeout_terminates_then_kills_child_process_group(monkeypatch, tmp_path: Path) -> None:
+    _configure_live(monkeypatch)
+    config = harness._live_config()
+    signals: list[int] = []
+
+    class HungProcess:
+        pid = 456
+
+        def __init__(self):
+            self.waits = 0
+
+        def wait(self, timeout):
+            self.waits += 1
+            if self.waits < 3:
+                raise harness.subprocess.TimeoutExpired("worker", timeout)
+            return -9
+
+    def fake_popen(command, **kwargs):
+        assert kwargs["start_new_session"] is True
+        return HungProcess()
+
+    monkeypatch.setattr(harness.os, "killpg", lambda pid, sig: signals.append(sig))
+
+    result = harness._run_metric_attempt(
+        {"question_id": "q-1"},
+        "faithfulness",
+        config,
+        config.accounts[0],
+        subprocess_runner=fake_popen,
+        ipc_directory=tmp_path,
     )
 
     assert result.failure == "timeout"
-    assert process.terminated is True
-    assert process.killed is True
-    assert process.joins == [1, 1, 1]
+    assert signals == [harness.signal.SIGTERM, harness.signal.SIGKILL]

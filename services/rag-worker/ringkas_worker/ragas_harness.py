@@ -5,8 +5,10 @@ import hashlib
 import importlib.util
 import json
 import math
-import multiprocessing
 import os
+import signal
+import subprocess
+import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -49,7 +51,7 @@ class LiveConfig:
 
     def fingerprint(self, ragas_version: str) -> dict[str, Any]:
         return {
-            "execution_architecture": "spawned_single_metric_v1",
+            "execution_architecture": "supervised_subprocess_metric_v1",
             "model": self.model,
             "provider": "cloudflare_workers_ai_openai_compatible",
             "max_tokens": self.max_tokens,
@@ -306,7 +308,6 @@ def _evaluate_one_metric(
             metrics=[metrics[metric_name]],
             llm=evaluator_llm,
             run_config=RunConfig(
-                timeout=config.timeout_seconds,
                 # One Ragas attempt; parent-owned retries control account sequencing.
                 max_retries=1,
                 max_workers=1,
@@ -322,41 +323,72 @@ def _evaluate_one_metric(
         client.close()
 
 
-def _metric_child(
-    send_connection: Any,
-    sample: dict[str, Any],
-    metric_name: str,
-    config: MetricProcessConfig,
-    account: CloudflareAccount,
-) -> None:
-    """Evaluate one metric without sending provider details or exceptions to the parent."""
-    try:
-        try:
-            value = _evaluate_one_metric(sample, metric_name, config, account)
-        except Exception as error:
-            failure = "retryable" if _retryable_account_error(error) else "nonretryable"
-            send_connection.send({"status": failure})
-        else:
-            send_connection.send({"status": "ok", "value": value})
-    finally:
-        send_connection.close()
-
-
 @dataclass(frozen=True)
 class MetricAttempt:
     value: float | None = None
     failure: str | None = None
 
 
-def _terminate_process(process: Any) -> None:
+def _terminate_process_group(process: Any) -> None:
+    """Stop the worker and anything it started without exposing its output."""
     try:
-        process.terminate()
-        process.join(1)
-        if process.is_alive():
-            process.kill()
-            process.join(1)
-    except Exception:
+        os.killpg(process.pid, signal.SIGTERM)
+    except (OSError, ProcessLookupError):
+        pass
+    try:
+        process.wait(timeout=1)
         return
+    except (subprocess.TimeoutExpired, OSError):
+        pass
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except (OSError, ProcessLookupError):
+        pass
+    try:
+        process.wait(timeout=1)
+    except (subprocess.TimeoutExpired, OSError):
+        pass
+
+
+def _secure_json_file(directory: Path, payload: dict[str, Any]) -> Path:
+    descriptor, name = tempfile.mkstemp(dir=directory, prefix="ragas-metric-", suffix=".json")
+    path = Path(name)
+    try:
+        os.fchmod(descriptor, 0o600)
+    except Exception:
+        os.close(descriptor)
+        path.unlink(missing_ok=True)
+        raise
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as output:
+            json.dump(payload, output, ensure_ascii=True, allow_nan=False, separators=(",", ":"))
+            output.flush()
+            os.fsync(output.fileno())
+    except Exception:
+        path.unlink(missing_ok=True)
+        raise
+    return path
+
+
+def _secure_empty_file(directory: Path) -> Path:
+    descriptor, name = tempfile.mkstemp(dir=directory, prefix="ragas-result-", suffix=".json")
+    os.fchmod(descriptor, 0o600)
+    os.close(descriptor)
+    return Path(name)
+
+
+def _read_metric_result(path: Path) -> MetricAttempt:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return MetricAttempt(failure="process")
+    if not isinstance(payload, dict):
+        return MetricAttempt(failure="process")
+    if payload.get("status") == "ok" and set(payload) == {"status", "value"} and _finite_value(payload.get("value")):
+        return MetricAttempt(value=float(payload["value"]))
+    if payload.get("status") in {"retryable", "nonretryable"} and set(payload) == {"status"}:
+        return MetricAttempt(failure=payload["status"])
+    return MetricAttempt(failure="nonfinite")
 
 
 def _run_metric_attempt(
@@ -365,49 +397,64 @@ def _run_metric_attempt(
     config: LiveConfig,
     account: CloudflareAccount,
     *,
-    process_context: Any = None,
-    worker_target: Any = _metric_child,
+    subprocess_runner: Any = subprocess.Popen,
+    ipc_directory: Path,
 ) -> MetricAttempt:
-    context = process_context or multiprocessing.get_context("spawn")
-    receive_connection, send_connection = context.Pipe(duplex=False)
     process_config = MetricProcessConfig(
         model=config.model,
         timeout_seconds=config.timeout_seconds,
         max_tokens=config.max_tokens,
         temperature=config.temperature,
     )
-    process = context.Process(target=worker_target, args=(send_connection, sample, metric_name, process_config, account))
+    checkpoint_directory = Path(tempfile.mkdtemp(prefix="ragas-worker-", dir=ipc_directory))
     try:
-        process.start()
-    except Exception:
-        send_connection.close()
-        receive_connection.close()
-        return MetricAttempt(failure="process")
-    send_connection.close()
-    try:
-        process.join(config.timeout_seconds)
-    except Exception:
-        _terminate_process(process)
-        receive_connection.close()
-        return MetricAttempt(failure="process")
-    if process.is_alive():
-        _terminate_process(process)
-        receive_connection.close()
-        return MetricAttempt(failure="timeout")
-
-    try:
-        payload = receive_connection.recv() if receive_connection.poll() else None
-    except (EOFError, OSError):
-        payload = None
+        input_path = _secure_json_file(
+            checkpoint_directory,
+            {
+                "sample": sample,
+                "metric_name": metric_name,
+                "config": {
+                    "model": process_config.model,
+                    "timeout_seconds": process_config.timeout_seconds,
+                    "max_tokens": process_config.max_tokens,
+                    "temperature": process_config.temperature,
+                },
+            },
+        )
+        output_path = _secure_empty_file(checkpoint_directory)
+        environment = {
+            "PATH": os.environ.get("PATH", ""),
+            "RINGKAS_RAGAS_ACCOUNT_ID": account.account_id,
+            "RINGKAS_RAGAS_API_TOKEN": account.api_token,
+        }
+        command = [sys.executable, "-m", "ringkas_worker.ragas_metric_worker", str(input_path), str(output_path)]
+        try:
+            process = subprocess_runner(
+                command,
+                cwd=Path(__file__).resolve().parents[1],
+                env=environment,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        except Exception:
+            return MetricAttempt(failure="process")
+        try:
+            return_code = process.wait(timeout=config.timeout_seconds)
+        except subprocess.TimeoutExpired:
+            _terminate_process_group(process)
+            return MetricAttempt(failure="timeout")
+        except Exception:
+            _terminate_process_group(process)
+            return MetricAttempt(failure="process")
+        if return_code != 0:
+            return MetricAttempt(failure="process")
+        return _read_metric_result(output_path)
     finally:
-        receive_connection.close()
-    if process.exitcode != 0 or not isinstance(payload, dict):
-        return MetricAttempt(failure="process")
-    if payload.get("status") == "ok" and _finite_value(payload.get("value")):
-        return MetricAttempt(value=float(payload["value"]))
-    if payload.get("status") in {"retryable", "nonretryable"}:
-        return MetricAttempt(failure=payload["status"])
-    return MetricAttempt(failure="nonfinite")
+        for path in checkpoint_directory.iterdir():
+            path.unlink(missing_ok=True)
+        checkpoint_directory.rmdir()
 
 
 def _evaluate_metric_with_failover(
@@ -477,8 +524,20 @@ def run_live(
         partial = _validated_partial_metrics(checkpoint.get("partial_metrics", {}), set(selected_ids)) if checkpoint else {}
     except ValueError as error:
         return _blocked(str(error), 0)
-    if attempt_runner is _run_metric_attempt and not _ragas_available():
+    use_subprocess_worker = attempt_runner is _run_metric_attempt
+    if use_subprocess_worker and not _ragas_available():
         return _blocked("Optional RAGAS evaluation dependencies are unavailable.", _finite_metric_count(partial))
+    if use_subprocess_worker:
+        def execute_attempt(sample: dict[str, Any], metric_name: str, live_config: LiveConfig, account: CloudflareAccount) -> MetricAttempt:
+            return _run_metric_attempt(
+                sample,
+                metric_name,
+                live_config,
+                account,
+                ipc_directory=checkpoint_path.parent,
+            )
+    else:
+        execute_attempt = attempt_runner
     preflight_ids = selected_ids[: config.preflight_samples]
     preflight_complete = all(
         set(partial.get(question_id, {})) == set(METRIC_NAMES) for question_id in preflight_ids
@@ -497,7 +556,7 @@ def run_live(
             for metric_name in METRIC_NAMES:
                 if metric_name in question_metrics:
                     continue
-                result = _evaluate_metric_with_failover(sample, metric_name, config, attempt_runner)
+                result = _evaluate_metric_with_failover(sample, metric_name, config, execute_attempt)
                 if result.value is None or not _finite_value(result.value):
                     return _blocked("RAGAS evaluator preflight failed.", _finite_metric_count(partial))
                 question_metrics[metric_name] = float(result.value)
@@ -534,7 +593,7 @@ def run_live(
         for metric_name in METRIC_NAMES:
             if metric_name in question_metrics:
                 continue
-            result = _evaluate_metric_with_failover(sample, metric_name, config, attempt_runner)
+            result = _evaluate_metric_with_failover(sample, metric_name, config, execute_attempt)
             if result.value is None or not _finite_value(result.value):
                 return _blocked("RAGAS evaluator failed.", _finite_metric_count(partial))
             question_metrics[metric_name] = float(result.value)
