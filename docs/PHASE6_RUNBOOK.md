@@ -9,7 +9,7 @@ change task statuses.
 - The fixture dataset at `services/rag-worker/evaluation_dataset.json` contains 100 stable sample slots (`q-001` through `q-100`) for no-secret harness validation.
 - `services/rag-worker/ringkas_worker/evaluation_dataset.py` validates grounded evidence records.
 - Live response generation and automated audit use 1000 linked verified records. The live RAGAS baseline evaluates a deterministic stratified 100-record subset, balanced by question type where possible.
-- `services/rag-worker/ringkas_worker/ragas_harness.py` has a deterministic no-secret fixture path and an explicit resumable Cloudflare live RAGAS path.
+- `services/rag-worker/ringkas_worker/ragas_harness.py` has a deterministic no-secret fixture path and explicit resumable live RAGAS contracts for Cloudflare Workers AI or the official DeepSeek API.
 
 The sample harness validates only its synthetic fixture and emits no metric
 values. The initial MVP baseline label is reserved for a completed live RAGAS
@@ -92,6 +92,9 @@ RAGAS_LLM_MAX_WORKERS
 RAGAS_LLM_PREFLIGHT_SAMPLES
 RAGAS_LLM_MAX_TOKENS
 RAGAS_LLM_TEMPERATURE
+DEEPSEEK_API_KEY
+DEEPSEEK_API_BASE_URL
+DEEPSEEK_RAGAS_MODEL
 CLOUDFLARE_SECONDARY_ACCOUNT_ID
 CLOUDFLARE_SECONDARY_API_TOKEN
 CLOUDFLARE_TERTIARY_ACCOUNT_ID
@@ -103,10 +106,13 @@ GUEST_PROMPT_QUOTA
 REGISTERED_DAILY_QUOTA
 ```
 
-The live RAGAS harness runs exactly one metric for one sample in each spawned
+The live RAGAS harness runs exactly one metric for one sample in each supervised
 child process. `RAGAS_LLM_TIMEOUT_SECONDS` is enforced by the parent as a hard
-wall-clock timeout, and `RAGAS_LLM_MAX_RETRIES` is the number of attempts per
-Cloudflare account before same-model account failover. Keep
+wall-clock timeout. For a Cloudflare baseline, `RAGAS_LLM_MAX_RETRIES` is the
+number of attempts per account before same-model primary/secondary/tertiary
+failover. The DeepSeek contract pins `deepseek-flash` through the official API
+at `https://api.deepseek.com`; it does not share a baseline with Cloudflare and
+does not act as an embedding or product-generation fallback. Keep
 `RAGAS_LLM_MAX_WORKERS=1` and `RAGAS_LLM_PREFLIGHT_SAMPLES=20`; other values are
 rejected. The checkpoint is updated after every finite metric. Preflight is
 valid only with 60 finite metrics, while the completed baseline requires all

@@ -62,6 +62,10 @@ RINGKAS dibuat untuk mempercepat pencarian dan pemahaman dokumen BPS, sekaligus 
 6. Menyediakan admin UI sederhana untuk ingestion dokumen dari API BPS.
 7. Menyediakan baseline evaluasi kualitas RAG secara automated-first dengan manual audit minimal.
 
+Baseline RAGAS dapat memakai satu model judge yang dipin melalui Cloudflare
+Workers AI atau kontrak API resmi DeepSeek `deepseek-flash`; pilihan evaluator
+tidak mengubah provider embedding maupun generation produk.
+
 ### 4.2 Non-Goals / Out of Scope MVP
 
 Tidak masuk MVP:

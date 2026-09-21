@@ -346,6 +346,9 @@ NVIDIA_NIM_GENERATION_ALLOWED_HOSTS=integrate.api.nvidia.com
 NVIDIA_NIM_GENERATION_TIMEOUT_SECONDS=60
 NVIDIA_NIM_GENERATION_SECONDARY_MODEL=mistralai/mistral-small-4-119b-2603
 NVIDIA_NIM_GENERATION_LIGHTWEIGHT_MODEL=nvidia/nemotron-mini-4b-instruct
+DEEPSEEK_API_KEY=TBD_OPTIONAL_FOR_RAGAS
+DEEPSEEK_API_BASE_URL=https://api.deepseek.com
+DEEPSEEK_RAGAS_MODEL=deepseek-flash
 CLOUDFLARE_ACCOUNT_ID=TBD
 CLOUDFLARE_API_TOKEN=TBD
 CLOUDFLARE_WORKERS_AI_GENERATION_MODEL=@cf/meta/llama-3.3-70b-instruct-fp8-fast
@@ -1196,6 +1199,18 @@ RINGKAS uses automated-first evaluation:
 - RAGAS as automated evaluation baseline.
 - LLM-as-judge as helper.
 - Manual evaluation minimized but not removed.
+
+### 25.1.1 Evaluator Provider Contract
+
+The default evaluator uses the Cloudflare Workers AI OpenAI-compatible endpoint
+with a model pinned for one baseline. The approved alternative uses the official
+DeepSeek OpenAI-compatible API at `https://api.deepseek.com` with
+`DEEPSEEK_API_KEY` and `DEEPSEEK_RAGAS_MODEL=deepseek-flash`.
+
+DeepSeek is evaluator-only. It must not replace Cloudflare Qwen3 embedding or
+become an automatic product-generation fallback. A failed Cloudflare baseline
+may be discarded and restarted as a new DeepSeek baseline, but individual
+samples from the two providers must never be combined.
 
 ### 25.2 Dataset
 

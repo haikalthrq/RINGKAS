@@ -609,6 +609,13 @@ Sistem evaluasi menggunakan pendekatan automated-first.
 
 RAGAS digunakan sebagai evaluasi otomatis utama/awal.
 
+Kontrak evaluator RAGAS yang diizinkan adalah Cloudflare Workers AI atau API
+resmi DeepSeek. Kontrak DeepSeek menggunakan endpoint OpenAI-compatible
+`https://api.deepseek.com`, `DEEPSEEK_API_KEY`, dan model `deepseek-flash`.
+Satu baseline harus memakai satu provider dan satu model judge yang dipin dari
+preflight sampai selesai; DeepSeek tidak menjadi embedding provider atau fallback
+generation otomatis.
+
 #### FR-EVAL-003 LLM-as-Judge
 
 LLM-as-judge boleh digunakan sebagai bantuan evaluasi.

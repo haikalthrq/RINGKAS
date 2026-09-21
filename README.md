@@ -105,6 +105,7 @@ Open `.env` and fill in the required keys:
 - `DATABASE_URL` / `POSTGRES_*`
 - `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`
 - `NVIDIA_NIM_API_KEY`
+- `DEEPSEEK_API_KEY` only when using the optional DeepSeek RAGAS judge contract
 - `BPS_API_KEY` (if querying the live BPS Web API)
 
 ### 2. Run Database Migrations
@@ -187,9 +188,11 @@ cd apps/web && npm run build
 
 ### RAGAS Baseline
 
-Response generation and automated audit operate on 1000 verified evaluation records. The live RAGAS baseline evaluates a deterministic, as-balanced-as-possible stratified subset of 100 of those responses. It uses one Cloudflare Workers AI evaluator model, configured by `RAGAS_LLM_MODEL` (default `@cf/openai/gpt-oss-120b`), with optional primary/secondary/tertiary account failover for eligible upstream failures only.
+Response generation and automated audit operate on 1000 verified evaluation records. The live RAGAS baseline evaluates a deterministic, as-balanced-as-possible stratified subset of 100 of those responses. A baseline pins exactly one evaluator provider and model for all selected samples.
 
-Set the positive `RAGAS_LLM_TIMEOUT_SECONDS`, `RAGAS_LLM_MAX_RETRIES`, `RAGAS_LLM_MAX_WORKERS`, `RAGAS_LLM_PREFLIGHT_SAMPLES`, `RAGAS_LLM_MAX_TOKENS`, and `RAGAS_LLM_TEMPERATURE` values in `.env`. Live execution requires one worker and a 20-sample preflight. Each sample/metric pair runs in an isolated child process; the parent applies the timeout as a hard wall-clock limit and treats `RAGAS_LLM_MAX_RETRIES` as attempts per Cloudflare account before moving from primary to secondary to tertiary with the same model. Every finite metric is checkpointed atomically. Preflight succeeds only after all 60 metrics are finite, and a report is completed only when all 300 metrics across 100 samples are finite; these remain baseline metrics, not proof of comprehensive accuracy.
+The Cloudflare contract pins `RAGAS_LLM_MODEL` (default `@cf/openai/gpt-oss-120b`) and may fail over only between primary, secondary, and tertiary Cloudflare accounts using that same model. The approved alternative contract uses the official DeepSeek OpenAI-compatible API: `DEEPSEEK_API_KEY`, `DEEPSEEK_API_BASE_URL=https://api.deepseek.com`, and `DEEPSEEK_RAGAS_MODEL=deepseek-flash`. DeepSeek is evaluator-only; it is not an embedding provider or an automatic product-generation fallback. Do not switch provider or model during a baseline.
+
+Set the positive `RAGAS_LLM_TIMEOUT_SECONDS`, `RAGAS_LLM_MAX_RETRIES`, `RAGAS_LLM_MAX_WORKERS`, `RAGAS_LLM_PREFLIGHT_SAMPLES`, `RAGAS_LLM_MAX_TOKENS`, and `RAGAS_LLM_TEMPERATURE` values in `.env`. Live execution requires one worker and a 20-sample preflight. Each sample/metric pair runs in an isolated child process with a hard wall-clock timeout. Every finite metric is checkpointed atomically. Preflight succeeds only after all 60 metrics are finite, and a report is completed only when all 300 metrics across 100 samples are finite; these remain baseline metrics, not proof of comprehensive accuracy.
 
 ---
 

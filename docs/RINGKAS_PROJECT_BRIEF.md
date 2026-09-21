@@ -619,6 +619,9 @@ Artinya:
 - evaluasi manual dibuat seminimal mungkin;
 - evaluasi manual tidak dihapus sepenuhnya;
 - hasil RAGAS tidak dianggap sebagai satu-satunya bukti kualitas sistem.
+- Baseline RAGAS boleh memakai kontrak evaluator resmi DeepSeek API dengan model
+  `deepseek-flash`, tetapi provider dan model harus dipin untuk seluruh baseline.
+  Kontrak ini tidak mengubah provider embedding atau urutan product generation.
 
 ### 14.2 Evaluation Dataset
 

@@ -334,6 +334,13 @@ code:
 Until all gates are closed, call the deployment `staging` or `beta`, not full
 public production.
 
+For a DeepSeek-backed RAGAS baseline, configure the official API contract in
+the untracked environment: `DEEPSEEK_API_KEY`,
+`DEEPSEEK_API_BASE_URL=https://api.deepseek.com`, and
+`DEEPSEEK_RAGAS_MODEL=deepseek-flash`. Pin that provider/model for the entire
+baseline. It is an evaluator-only contract and does not replace Cloudflare
+embedding or the product-generation provider order.
+
 ## Commands For Code Changes
 
 Only change code if the VPS task requires it. Before editing, read the relevant
