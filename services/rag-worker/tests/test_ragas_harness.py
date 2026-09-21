@@ -140,6 +140,51 @@ def test_live_config_selects_deepseek_without_cloudflare_credentials(monkeypatch
     assert "api.deepseek.com" not in config.fingerprint("test")["base_url"]
 
 
+def test_deepseek_preflight_completes_offline_without_cloudflare_credentials(monkeypatch, tmp_path: Path) -> None:
+    dataset_path, responses_path = _live_inputs(tmp_path)
+    monkeypatch.setenv("RAGAS_EVALUATOR_PROVIDER", "deepseek")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-test-token")
+    monkeypatch.setenv("DEEPSEEK_API_BASE_URL", "https://api.deepseek.com")
+    monkeypatch.setenv("DEEPSEEK_RAGAS_MODEL", "deepseek-flash")
+    monkeypatch.setenv("RAGAS_DEEPSEEK_REASONING_EFFORT", "high")
+    monkeypatch.setenv("RAGAS_LLM_TIMEOUT_SECONDS", "1")
+    monkeypatch.setenv("RAGAS_LLM_MAX_RETRIES", "1")
+    monkeypatch.setenv("RAGAS_LLM_MAX_WORKERS", "1")
+    monkeypatch.setenv("RAGAS_LLM_PREFLIGHT_SAMPLES", "20")
+    monkeypatch.setenv("RAGAS_LLM_MAX_TOKENS", "16000")
+    monkeypatch.setenv("RAGAS_LLM_TEMPERATURE", "0.1")
+    for name in (
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_SECONDARY_ACCOUNT_ID",
+        "CLOUDFLARE_SECONDARY_API_TOKEN",
+        "CLOUDFLARE_TERTIARY_ACCOUNT_ID",
+        "CLOUDFLARE_TERTIARY_API_TOKEN",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    calls: list[tuple[str, str]] = []
+
+    def fake_attempt(sample, metric_name, config, target):
+        assert isinstance(target, harness.DeepSeekTarget)
+        assert config.model == "deepseek-flash"
+        assert config.reasoning_effort == "high"
+        calls.append((sample["question_id"], metric_name))
+        return harness.MetricAttempt(value=1.0)
+
+    result = harness.run_live(
+        dataset_path,
+        responses_path,
+        tmp_path / "checkpoint.json",
+        preflight_only=True,
+        attempt_runner=fake_attempt,
+    )
+
+    assert result["status"] == "preflight_validated"
+    assert result["metric_count"] == 60
+    assert result["evaluator"]["provider"] == "deepseek_openai_compatible"
+    assert len(calls) == 60
+
+
 def test_live_config_rejects_deepseek_max_reasoning_effort(monkeypatch) -> None:
     _configure_live(monkeypatch)
     monkeypatch.setenv("RAGAS_EVALUATOR_PROVIDER", "deepseek")
