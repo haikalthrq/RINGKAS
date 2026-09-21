@@ -92,9 +92,11 @@ RAGAS_LLM_MAX_WORKERS
 RAGAS_LLM_PREFLIGHT_SAMPLES
 RAGAS_LLM_MAX_TOKENS
 RAGAS_LLM_TEMPERATURE
+RAGAS_EVALUATOR_PROVIDER
 DEEPSEEK_API_KEY
 DEEPSEEK_API_BASE_URL
 DEEPSEEK_RAGAS_MODEL
+RAGAS_DEEPSEEK_REASONING_EFFORT
 CLOUDFLARE_SECONDARY_ACCOUNT_ID
 CLOUDFLARE_SECONDARY_API_TOKEN
 CLOUDFLARE_TERTIARY_ACCOUNT_ID
@@ -110,9 +112,12 @@ The live RAGAS harness runs exactly one metric for one sample in each supervised
 child process. `RAGAS_LLM_TIMEOUT_SECONDS` is enforced by the parent as a hard
 wall-clock timeout. For a Cloudflare baseline, `RAGAS_LLM_MAX_RETRIES` is the
 number of attempts per account before same-model primary/secondary/tertiary
-failover. The DeepSeek contract pins `deepseek-flash` through the official API
-at `https://api.deepseek.com`; it does not share a baseline with Cloudflare and
-does not act as an embedding or product-generation fallback. Keep
+failover. Set `RAGAS_EVALUATOR_PROVIDER=cloudflare` (the compatibility default)
+or `deepseek` explicitly; keys never select a provider automatically. The DeepSeek
+contract pins `deepseek-flash` through the official API at `https://api.deepseek.com`
+with `RAGAS_DEEPSEEK_REASONING_EFFORT=high` by default. Accepted effort values are
+`low`, `medium`, and `high`; `max` is invalid. It does not share a baseline with
+Cloudflare and does not act as an embedding or product-generation fallback. Keep
 `RAGAS_LLM_MAX_WORKERS=1` and `RAGAS_LLM_PREFLIGHT_SAMPLES=20`; other values are
 rejected. The checkpoint is updated after every finite metric. Preflight is
 valid only with 60 finite metrics, while the completed baseline requires all

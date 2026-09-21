@@ -9,6 +9,7 @@ from typing import Any
 
 from ringkas_worker.ragas_harness import (
     CloudflareAccount,
+    DeepSeekTarget,
     METRIC_NAMES,
     MetricProcessConfig,
     _evaluate_one_metric,
@@ -38,18 +39,23 @@ def run(input_path: Path, output_path: Path) -> int:
         if metric_name not in METRIC_NAMES or not isinstance(payload["sample"], dict) or not isinstance(config_data, dict):
             raise ValueError
         config = MetricProcessConfig(
+            evaluator_provider=str(config_data["evaluator_provider"]),
             model=str(config_data["model"]),
             timeout_seconds=int(config_data["timeout_seconds"]),
             max_tokens=int(config_data["max_tokens"]),
             temperature=float(config_data["temperature"]),
+            reasoning_effort=config_data["reasoning_effort"],
         )
-        account = CloudflareAccount(
-            os.environ["RINGKAS_RAGAS_ACCOUNT_ID"],
-            os.environ["RINGKAS_RAGAS_API_TOKEN"],
-        )
+        if config.evaluator_provider == "cloudflare":
+            target = CloudflareAccount(os.environ["RINGKAS_RAGAS_ACCOUNT_ID"], os.environ["RINGKAS_RAGAS_API_TOKEN"])
+            target_valid = bool(target.account_id and target.api_token) and config.reasoning_effort is None
+        elif config.evaluator_provider == "deepseek":
+            target = DeepSeekTarget(os.environ["RINGKAS_RAGAS_DEEPSEEK_API_KEY"], os.environ["RINGKAS_RAGAS_DEEPSEEK_BASE_URL"])
+            target_valid = bool(target.api_key and target.base_url) and config.reasoning_effort in {"low", "medium", "high"}
+        else:
+            raise ValueError
         if (
-            not account.account_id
-            or not account.api_token
+            not target_valid
             or not config.model
             or config.timeout_seconds <= 0
             or config.max_tokens <= 0
@@ -62,7 +68,7 @@ def run(input_path: Path, output_path: Path) -> int:
         return 0
 
     try:
-        value = _evaluate_one_metric(payload["sample"], metric_name, config, account)
+        value = _evaluate_one_metric(payload["sample"], metric_name, config, target)
     except Exception as error:
         _write_result(output_path, {"status": "retryable" if _retryable_account_error(error) else "nonretryable"})
         return 0

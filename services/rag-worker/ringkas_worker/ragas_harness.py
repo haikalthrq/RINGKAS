@@ -21,6 +21,9 @@ from ringkas_worker.evaluation_dataset import DATASET_CAPACITY_EXPANDED, DATASET
 
 DEFAULT_FIXTURE_PATH = Path(__file__).resolve().parents[1] / "evaluation_sample_responses.json"
 DEFAULT_MODEL = "@cf/openai/gpt-oss-120b"
+DEFAULT_DEEPSEEK_MODEL = "deepseek-flash"
+DEFAULT_EVALUATOR_PROVIDER = "cloudflare"
+DEFAULT_DEEPSEEK_REASONING_EFFORT = "high"
 DEFAULT_PREFLIGHT_SAMPLES = 20
 DEFAULT_TIMEOUT_SECONDS = 120
 DEFAULT_MAX_RETRIES = 2
@@ -39,8 +42,17 @@ class CloudflareAccount:
 
 
 @dataclass(frozen=True)
+class DeepSeekTarget:
+    api_key: str
+    base_url: str
+
+
+@dataclass(frozen=True)
 class LiveConfig:
+    evaluator_provider: str
     model: str
+    base_url: str
+    reasoning_effort: str | None
     timeout_seconds: int
     max_retries: int
     max_workers: int
@@ -48,12 +60,16 @@ class LiveConfig:
     max_tokens: int
     temperature: float
     accounts: tuple[CloudflareAccount, ...]
+    deepseek_target: DeepSeekTarget | None = None
 
     def fingerprint(self, ragas_version: str) -> dict[str, Any]:
         return {
             "execution_architecture": "supervised_subprocess_metric_v1",
             "model": self.model,
-            "provider": "cloudflare_workers_ai_openai_compatible",
+            "provider": self.evaluator_provider,
+            # Do not persist endpoint details, which may include a private gateway URL.
+            "base_url": "sha256:" + hashlib.sha256(self.base_url.encode("utf-8")).hexdigest(),
+            "reasoning_effort": self.reasoning_effort,
             "max_tokens": self.max_tokens,
             "timeout_seconds": self.timeout_seconds,
             "max_retries": self.max_retries,
@@ -65,10 +81,12 @@ class LiveConfig:
 
 @dataclass(frozen=True)
 class MetricProcessConfig:
+    evaluator_provider: str
     model: str
     timeout_seconds: int
     max_tokens: int
     temperature: float
+    reasoning_effort: str | None
 
 
 def _load_responses(path: Path) -> list[dict[str, Any]]:
@@ -133,26 +151,57 @@ def _positive_float_env(name: str, default: float) -> float:
 
 
 def _live_config() -> LiveConfig:
-    accounts: list[CloudflareAccount] = []
-    for suffix in ("", "_SECONDARY", "_TERTIARY"):
-        account_id = os.getenv(f"CLOUDFLARE{suffix}_ACCOUNT_ID", "").strip()
-        api_token = os.getenv(f"CLOUDFLARE{suffix}_API_TOKEN", "").strip()
-        if bool(account_id) != bool(api_token):
-            raise ValueError("Cloudflare account failover credentials must be configured as complete pairs")
-        if account_id:
-            accounts.append(CloudflareAccount(account_id, api_token))
-    if not accounts:
-        raise ValueError("CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are required")
-    config = LiveConfig(
-        model=os.getenv("RAGAS_LLM_MODEL", DEFAULT_MODEL).strip(),
-        timeout_seconds=_positive_env("RAGAS_LLM_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS),
-        max_retries=_positive_env("RAGAS_LLM_MAX_RETRIES", DEFAULT_MAX_RETRIES),
-        max_workers=_positive_env("RAGAS_LLM_MAX_WORKERS", DEFAULT_MAX_WORKERS),
-        preflight_samples=_positive_env("RAGAS_LLM_PREFLIGHT_SAMPLES", DEFAULT_PREFLIGHT_SAMPLES),
-        max_tokens=_positive_env("RAGAS_LLM_MAX_TOKENS"),
-        temperature=_positive_float_env("RAGAS_LLM_TEMPERATURE", DEFAULT_TEMPERATURE),
-        accounts=tuple(accounts),
-    )
+    evaluator_provider = os.getenv("RAGAS_EVALUATOR_PROVIDER", DEFAULT_EVALUATOR_PROVIDER).strip()
+    if evaluator_provider not in {"cloudflare", "deepseek"}:
+        raise ValueError("RAGAS_EVALUATOR_PROVIDER must be cloudflare or deepseek")
+    common = {
+        "timeout_seconds": _positive_env("RAGAS_LLM_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS),
+        "max_retries": _positive_env("RAGAS_LLM_MAX_RETRIES", DEFAULT_MAX_RETRIES),
+        "max_workers": _positive_env("RAGAS_LLM_MAX_WORKERS", DEFAULT_MAX_WORKERS),
+        "preflight_samples": _positive_env("RAGAS_LLM_PREFLIGHT_SAMPLES", DEFAULT_PREFLIGHT_SAMPLES),
+        "max_tokens": _positive_env("RAGAS_LLM_MAX_TOKENS"),
+        "temperature": _positive_float_env("RAGAS_LLM_TEMPERATURE", DEFAULT_TEMPERATURE),
+    }
+    if evaluator_provider == "deepseek":
+        api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
+        base_url = os.getenv("DEEPSEEK_API_BASE_URL", "https://api.deepseek.com").strip().rstrip("/")
+        reasoning_effort = os.getenv(
+            "RAGAS_DEEPSEEK_REASONING_EFFORT", DEFAULT_DEEPSEEK_REASONING_EFFORT
+        ).strip()
+        if not api_key:
+            raise ValueError("DEEPSEEK_API_KEY is required for the DeepSeek RAGAS evaluator")
+        if not base_url:
+            raise ValueError("DEEPSEEK_API_BASE_URL must be non-empty for the DeepSeek RAGAS evaluator")
+        if reasoning_effort not in {"low", "medium", "high"}:
+            raise ValueError("RAGAS_DEEPSEEK_REASONING_EFFORT must be low, medium, or high")
+        config = LiveConfig(
+            evaluator_provider=evaluator_provider,
+            model=os.getenv("DEEPSEEK_RAGAS_MODEL", DEFAULT_DEEPSEEK_MODEL).strip(),
+            base_url=base_url,
+            reasoning_effort=reasoning_effort,
+            accounts=(),
+            deepseek_target=DeepSeekTarget(api_key, base_url),
+            **common,
+        )
+    else:
+        accounts: list[CloudflareAccount] = []
+        for suffix in ("", "_SECONDARY", "_TERTIARY"):
+            account_id = os.getenv(f"CLOUDFLARE{suffix}_ACCOUNT_ID", "").strip()
+            api_token = os.getenv(f"CLOUDFLARE{suffix}_API_TOKEN", "").strip()
+            if bool(account_id) != bool(api_token):
+                raise ValueError("Cloudflare account failover credentials must be configured as complete pairs")
+            if account_id:
+                accounts.append(CloudflareAccount(account_id, api_token))
+        if not accounts:
+            raise ValueError("CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are required")
+        config = LiveConfig(
+            evaluator_provider=evaluator_provider,
+            model=os.getenv("RAGAS_LLM_MODEL", DEFAULT_MODEL).strip(),
+            base_url="https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+            reasoning_effort=None,
+            accounts=tuple(accounts),
+            **common,
+        )
     if config.max_workers != 1:
         raise ValueError("RAGAS_LLM_MAX_WORKERS must be 1 for supervised metric execution")
     if config.preflight_samples != DEFAULT_PREFLIGHT_SAMPLES:
@@ -285,23 +334,32 @@ def _cloudflare_base_url(account_id: str) -> str:
     return f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1"
 
 
+def _report_provider(config: LiveConfig) -> str:
+    return "cloudflare_workers_ai_openai_compatible" if config.evaluator_provider == "cloudflare" else "deepseek_openai_compatible"
+
+
 def _evaluate_one_metric(
-    sample: dict[str, Any], metric_name: str, config: MetricProcessConfig, account: CloudflareAccount
+    sample: dict[str, Any], metric_name: str, config: MetricProcessConfig, target: CloudflareAccount | DeepSeekTarget
 ) -> float:
     OpenAI, RagasEvaluationDataset, evaluate, llm_factory, metrics, RunConfig = _load_ragas_components()
     client = OpenAI(
-        api_key=account.api_token,
-        base_url=_cloudflare_base_url(account.account_id),
+        api_key=target.api_token if isinstance(target, CloudflareAccount) else target.api_key,
+        base_url=_cloudflare_base_url(target.account_id) if isinstance(target, CloudflareAccount) else target.base_url,
         timeout=config.timeout_seconds,
         max_retries=0,
     )
     try:
+        llm_arguments: dict[str, Any] = {
+            "provider": "openai",
+            "client": client,
+            "temperature": config.temperature,
+            "max_tokens": config.max_tokens,
+        }
+        if config.reasoning_effort is not None:
+            llm_arguments["reasoning_effort"] = config.reasoning_effort
         evaluator_llm = llm_factory(
             config.model,
-            provider="openai",
-            client=client,
-            temperature=config.temperature,
-            max_tokens=config.max_tokens,
+            **llm_arguments,
         )
         result = evaluate(
             dataset=RagasEvaluationDataset.from_list([sample]),
@@ -395,16 +453,18 @@ def _run_metric_attempt(
     sample: dict[str, Any],
     metric_name: str,
     config: LiveConfig,
-    account: CloudflareAccount,
+    target: CloudflareAccount | DeepSeekTarget,
     *,
     subprocess_runner: Any = subprocess.Popen,
     ipc_directory: Path,
 ) -> MetricAttempt:
     process_config = MetricProcessConfig(
+        evaluator_provider=config.evaluator_provider,
         model=config.model,
         timeout_seconds=config.timeout_seconds,
         max_tokens=config.max_tokens,
         temperature=config.temperature,
+        reasoning_effort=config.reasoning_effort,
     )
     checkpoint_directory = Path(tempfile.mkdtemp(prefix="ragas-worker-", dir=ipc_directory))
     try:
@@ -414,19 +474,21 @@ def _run_metric_attempt(
                 "sample": sample,
                 "metric_name": metric_name,
                 "config": {
+                    "evaluator_provider": process_config.evaluator_provider,
                     "model": process_config.model,
                     "timeout_seconds": process_config.timeout_seconds,
                     "max_tokens": process_config.max_tokens,
                     "temperature": process_config.temperature,
+                    "reasoning_effort": process_config.reasoning_effort,
                 },
             },
         )
         output_path = _secure_empty_file(checkpoint_directory)
-        environment = {
-            "PATH": os.environ.get("PATH", ""),
-            "RINGKAS_RAGAS_ACCOUNT_ID": account.account_id,
-            "RINGKAS_RAGAS_API_TOKEN": account.api_token,
-        }
+        environment = {"PATH": os.environ.get("PATH", "")}
+        if isinstance(target, CloudflareAccount):
+            environment.update({"RINGKAS_RAGAS_ACCOUNT_ID": target.account_id, "RINGKAS_RAGAS_API_TOKEN": target.api_token})
+        else:
+            environment.update({"RINGKAS_RAGAS_DEEPSEEK_API_KEY": target.api_key, "RINGKAS_RAGAS_DEEPSEEK_BASE_URL": target.base_url})
         command = [sys.executable, "-m", "ringkas_worker.ragas_metric_worker", str(input_path), str(output_path)]
         try:
             process = subprocess_runner(
@@ -463,7 +525,8 @@ def _evaluate_metric_with_failover(
     config: LiveConfig,
     attempt_runner: Any,
 ) -> MetricAttempt:
-    for account in config.accounts:
+    targets: tuple[CloudflareAccount | DeepSeekTarget, ...] = config.accounts or ((config.deepseek_target,) if config.deepseek_target else ())
+    for account in targets:
         for _ in range(config.max_retries):
             result = attempt_runner(sample, metric_name, config, account)
             if result.value is not None and _finite_value(result.value):
@@ -498,7 +561,7 @@ def run_live(
             return _blocked("The evaluation dataset is not a ready 1000-record verified dataset.")
         config = _live_config()
         if not config.model:
-            return _blocked("RAGAS_LLM_MODEL must be non-empty.")
+            return _blocked("RAGAS evaluator model must be non-empty.")
         samples = _stratified_samples(dataset, responses)
     except ValueError as error:
         return _blocked(str(error))
@@ -528,7 +591,7 @@ def run_live(
     if use_subprocess_worker and not _ragas_available():
         return _blocked("Optional RAGAS evaluation dependencies are unavailable.", _finite_metric_count(partial))
     if use_subprocess_worker:
-        def execute_attempt(sample: dict[str, Any], metric_name: str, live_config: LiveConfig, account: CloudflareAccount) -> MetricAttempt:
+        def execute_attempt(sample: dict[str, Any], metric_name: str, live_config: LiveConfig, account: CloudflareAccount | DeepSeekTarget) -> MetricAttempt:
             return _run_metric_attempt(
                 sample,
                 metric_name,
@@ -576,13 +639,14 @@ def run_live(
             "resumed": resumed,
             "evaluator": {
                 "model": config.model,
-                "provider": "cloudflare_workers_ai_openai_compatible",
+                "provider": _report_provider(config),
                 "account_count": len(config.accounts),
                 "timeout_seconds": config.timeout_seconds,
                 "max_retries": config.max_retries,
                 "max_workers": config.max_workers,
                 "max_tokens": config.max_tokens,
                 "temperature": config.temperature,
+                "reasoning_effort": config.reasoning_effort,
             },
             "selected_sample_ids_hash": selected_hash,
             "metrics": sorted(rows, key=lambda row: row["question_id"]),
@@ -605,12 +669,14 @@ def run_live(
     return {
         "evaluation_label": BASELINE_LABEL,
         "status": "completed",
-        "external_services": "Cloudflare Workers AI OpenAI-compatible evaluator",
+        "external_services": "Cloudflare Workers AI OpenAI-compatible evaluator"
+        if config.evaluator_provider == "cloudflare"
+        else "DeepSeek OpenAI-compatible evaluator",
         "sample_count": len(samples),
         "resumed": resumed,
         "evaluator": {
             "model": config.model,
-            "provider": "cloudflare_workers_ai_openai_compatible",
+            "provider": _report_provider(config),
             "account_count": len(config.accounts),
             "timeout_seconds": config.timeout_seconds,
             "max_retries": config.max_retries,
@@ -618,6 +684,7 @@ def run_live(
             "preflight_samples": config.preflight_samples,
             "max_tokens": config.max_tokens,
             "temperature": config.temperature,
+            "reasoning_effort": config.reasoning_effort,
             "ragas_version": fingerprint["ragas_version"],
         },
         "selected_sample_ids": selected_ids,

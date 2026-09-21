@@ -72,6 +72,7 @@ def _live_inputs(tmp_path: Path) -> tuple[Path, Path]:
 
 
 def _configure_live(monkeypatch) -> None:
+    monkeypatch.setenv("RAGAS_EVALUATOR_PROVIDER", "cloudflare")
     monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "primary")
     monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "test-token")
     monkeypatch.setenv("RAGAS_LLM_MODEL", "@cf/openai/gpt-oss-120b")
@@ -108,6 +109,47 @@ def test_live_config_rejects_parallel_ragas_workers(monkeypatch) -> None:
         harness._live_config()
 
 
+def test_live_config_defaults_to_cloudflare(monkeypatch) -> None:
+    _configure_live(monkeypatch)
+    monkeypatch.delenv("RAGAS_EVALUATOR_PROVIDER")
+
+    assert harness._live_config().evaluator_provider == "cloudflare"
+
+
+def test_live_config_selects_deepseek_without_cloudflare_credentials(monkeypatch) -> None:
+    monkeypatch.setenv("RAGAS_EVALUATOR_PROVIDER", "deepseek")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-test-token")
+    monkeypatch.setenv("DEEPSEEK_API_BASE_URL", "https://api.deepseek.com/")
+    monkeypatch.setenv("DEEPSEEK_RAGAS_MODEL", "deepseek-flash")
+    monkeypatch.setenv("RAGAS_DEEPSEEK_REASONING_EFFORT", "high")
+    monkeypatch.setenv("RAGAS_LLM_TIMEOUT_SECONDS", "1")
+    monkeypatch.setenv("RAGAS_LLM_MAX_RETRIES", "1")
+    monkeypatch.setenv("RAGAS_LLM_MAX_WORKERS", "1")
+    monkeypatch.setenv("RAGAS_LLM_PREFLIGHT_SAMPLES", "20")
+    monkeypatch.setenv("RAGAS_LLM_MAX_TOKENS", "128")
+    monkeypatch.setenv("RAGAS_LLM_TEMPERATURE", "0.1")
+
+    config = harness._live_config()
+
+    assert config.evaluator_provider == "deepseek"
+    assert config.model == "deepseek-flash"
+    assert config.reasoning_effort == "high"
+    assert config.deepseek_target is not None
+    assert config.deepseek_target.base_url == "https://api.deepseek.com"
+    assert config.accounts == ()
+    assert "api.deepseek.com" not in config.fingerprint("test")["base_url"]
+
+
+def test_live_config_rejects_deepseek_max_reasoning_effort(monkeypatch) -> None:
+    _configure_live(monkeypatch)
+    monkeypatch.setenv("RAGAS_EVALUATOR_PROVIDER", "deepseek")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-test-token")
+    monkeypatch.setenv("RAGAS_DEEPSEEK_REASONING_EFFORT", "max")
+
+    with pytest.raises(ValueError, match="low, medium, or high"):
+        harness._live_config()
+
+
 def test_live_completes_with_metadata_using_offline_fakes(monkeypatch, tmp_path: Path) -> None:
     dataset_path, responses_path = _live_inputs(tmp_path)
     _configure_live(monkeypatch)
@@ -135,6 +177,8 @@ def test_live_completes_with_metadata_using_offline_fakes(monkeypatch, tmp_path:
         "execution_architecture",
         "model",
         "provider",
+        "base_url",
+        "reasoning_effort",
         "max_tokens",
         "timeout_seconds",
         "max_retries",
@@ -161,6 +205,20 @@ def test_checkpoint_config_mismatch_blocks_resume(monkeypatch, tmp_path: Path) -
         "reason": "RAGAS checkpoint fingerprint does not match this baseline.",
         "count": 100,
     }
+
+
+def test_checkpoint_rejects_switching_evaluator_provider(monkeypatch, tmp_path: Path) -> None:
+    dataset_path, responses_path = _live_inputs(tmp_path)
+    _configure_live(monkeypatch)
+    checkpoint = tmp_path / "checkpoint.json"
+    fake_attempt = lambda sample, metric_name, config, target: harness.MetricAttempt(value=1.0)
+    assert harness.run_live(dataset_path, responses_path, checkpoint, attempt_runner=fake_attempt)["status"] == "completed"
+    monkeypatch.setenv("RAGAS_EVALUATOR_PROVIDER", "deepseek")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-test-token")
+
+    result = harness.run_live(dataset_path, responses_path, checkpoint, attempt_runner=fake_attempt)
+
+    assert result["reason"] == "RAGAS checkpoint fingerprint does not match this baseline."
 
 
 def test_checkpoint_resumes_at_next_metric(monkeypatch, tmp_path: Path) -> None:
@@ -320,6 +378,42 @@ def test_subprocess_worker_uses_private_ipc_and_returns_finite_value(monkeypatch
 
     assert result == harness.MetricAttempt(value=0.5)
     assert list(tmp_path.iterdir()) == []
+
+
+def test_subprocess_worker_routes_deepseek_credentials_only_through_environment(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("RAGAS_EVALUATOR_PROVIDER", "deepseek")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-test-token")
+    monkeypatch.setenv("DEEPSEEK_API_BASE_URL", "https://api.deepseek.com")
+    monkeypatch.setenv("RAGAS_LLM_TIMEOUT_SECONDS", "1")
+    monkeypatch.setenv("RAGAS_LLM_MAX_RETRIES", "1")
+    monkeypatch.setenv("RAGAS_LLM_MAX_WORKERS", "1")
+    monkeypatch.setenv("RAGAS_LLM_PREFLIGHT_SAMPLES", "20")
+    monkeypatch.setenv("RAGAS_LLM_MAX_TOKENS", "128")
+    monkeypatch.setenv("RAGAS_LLM_TEMPERATURE", "0.1")
+    config = harness._live_config()
+
+    class CompletedProcess:
+        pid = 123
+
+        def wait(self, timeout):
+            return 0
+
+    def fake_popen(command, **kwargs):
+        assert kwargs["env"]["RINGKAS_RAGAS_DEEPSEEK_API_KEY"] == "deepseek-test-token"
+        assert kwargs["env"]["RINGKAS_RAGAS_DEEPSEEK_BASE_URL"] == "https://api.deepseek.com"
+        input_path, output_path = map(Path, command[3:])
+        input_payload = input_path.read_text(encoding="utf-8")
+        assert "deepseek-test-token" not in input_payload
+        assert "api.deepseek.com" not in input_payload
+        output_path.write_text('{"status":"ok","value":0.5}', encoding="utf-8")
+        return CompletedProcess()
+
+    result = harness._run_metric_attempt(
+        {"question_id": "q-1"}, "faithfulness", config, config.deepseek_target,
+        subprocess_runner=fake_popen, ipc_directory=tmp_path,
+    )
+
+    assert result == harness.MetricAttempt(value=0.5)
 
 
 def test_hard_timeout_terminates_then_kills_child_process_group(monkeypatch, tmp_path: Path) -> None:

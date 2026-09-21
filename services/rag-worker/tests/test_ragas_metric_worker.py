@@ -10,7 +10,14 @@ def _input(path: Path) -> None:
             {
                 "sample": {"question_id": "q-1"},
                 "metric_name": "faithfulness",
-                "config": {"model": "test-model", "timeout_seconds": 120, "max_tokens": 16000, "temperature": 0.1},
+                "config": {
+                    "evaluator_provider": "cloudflare",
+                    "model": "test-model",
+                    "timeout_seconds": 120,
+                    "max_tokens": 16000,
+                    "temperature": 0.1,
+                    "reasoning_effort": None,
+                },
             }
         ),
         encoding="utf-8",

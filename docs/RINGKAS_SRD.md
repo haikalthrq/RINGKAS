@@ -612,6 +612,9 @@ RAGAS digunakan sebagai evaluasi otomatis utama/awal.
 Kontrak evaluator RAGAS yang diizinkan adalah Cloudflare Workers AI atau API
 resmi DeepSeek. Kontrak DeepSeek menggunakan endpoint OpenAI-compatible
 `https://api.deepseek.com`, `DEEPSEEK_API_KEY`, dan model `deepseek-flash`.
+Pilih evaluator secara eksplisit dengan `RAGAS_EVALUATOR_PROVIDER=cloudflare`
+atau `deepseek`; DeepSeek memakai `RAGAS_DEEPSEEK_REASONING_EFFORT=high` secara
+default dan hanya menerima `low`, `medium`, atau `high` (`max` tidak valid).
 Satu baseline harus memakai satu provider dan satu model judge yang dipin dari
 preflight sampai selesai; DeepSeek tidak menjadi embedding provider atau fallback
 generation otomatis.
