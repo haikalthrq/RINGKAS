@@ -404,8 +404,9 @@ def test_subprocess_worker_uses_private_ipc_and_returns_finite_value(monkeypatch
         assert kwargs["env"]["RINGKAS_RAGAS_API_TOKEN"] == "test-token"
         input_path, output_path = map(Path, command[3:])
         assert input_path.parent.parent == tmp_path
-        assert input_path.stat().st_mode & 0o777 == 0o600
-        assert output_path.stat().st_mode & 0o777 == 0o600
+        if harness.os.name != "nt":
+            assert input_path.stat().st_mode & 0o777 == 0o600
+            assert output_path.stat().st_mode & 0o777 == 0o600
         input_payload = input_path.read_text(encoding="utf-8")
         assert "api_token" not in input_payload
         assert "test-token" not in input_payload
@@ -482,7 +483,8 @@ def test_hard_timeout_terminates_then_kills_child_process_group(monkeypatch, tmp
         assert kwargs["start_new_session"] is True
         return HungProcess()
 
-    monkeypatch.setattr(harness.os, "killpg", lambda pid, sig: signals.append(sig))
+    monkeypatch.setattr(harness.os, "killpg", lambda pid, sig: signals.append(sig), raising=False)
+    monkeypatch.setattr(harness.signal, "SIGKILL", getattr(harness.signal, "SIGKILL", 9), raising=False)
 
     result = harness._run_metric_attempt(
         {"question_id": "q-1"},

@@ -316,18 +316,29 @@ def _status_code(error: Exception) -> int | None:
         return value
     response = getattr(error, "response", None)
     value = getattr(response, "status_code", None)
-    return value if isinstance(value, int) else None
+    if isinstance(value, int):
+        return value
+    if error.__cause__ is not None and isinstance(error.__cause__, Exception):
+        return _status_code(error.__cause__)
+    return None
 
 
 def _retryable_account_error(error: Exception) -> bool:
     status = _status_code(error)
     if status is not None:
         return status in {401, 403, 408, 429} or 500 <= status <= 599
-    return isinstance(error, (httpx.RequestError, TimeoutError, ConnectionError, OSError)) or error.__class__.__name__ in {
+    names = {
         "APIConnectionError",
         "APITimeoutError",
         "RequestError",
+        "RateLimitError",
+        "InstructorRetryException",
     }
+    if error.__class__.__name__ in names:
+        return True
+    if error.__cause__ is not None and error.__cause__.__class__.__name__ in names:
+        return True
+    return isinstance(error, (httpx.RequestError, TimeoutError, ConnectionError, OSError))
 
 
 def _cloudflare_base_url(account_id: str) -> str:
@@ -389,8 +400,14 @@ class MetricAttempt:
 
 def _terminate_process_group(process: Any) -> None:
     """Stop the worker and anything it started without exposing its output."""
+    killpg = getattr(os, "killpg", None)
+    sigterm = getattr(signal, "SIGTERM", 15)
+    sigkill = getattr(signal, "SIGKILL", 9)
     try:
-        os.killpg(process.pid, signal.SIGTERM)
+        if killpg is not None:
+            killpg(process.pid, sigterm)
+        else:
+            process.terminate()
     except (OSError, ProcessLookupError):
         pass
     try:
@@ -399,7 +416,10 @@ def _terminate_process_group(process: Any) -> None:
     except (subprocess.TimeoutExpired, OSError):
         pass
     try:
-        os.killpg(process.pid, signal.SIGKILL)
+        if killpg is not None:
+            killpg(process.pid, sigkill)
+        else:
+            process.kill()
     except (OSError, ProcessLookupError):
         pass
     try:
@@ -485,6 +505,9 @@ def _run_metric_attempt(
         )
         output_path = _secure_empty_file(checkpoint_directory)
         environment = {"PATH": os.environ.get("PATH", "")}
+        for var in ("SYSTEMROOT", "SystemRoot", "WINDIR", "SYSTEMDRIVE", "TEMP", "TMP", "USERPROFILE"):
+            if var in os.environ:
+                environment[var] = os.environ[var]
         if isinstance(target, CloudflareAccount):
             environment.update({"RINGKAS_RAGAS_ACCOUNT_ID": target.account_id, "RINGKAS_RAGAS_API_TOKEN": target.api_token})
         else:

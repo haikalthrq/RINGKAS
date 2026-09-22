@@ -16,6 +16,7 @@ Desktop.ini
 *.err
 *.pid
 *.pid.lock
+*.ragas_checkpoint.json
 
 # Environment and secrets
 .env
