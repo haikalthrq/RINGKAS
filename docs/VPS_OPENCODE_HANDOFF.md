@@ -12,7 +12,7 @@ gates are closed.
 
 - Repository: `https://github.com/haikalthrq/RINGKAS.git`
 - Branch: `main`
-- Handoff commit: `baa700f feat(web): refine public landing page`
+- Handoff commit: `8a07624 fix(evaluation): support cross-platform subprocess worker and quota failover`
 - Previous P0 commit: `f890e26 feat: execute production P0 hardening`
 - Local verification at handoff:
   - API tests: `127 passed`
@@ -326,7 +326,7 @@ code:
 | Secrets | Real untracked production `.env`; no fallback/default secrets |
 | OAuth | Google Console credentials and public callback URI tested |
 | Recovery | Backup copied off-host and restore tested on a disposable environment |
-| Evaluation | 100-question verified evaluation dataset, live RAGAS baseline, manual audit of at least 20 questions |
+| Evaluation | 100-question verified evaluation dataset, 20-sample live RAGAS preflight validated (`preflight_validated`, 60/60 finite metrics on Cloudflare `@cf/openai/gpt-oss-120b`), full 100-sample live RAGAS baseline, manual audit of at least 20 questions |
 | Corpus scope | Resolve and document 263 vs 264 publication snapshot |
 | Provider operations | Record actual provider terms/limits/cost decisions; do not invent them |
 | Quota | Operator selects a positive `REGISTERED_DAILY_QUOTA`; current limiter remains in-memory and resets on API restart |

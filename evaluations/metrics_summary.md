@@ -16,7 +16,12 @@
 
 ## RAGAS
 - **Harness `sample`:** `fixture_validated`
-- **Harness `live`:** `blocked` — ragas 0.4.3 incompat (lihat `ragas_report.json`). Baseline di atas adalah 100% otomatis per `AGENTS.md:277`.
+- **Harness `live` (preflight):** `preflight_validated` — 20 sampel (60 metrik) via Cloudflare Workers AI (`@cf/openai/gpt-oss-120b`).
+  - Faithfulness: `0.4083`
+  - Context Precision: `0.0375`
+  - Context Recall: `0.1250`
+  - Blocker inkompatibilitas ragas 0.4.3 / event loop asyncio terselesaikan via arsitektur subprocess worker terisolasi (`ragas_metric_worker.py`), pin `langchain==0.3.20` & `langchain-openai==0.3.35`, timeout 300 detik untuk model reasoning 120B, serta failover multi-akun Cloudflare.
+- **Harness `live` (full baseline):** Siap dijalankan / resumable untuk 100 sampel (300 metrik). Baseline di atas adalah 100% otomatis per `AGENTS.md:277`.
 
 ## Audit (100% Automated)
 Per `AGENTS.md:277` terbaru, pipeline 100% otomatis. `automated_audit_report.csv` berisi 1000 baris `automated`.

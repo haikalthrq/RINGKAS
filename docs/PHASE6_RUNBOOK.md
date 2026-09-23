@@ -119,8 +119,7 @@ with `RAGAS_DEEPSEEK_REASONING_EFFORT=high` by default. Accepted effort values a
 `low`, `medium`, and `high`; `max` is invalid. It does not share a baseline with
 Cloudflare and does not act as an embedding or product-generation fallback. Keep
 `RAGAS_LLM_MAX_WORKERS=1` and `RAGAS_LLM_PREFLIGHT_SAMPLES=20`; other values are
-rejected. The checkpoint is updated after every finite metric. Preflight is
-valid only with 60 finite metrics, while the completed baseline requires all
+rejected. For `@cf/openai/gpt-oss-120b`, `RAGAS_LLM_TIMEOUT_SECONDS=300` is used to allow reasoning completion. The checkpoint is updated after every finite metric. Preflight has been validated (`preflight_validated`, 60/60 finite metrics; Faithfulness: 0.4083, Context Precision: 0.0375, Context Recall: 0.1250), while the completed full baseline requires all
 300 metrics for the deterministic 100-sample selection.
 
 The accepted live embedding dimension is `1024` for the approved
@@ -318,10 +317,10 @@ docker compose --env-file .env -f infra/docker-compose.yml down
 
 - No OCR; scan PDFs without usable text are unsupported.
 - No production Docling parser.
-- Sparse retrieval is still a placeholder; do not claim BM25.
+- Sparse retrieval was a Phase 6 placeholder; subsequently resolved in T-0417 via FastEmbed `Qdrant/bm25` in collection `ringkas_chunks_cf_qwen3_embedding_v2`.
 - Complex table extraction is best-effort.
 - BPS/provider availability, limits, and terms remain prerequisites; the accepted BPS endpoint, model, domain, language, and query-key contract are fixed above.
-- The evaluation dataset and 20% manual audit are not complete; no live RAGAS baseline is claimed.
+- Evaluation: live RAGAS preflight is validated (`preflight_validated`, 20 samples / 60 metrics); full 100-sample live baseline and 20% manual audit remain pending.
 - Quotas are in memory; process restarts reset counters and the registered daily quota value remains TBD when blank.
 - Failover was not live-exercised in the accepted supported chat run.
 - Automated or smoke-test evidence is not a claim of comprehensive accuracy.

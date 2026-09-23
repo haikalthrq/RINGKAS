@@ -330,5 +330,12 @@ the P0 hardening request, with email verification explicitly excluded:
 
 The following still require deployment-specific values or human/provider
 evidence before public production launch: domain/TLS reverse proxy, provider
-quota and cost decisions, tested restore on the target VPS, live RAGAS metrics,
-the 20-question manual audit, and any final corpus snapshot reconciliation.
+quota and cost decisions, tested restore on the target VPS, full 100-sample live
+RAGAS metrics, the 20-question manual audit, and any final corpus snapshot reconciliation.
+
+## Evaluation Harness & Preflight Update
+
+- Live RAGAS preflight (20 samples, 60 metrics) has completed with status `preflight_validated` using Cloudflare Workers AI (`@cf/openai/gpt-oss-120b`). Faithfulness: `0.4083`, Context Precision: `0.0375`, Context Recall: `0.1250`.
+- The ragas 0.4.3 asyncio/event-loop collision and timeout issues were resolved by introducing an isolated child process runner (`ragas_metric_worker.py`), pinning `langchain==0.3.20` and `langchain-openai==0.3.35`, and using `RAGAS_LLM_TIMEOUT_SECONDS=300` for 120B reasoning models.
+- Cross-platform Windows child-process execution and Cloudflare multi-account failover error handling were implemented and verified.
+- Full 100-sample live RAGAS baseline and 20-question manual audit remain pending for the final VPS production launch gate.

@@ -695,6 +695,16 @@ Recommended early execution order:
 7. T-0601 to T-0609
 8. T-0701 to T-0704
 
+For the current repository state, agents must also read:
+
+- `docs/PHASE6_RUNBOOK.md`
+- `docs/PHASE7_REVIEW.md`
+
+T-0417 retrieval work is complete and recorded in `docs/PHASE7_REVIEW.md`.
+Agents must preserve the approved sparse retrieval path and must not claim full
+production readiness while the remaining deployment and evaluation TBDs stay
+open; agents must not invent their values.
+
 ---
 
 ## 21. When to Add More Subagents

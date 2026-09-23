@@ -29,12 +29,12 @@ python -m ringkas_worker
 
 Copy `.env.example` to a local environment file only outside version control.
 
-The processor preserves the existing schema and statuses. Document retries and
-startup recovery of stale running jobs are configurable through
-`INGESTION_DOCUMENT_RETRY_COUNT` and `INGESTION_RUNNING_JOB_TIMEOUT_SECONDS`.
-It still has no live lease/heartbeat, force reprocess, or distributed
-PostgreSQL-Qdrant transaction. Concurrent checksum deduplication and provider
-availability/limits remain MVP limitations. Hybrid sparse indexing/query uses
+The processor preserves the existing schema and statuses. Document retries,
+heartbeat lease updates during processing (`heartbeat_at`), and startup recovery of
+stale running jobs are configurable through `INGESTION_DOCUMENT_RETRY_COUNT` and
+`INGESTION_RUNNING_JOB_TIMEOUT_SECONDS`. It still has no force reprocess or
+distributed PostgreSQL-Qdrant transaction. Concurrent checksum deduplication and
+provider availability/limits remain MVP limitations. Hybrid sparse indexing/query uses
 FastEmbed `Qdrant/bm25` with Qdrant IDF weighting; the approved embedding model
 and locked generation order are implementation decisions, not unresolved model
 choices.
