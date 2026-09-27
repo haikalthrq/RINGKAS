@@ -70,10 +70,12 @@ def run(input_path: Path, output_path: Path) -> int:
     try:
         value = _evaluate_one_metric(payload["sample"], metric_name, config, target)
     except Exception as error:
-        _write_result(output_path, {"status": "retryable" if _retryable_account_error(error) else "nonretryable"})
+        print(f"[{metric_name}] Metric evaluation error ({type(error).__name__}): {error}", file=sys.stderr, flush=True)
+        _write_result(output_path, {"status": "retryable"})
         return 0
     if not _finite_value(value):
-        _write_result(output_path, {"status": "nonretryable"})
+        print(f"[{metric_name}] Metric returned non-finite value ({value}), marking retryable", file=sys.stderr, flush=True)
+        _write_result(output_path, {"status": "retryable"})
         return 0
     _write_result(output_path, {"status": "ok", "value": float(value)})
     return 0

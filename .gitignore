@@ -17,6 +17,7 @@ Desktop.ini
 *.pid
 *.pid.lock
 *.ragas_checkpoint.json
+ragas-worker-*/
 
 # Environment and secrets
 .env

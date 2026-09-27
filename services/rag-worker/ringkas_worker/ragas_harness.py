@@ -520,7 +520,7 @@ def _run_metric_attempt(
                 env=environment,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stderr=None,
                 start_new_session=True,
             )
         except Exception:
@@ -647,6 +647,7 @@ def run_live(
                     return _blocked("RAGAS evaluator preflight failed.", _finite_metric_count(partial))
                 question_metrics[metric_name] = float(result.value)
                 _write_checkpoint(checkpoint_path, state)
+                print(f"[RAGAS preflight] {sample['question_id']} {metric_name} = {result.value:.4f}", file=sys.stderr, flush=True)
         state["preflight_complete"] = True
         _write_checkpoint(checkpoint_path, state)
 
@@ -685,6 +686,7 @@ def run_live(
                 return _blocked("RAGAS evaluator failed.", _finite_metric_count(partial))
             question_metrics[metric_name] = float(result.value)
             _write_checkpoint(checkpoint_path, state)
+            print(f"[RAGAS live] [{len(partial)}/100] {sample['question_id']} {metric_name} = {result.value:.4f}", file=sys.stderr, flush=True)
 
     rows = _complete_rows(partial, selected_ids)
     if len(rows) != 100 or _finite_metric_count(partial) != 100 * len(METRIC_NAMES):

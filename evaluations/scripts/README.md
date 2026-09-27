@@ -4,5 +4,6 @@
 - `generate_responses.py` — generate respons via direct rag-query + NVIDIA NIM (run for all 1000 before a live baseline)
 - `improve_dataset_llm.py` — perbaiki 20 Q pertama via LLM (opsional, butuh NVIDIA key)
 - `run_ragas.sh` — jalankan baseline RAGAS pinned-provider yang resumable, 100 sampel stratified dari 1000 respons verified; kontrak Cloudflare atau DeepSeek resmi dipilih sebelum baseline dimulai
+- `run_live_baseline.py` — runner Python untuk eksekusi RAGAS live baseline dengan checkpointing atomik dan auto-save laporan akhir ke `evaluations/ragas_report.json`
 
 Semua skrip diasumsikan dijalankan dari root repo.
