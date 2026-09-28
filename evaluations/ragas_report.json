@@ -1,26 +1,728 @@
 {
-  "ragas_live": {
-    "status": "empty"
+  "evaluation_label": "initial MVP baseline",
+  "status": "completed",
+  "external_services": "Cloudflare Workers AI OpenAI-compatible evaluator",
+  "sample_count": 100,
+  "resumed": true,
+  "evaluator": {
+    "model": "@cf/openai/gpt-oss-120b",
+    "provider": "cloudflare_workers_ai_openai_compatible",
+    "account_count": 3,
+    "timeout_seconds": 300,
+    "max_retries": 2,
+    "max_workers": 1,
+    "preflight_samples": 20,
+    "max_tokens": 16000,
+    "temperature": 0.1,
+    "reasoning_effort": null,
+    "ragas_version": "0.4.3"
   },
-  "alternative_baseline": {
-    "evaluation_label": "staging baseline 1000 (100% automated)",
-    "status": "completed_1000",
-    "dataset": "evaluations/evaluation_dataset.json (1000 ready)",
-    "responses": "evaluations/responses.json (1000)",
-    "retrieval": {
-      "evaluated": 1000,
-      "hit_at_k": "98/1000 (9.8%)",
-      "avg_contexts": 9.1
+  "selected_sample_ids": [
+    "q-0009",
+    "q-0012",
+    "q-0019",
+    "q-0023",
+    "q-0029",
+    "q-0031",
+    "q-0068",
+    "q-0069",
+    "q-0070",
+    "q-0093",
+    "q-0094",
+    "q-0099",
+    "q-0106",
+    "q-0115",
+    "q-0125",
+    "q-0126",
+    "q-0186",
+    "q-0194",
+    "q-0197",
+    "q-0199",
+    "q-0227",
+    "q-0241",
+    "q-0300",
+    "q-0312",
+    "q-0315",
+    "q-0318",
+    "q-0325",
+    "q-0363",
+    "q-0364",
+    "q-0380",
+    "q-0382",
+    "q-0392",
+    "q-0395",
+    "q-0413",
+    "q-0424",
+    "q-0429",
+    "q-0454",
+    "q-0462",
+    "q-0482",
+    "q-0492",
+    "q-0514",
+    "q-0531",
+    "q-0533",
+    "q-0541",
+    "q-0544",
+    "q-0558",
+    "q-0566",
+    "q-0571",
+    "q-0572",
+    "q-0584",
+    "q-0590",
+    "q-0593",
+    "q-0603",
+    "q-0609",
+    "q-0622",
+    "q-0623",
+    "q-0630",
+    "q-0649",
+    "q-0651",
+    "q-0666",
+    "q-0675",
+    "q-0680",
+    "q-0688",
+    "q-0690",
+    "q-0701",
+    "q-0703",
+    "q-0719",
+    "q-0720",
+    "q-0727",
+    "q-0736",
+    "q-0747",
+    "q-0748",
+    "q-0763",
+    "q-0769",
+    "q-0776",
+    "q-0779",
+    "q-0781",
+    "q-0798",
+    "q-0820",
+    "q-0827",
+    "q-0833",
+    "q-0867",
+    "q-0870",
+    "q-0872",
+    "q-0877",
+    "q-0894",
+    "q-0902",
+    "q-0907",
+    "q-0920",
+    "q-0925",
+    "q-0926",
+    "q-0944",
+    "q-0945",
+    "q-0952",
+    "q-0959",
+    "q-0962",
+    "q-0981",
+    "q-0984",
+    "q-0995",
+    "q-1000"
+  ],
+  "selected_sample_ids_hash": "3f74bd67c3aa39a6e3c83599dc727ab1f208b283d114423d9cd698d722118b84",
+  "metrics": [
+    {
+      "question_id": "q-0009",
+      "context_precision": 0.0,
+      "context_recall": 0.5,
+      "faithfulness": 0.6111111111111112
     },
-    "generation": {
-      "substantive": "961/1000",
-      "refusals": "39/1000",
-      "avg_length": 2273
+    {
+      "question_id": "q-0012",
+      "context_precision": 0.249999999975,
+      "context_recall": 1.0,
+      "faithfulness": 0.75
     },
-    "fictitious": "0/1000"
-  },
-  "files": {
-    "dataset": "evaluations/evaluation_dataset.json:1",
-    "responses": "evaluations/responses.json:1"
-  }
+    {
+      "question_id": "q-0019",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0023",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.8333333333333334
+    },
+    {
+      "question_id": "q-0029",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.11538461538461539
+    },
+    {
+      "question_id": "q-0031",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.02631578947368421
+    },
+    {
+      "question_id": "q-0068",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0069",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.2
+    },
+    {
+      "question_id": "q-0070",
+      "context_precision": 0.0,
+      "context_recall": 1.0,
+      "faithfulness": 0.5277777777777778
+    },
+    {
+      "question_id": "q-0093",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.041666666666666664
+    },
+    {
+      "question_id": "q-0094",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0099",
+      "context_precision": 0.49999999995,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0106",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0115",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.19047619047619047
+    },
+    {
+      "question_id": "q-0125",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0625
+    },
+    {
+      "question_id": "q-0126",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0186",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0194",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0197",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.23684210526315788
+    },
+    {
+      "question_id": "q-0199",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.5714285714285714
+    },
+    {
+      "question_id": "q-0227",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0241",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0300",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0312",
+      "context_precision": 0.49999999995,
+      "context_recall": 1.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0315",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.043478260869565216
+    },
+    {
+      "question_id": "q-0318",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0625
+    },
+    {
+      "question_id": "q-0325",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.8333333333333334
+    },
+    {
+      "question_id": "q-0363",
+      "context_precision": 0.0,
+      "context_recall": 0.1111111111111111,
+      "faithfulness": 0.4583333333333333
+    },
+    {
+      "question_id": "q-0364",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0380",
+      "context_precision": 0.5253968253863175,
+      "context_recall": 1.0,
+      "faithfulness": 0.23809523809523808
+    },
+    {
+      "question_id": "q-0382",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.8571428571428571
+    },
+    {
+      "question_id": "q-0392",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0395",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0413",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0424",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0429",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.4642857142857143
+    },
+    {
+      "question_id": "q-0454",
+      "context_precision": 0.0,
+      "context_recall": 0.8571428571428571,
+      "faithfulness": 0.2926829268292683
+    },
+    {
+      "question_id": "q-0462",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0482",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0492",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.06060606060606061
+    },
+    {
+      "question_id": "q-0514",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.1794871794871795
+    },
+    {
+      "question_id": "q-0531",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0625
+    },
+    {
+      "question_id": "q-0533",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.696969696969697
+    },
+    {
+      "question_id": "q-0541",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.10714285714285714
+    },
+    {
+      "question_id": "q-0544",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0558",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.4
+    },
+    {
+      "question_id": "q-0566",
+      "context_precision": 0.5253968253863175,
+      "context_recall": 1.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0571",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.8333333333333334
+    },
+    {
+      "question_id": "q-0572",
+      "context_precision": 0.4265873015766369,
+      "context_recall": 1.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0584",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.6666666666666666
+    },
+    {
+      "question_id": "q-0590",
+      "context_precision": 0.5833333333041666,
+      "context_recall": 1.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0593",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.12121212121212122
+    },
+    {
+      "question_id": "q-0603",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.5625
+    },
+    {
+      "question_id": "q-0609",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.14285714285714285
+    },
+    {
+      "question_id": "q-0622",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.5
+    },
+    {
+      "question_id": "q-0623",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0630",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.041666666666666664
+    },
+    {
+      "question_id": "q-0649",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0651",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.5517241379310345
+    },
+    {
+      "question_id": "q-0666",
+      "context_precision": 0.49999999995,
+      "context_recall": 1.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0675",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.8928571428571429
+    },
+    {
+      "question_id": "q-0680",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.9
+    },
+    {
+      "question_id": "q-0688",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.6666666666666666
+    },
+    {
+      "question_id": "q-0690",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.6666666666666666
+    },
+    {
+      "question_id": "q-0701",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0703",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0719",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.8333333333333334
+    },
+    {
+      "question_id": "q-0720",
+      "context_precision": 0.249999999975,
+      "context_recall": 1.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0727",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.5
+    },
+    {
+      "question_id": "q-0736",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.08571428571428572
+    },
+    {
+      "question_id": "q-0747",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0748",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0763",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.7894736842105263
+    },
+    {
+      "question_id": "q-0769",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.02702702702702703
+    },
+    {
+      "question_id": "q-0776",
+      "context_precision": 0.499999999975,
+      "context_recall": 1.0,
+      "faithfulness": 0.7
+    },
+    {
+      "question_id": "q-0779",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0781",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.06451612903225806
+    },
+    {
+      "question_id": "q-0798",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0820",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.09090909090909091
+    },
+    {
+      "question_id": "q-0827",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0833",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0867",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.2413793103448276
+    },
+    {
+      "question_id": "q-0870",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.6666666666666666
+    },
+    {
+      "question_id": "q-0872",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0877",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.16
+    },
+    {
+      "question_id": "q-0894",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.04
+    },
+    {
+      "question_id": "q-0902",
+      "context_precision": 0.49999999995,
+      "context_recall": 1.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0907",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0920",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0925",
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "faithfulness": 0.0
+    },
+    {
+      "question_id": "q-0926",
+      "context_precision": 0.1944444444347222,
+      "context_recall": 1.0,
+      "faithfulness": 1.0
+    },
+    {
+      "question_id": "q-0944",
+      "faithfulness": 0.13333333333333333,
+      "context_precision": 0.499999999975,
+      "context_recall": 1.0
+    },
+    {
+      "question_id": "q-0945",
+      "faithfulness": 0.09090909090909091,
+      "context_precision": 0.0,
+      "context_recall": 0.0
+    },
+    {
+      "question_id": "q-0952",
+      "faithfulness": 0.18181818181818182,
+      "context_precision": 0.3888888888759259,
+      "context_recall": 0.0
+    },
+    {
+      "question_id": "q-0959",
+      "faithfulness": 0.0,
+      "context_precision": 0.0,
+      "context_recall": 0.0
+    },
+    {
+      "question_id": "q-0962",
+      "faithfulness": 0.13333333333333333,
+      "context_precision": 0.0,
+      "context_recall": 0.0
+    },
+    {
+      "question_id": "q-0981",
+      "faithfulness": 0.12903225806451613,
+      "context_precision": 0.0,
+      "context_recall": 0.0
+    },
+    {
+      "question_id": "q-0984",
+      "faithfulness": 1.0,
+      "context_precision": 0.0,
+      "context_recall": 0.0
+    },
+    {
+      "question_id": "q-0995",
+      "faithfulness": 0.0,
+      "context_precision": 0.0,
+      "context_recall": 0.0
+    },
+    {
+      "question_id": "q-1000",
+      "faithfulness": 0.0,
+      "context_precision": 0.0,
+      "context_recall": 0.0
+    }
+  ],
+  "limitations": [
+    "Automated metrics are baseline-only and do not prove comprehensive accuracy."
+  ]
 }

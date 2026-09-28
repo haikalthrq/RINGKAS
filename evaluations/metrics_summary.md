@@ -21,11 +21,11 @@
   - Context Precision: `0.0375`
   - Context Recall: `0.1250`
   - Blocker inkompatibilitas ragas 0.4.3 / event loop asyncio terselesaikan via arsitektur subprocess worker terisolasi (`ragas_metric_worker.py`), pin `langchain==0.3.20` & `langchain-openai==0.3.35`, timeout 300 detik untuk model reasoning 120B, serta failover multi-akun Cloudflare.
-- **Harness `live` (in progress):** 91 dari 100 sampel (273 dari 300 metrik) selesai dan tersimpan di checkpoint via Cloudflare Workers AI (`@cf/openai/gpt-oss-120b`).
-  - Faithfulness: `0.3810`
-  - Context Precision: `0.0577`
-  - Context Recall: `0.1480`
-  - Sisa: 9 sampel (`q-0944`, `q-0945`, `q-0952`, `q-0959`, `q-0962`, `q-0981`, `q-0984`, `q-0995`, `q-1000`) untuk mencapai full baseline 100 sampel. Baseline di atas adalah 100% otomatis per `AGENTS.md:277`.
+- **Harness `live` (completed full baseline):** `completed` — 100 dari 100 sampel (300 dari 300 metrik terstratifikasi) via Cloudflare Workers AI (`@cf/openai/gpt-oss-120b`). Laporan resmi tersimpan di `evaluations/ragas_report.json`.
+  - **Faithfulness**: `0.3634` (36.34%)
+  - **Context Precision**: `0.0614` (6.14%)
+  - **Context Recall**: `0.1447` (14.47%)
+  - Evaluasi 100 sampel tuntas dengan 3 akun failover Cloudflare, isolasi subprocess worker (`ragas_metric_worker.py`), pin `langchain==0.3.20` & `langchain-openai==0.3.35`, serta timeout 300 detik. Baseline di atas adalah 100% otomatis per `AGENTS.md:277`.
 
 ## Audit (100% Automated)
 Per `AGENTS.md:277` terbaru, pipeline 100% otomatis. `automated_audit_report.csv` berisi 1000 baris `automated`.

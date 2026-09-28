@@ -118,9 +118,7 @@ contract pins `deepseek-flash` through the official API at `https://api.deepseek
 with `RAGAS_DEEPSEEK_REASONING_EFFORT=high` by default. Accepted effort values are
 `low`, `medium`, and `high`; `max` is invalid. It does not share a baseline with
 Cloudflare and does not act as an embedding or product-generation fallback. Keep
-`RAGAS_LLM_MAX_WORKERS=1` and `RAGAS_LLM_PREFLIGHT_SAMPLES=20`; other values are
-rejected. For `@cf/openai/gpt-oss-120b`, `RAGAS_LLM_TIMEOUT_SECONDS=300` is used to allow reasoning completion. The checkpoint is updated after every finite metric. Preflight has been validated (`preflight_validated`, 60/60 finite metrics; Faithfulness: 0.4083, Context Precision: 0.0375, Context Recall: 0.1250), while the completed full baseline requires all
-300 metrics for the deterministic 100-sample selection.
+rejected. For `@cf/openai/gpt-oss-120b`, `RAGAS_LLM_TIMEOUT_SECONDS=300` is used to allow reasoning completion. The checkpoint is updated after every finite metric. The full 100-sample live RAGAS baseline has completed successfully (`completed`, 300/300 finite metrics; Faithfulness: 0.3634, Context Precision: 0.0614, Context Recall: 0.1447, report at `evaluations/ragas_report.json`).
 
 The accepted live embedding dimension is `1024` for the approved
 `@cf/qwen/qwen3-embedding-0.6b` model. Secondary and tertiary Cloudflare accounts
@@ -320,7 +318,7 @@ docker compose --env-file .env -f infra/docker-compose.yml down
 - Sparse retrieval was a Phase 6 placeholder; subsequently resolved in T-0417 via FastEmbed `Qdrant/bm25` in collection `ringkas_chunks_cf_qwen3_embedding_v2`.
 - Complex table extraction is best-effort.
 - BPS/provider availability, limits, and terms remain prerequisites; the accepted BPS endpoint, model, domain, language, and query-key contract are fixed above.
-- Evaluation: live RAGAS preflight is validated (`preflight_validated`, 20 samples / 60 metrics); full 100-sample live baseline and 20% manual audit remain pending.
+- Evaluation: live RAGAS baseline has completed (`completed`, 100 samples / 300 metrics on Cloudflare `@cf/openai/gpt-oss-120b`, report at `evaluations/ragas_report.json`); 20% manual audit remains pending.
 - Quotas are in memory; process restarts reset counters and the registered daily quota value remains TBD when blank.
 - Failover was not live-exercised in the accepted supported chat run.
 - Automated or smoke-test evidence is not a claim of comprehensive accuracy.

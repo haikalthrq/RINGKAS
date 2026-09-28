@@ -326,7 +326,7 @@ code:
 | Secrets | Real untracked production `.env`; no fallback/default secrets |
 | OAuth | Google Console credentials and public callback URI tested |
 | Recovery | Backup copied off-host and restore tested on a disposable environment |
-| Evaluation | 100-question verified evaluation dataset, 20-sample live RAGAS preflight validated (`preflight_validated`, 60/60 finite metrics on Cloudflare `@cf/openai/gpt-oss-120b`), full 100-sample live RAGAS baseline, manual audit of at least 20 questions |
+| Evaluation | Full 100-sample live RAGAS baseline completed (`completed`, 300/300 finite metrics on Cloudflare `@cf/openai/gpt-oss-120b`, report at `evaluations/ragas_report.json`), 1000-question verified evaluation dataset ready; manual audit of at least 20 questions remains pending |
 | Corpus scope | Resolve and document 263 vs 264 publication snapshot |
 | Provider operations | Record actual provider terms/limits/cost decisions; do not invent them |
 | Quota | Operator selects a positive `REGISTERED_DAILY_QUOTA`; current limiter remains in-memory and resets on API restart |

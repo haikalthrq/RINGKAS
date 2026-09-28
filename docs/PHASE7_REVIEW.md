@@ -210,7 +210,7 @@ Duplicates from the source documents are consolidated below. A status of
 | D-05 | Exact VPS size and storage capacity are not specified. | `docs/RINGKAS_PROJECT_BRIEF.md:747-750,732-733` | Measure PDF/Qdrant/PostgreSQL footprint and provider workload; owner not documented. | Production capacity decision |
 | D-06 | Resolved after Phase 7: BM25 via FastEmbed `Qdrant/bm25` is indexed and queried in the versioned v2 collection with Qdrant IDF weighting. | `services/rag-worker/ringkas_worker/sparse_retrieval.py`; live v2 reindex/query evidence below | None for T-0417; continue monitoring provider availability and deployment configuration. | None for T-0417 |
 | D-07 | Reranker provider/model is optional and unresolved. | `docs/RINGKAS_TECHNICAL_SPEC.md:506-512,1361`; `docs/RINGKAS_PROJECT_BRIEF.md:260-261` | Only decide after baseline retrieval and provider cost review. | Neither for MVP without reranker |
-| D-08 | Evaluation baseline, final target metrics, and metric thresholds are unresolved. A RAGAS baseline may use either the pinned Cloudflare contract or the pinned official DeepSeek `deepseek-flash` contract, but one run cannot mix them. | `docs/RINGKAS_PROJECT_BRIEF.md:670-678`; `docs/RINGKAS_TECHNICAL_SPEC.md:1207-1212` | Complete verified dataset, live RAGAS run, and manual interpretation; owner not documented. | Evaluation claim and quality gate |
+| D-08 | Resolved: Full 100-sample live RAGAS baseline completed (`completed`, 300/300 finite metrics on Cloudflare `@cf/openai/gpt-oss-120b`, report at `evaluations/ragas_report.json`). Threshold interpretation and manual audit remain. | `evaluations/ragas_report.json`; `evaluations/metrics_summary.md` | Baseline complete; manual audit (D-09) remains for final production gate. | Quality gate (baseline ready) |
 | D-09 | Manual audit is not complete; 20 rows remain pending. | `services/rag-worker/manual_audit_template.csv:1-21`; `docs/PHASE6_RUNBOOK.md:7-17` | Human review of at least 20 verified questions; reviewer owner not assigned. | Baseline quality claim |
 | D-10 | Token/output limit is TBD; only request character length is currently bounded. | `docs/RINGKAS_TECHNICAL_SPEC.md:1133-1138`; `apps/api/Endpoints/ChatEndpoints.cs:238-247` | Provider-specific cost/limit decision and an output cap. | Production public access |
 | D-11 | Ingestion retry count is TBD and no automatic retry is implemented. | `docs/RINGKAS_SRD.md:230-236`; `docs/RINGKAS_TECHNICAL_SPEC.md:770-776,1362`; `services/rag-worker/README.md:32-37` | Choose and verify retry/backoff behavior without hiding per-document failures. | Ingestion reliability acceptance |
@@ -330,12 +330,15 @@ the P0 hardening request, with email verification explicitly excluded:
 
 The following still require deployment-specific values or human/provider
 evidence before public production launch: domain/TLS reverse proxy, provider
-quota and cost decisions, tested restore on the target VPS, full 100-sample live
-RAGAS metrics, the 20-question manual audit, and any final corpus snapshot reconciliation.
+quota and cost decisions, tested restore on the target VPS, the 20-question manual audit,
+and any final corpus snapshot reconciliation.
 
-## Evaluation Harness & Preflight Update
+## Evaluation Harness & Baseline Completion Update
 
-- Live RAGAS preflight (20 samples, 60 metrics) has completed with status `preflight_validated` using Cloudflare Workers AI (`@cf/openai/gpt-oss-120b`). Faithfulness: `0.4083`, Context Precision: `0.0375`, Context Recall: `0.1250`.
+- The full 100-sample live RAGAS baseline has completed with status `completed` across all 300 finite metrics using Cloudflare Workers AI (`@cf/openai/gpt-oss-120b`). Report is recorded in `evaluations/ragas_report.json`.
+  - Faithfulness: `0.3634` (36.34%)
+  - Context Precision: `0.0614` (6.14%)
+  - Context Recall: `0.1447` (14.47%)
 - The ragas 0.4.3 asyncio/event-loop collision and timeout issues were resolved by introducing an isolated child process runner (`ragas_metric_worker.py`), pinning `langchain==0.3.20` and `langchain-openai==0.3.35`, and using `RAGAS_LLM_TIMEOUT_SECONDS=300` for 120B reasoning models.
 - Cross-platform Windows child-process execution and Cloudflare multi-account failover error handling were implemented and verified.
-- Full 100-sample live RAGAS baseline and 20-question manual audit remain pending for the final VPS production launch gate.
+- The 20-question manual audit remains pending for the final VPS production launch gate.
