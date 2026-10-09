@@ -12,13 +12,14 @@ gates are closed.
 
 - Repository: `https://github.com/haikalthrq/RINGKAS.git`
 - Branch: `main`
-- Handoff commit: `8a07624 fix(evaluation): support cross-platform subprocess worker and quota failover`
+- Handoff commit: `f46ae58 feat(evaluation): complete full 100-sample live RAGAS baseline` (or latest HEAD)
 - Previous P0 commit: `f890e26 feat: execute production P0 hardening`
 - Local verification at handoff:
   - API tests: `127 passed`
   - Worker tests: `730 passed, 59 skipped`
   - API build: passed with no warnings/errors
   - Web typecheck and production build: passed
+  - Live RAGAS baseline: 100/100 stratified samples completed (300/300 finite metrics) with Cloudflare `@cf/openai/gpt-oss-120b` (report: `evaluations/ragas_report.json`)
 
 Start by checking out the tracked branch state:
 
@@ -44,7 +45,8 @@ backups, or a production `.env` file.
 | Retrieval | complete | Dense + BM25 sparse, RRF, final Top-10, citation payloads, sufficiency/refusal guard |
 | Chat/admin UI | complete | Citation-first chat, history, document search, admin ingestion trigger/status |
 | P0 hardening | implemented | Production Compose overlay, secret boundaries, persistent Data Protection keys, retries, heartbeat recovery, backup/restore, release preflight |
-| Public production launch | blocked | Deployment decisions and evaluation evidence are still open |
+| Evaluation baseline | complete | 100-sample live RAGAS baseline completed (report: `evaluations/ragas_report.json`); 20-question manual audit pending |
+| Public production launch | blocked | VPS deployment, reverse proxy, migration execution, backup verification, and manual audit remain open |
 
 ## Corpus And Runtime Data
 
@@ -244,12 +246,32 @@ overlay intentionally hides PostgreSQL from the VPS host, so do not run
 `dotnet ef database update` on the host using `@postgres`; that Docker hostname
 is not host-resolvable.
 
-Before first traffic, add or use a one-shot migration procedure that runs from
-the Compose network, then verify migration history includes
-`20260810122540_AddIngestionJobHeartbeat`. This is an explicit remaining VPS
-deployment task. It must not expose PostgreSQL publicly or change the schema by
-hand. Prefer a disposable SDK/migration container attached only to the existing
-`ringkas` Docker network, with the same internal `DATABASE_URL`.
+Before first traffic, execute the one-shot EF migration procedure inside the
+private Compose network:
+
+```bash
+docker compose --env-file .env \
+  -f infra/docker-compose.yml \
+  -f infra/docker-compose.production.yml \
+  run --rm \
+  -v "${PWD}:/app" \
+  -w /app \
+  mcr.microsoft.com/dotnet/sdk:9.0 \
+  sh -c "dotnet tool install --global dotnet-ef && export PATH=\"\$PATH:/root/.dotnet/tools\" && dotnet ef database update --project apps/api/Ringkas.Api.csproj --connection \"\$DATABASE_URL\""
+```
+
+Then verify that all migrations, including `20260810122540_AddIngestionJobHeartbeat`,
+are successfully recorded:
+
+```bash
+docker compose --env-file .env \
+  -f infra/docker-compose.yml \
+  -f infra/docker-compose.production.yml \
+  exec postgres psql -U ringkas -d ringkas -c "SELECT \"MigrationId\" FROM \"__EFMigrationsHistory\" ORDER BY \"MigrationId\";"
+```
+
+This applies migrations cleanly without exposing PostgreSQL publicly or editing
+the schema manually.
 
 ### 4. Populate or restore the corpus
 
@@ -326,7 +348,7 @@ code:
 | Secrets | Real untracked production `.env`; no fallback/default secrets |
 | OAuth | Google Console credentials and public callback URI tested |
 | Recovery | Backup copied off-host and restore tested on a disposable environment |
-| Evaluation | Full 100-sample live RAGAS baseline completed (`completed`, 300/300 finite metrics on Cloudflare `@cf/openai/gpt-oss-120b`, report at `evaluations/ragas_report.json`), 1000-question verified evaluation dataset ready; manual audit of at least 20 questions remains pending |
+| Evaluation | Full 100-sample live RAGAS baseline completed (300/300 finite metrics on Cloudflare `@cf/openai/gpt-oss-120b`, report at `evaluations/ragas_report.json`: Faithfulness 0.3634, Context Precision 0.0614, Context Recall 0.1447); manual audit of 20 questions in `services/rag-worker/manual_audit_template.csv` remains pending |
 | Corpus scope | Resolve and document 263 vs 264 publication snapshot |
 | Provider operations | Record actual provider terms/limits/cost decisions; do not invent them |
 | Quota | Operator selects a positive `REGISTERED_DAILY_QUOTA`; current limiter remains in-memory and resets on API restart |
@@ -334,14 +356,128 @@ code:
 Until all gates are closed, call the deployment `staging` or `beta`, not full
 public production.
 
-For a DeepSeek-backed RAGAS baseline, configure the official API contract in
-the untracked environment: `DEEPSEEK_API_KEY`,
-`DEEPSEEK_API_BASE_URL=https://api.deepseek.com`, and
-`DEEPSEEK_RAGAS_MODEL=deepseek-flash`. Set `RAGAS_EVALUATOR_PROVIDER=deepseek`
-explicitly and use `RAGAS_DEEPSEEK_REASONING_EFFORT=high` (only `low`, `medium`,
-and `high` are accepted; `max` is invalid). Pin that provider/model for the entire
-baseline. It is an evaluator-only contract and does not replace Cloudflare
-embedding or the product-generation provider order.
+Note on evaluator selection: The full 100-sample live RAGAS baseline was completed
+exclusively using Cloudflare Workers AI (`@cf/openai/gpt-oss-120b`) with multi-account
+failover across Primary, Secondary, and Tertiary accounts, maintaining a single
+unmixed judge. DeepSeek is supported in the codebase as an evaluator option via
+`RAGAS_EVALUATOR_PROVIDER=deepseek`, but was not used for the production baseline.
+
+## OpenCode VPS Execution Checklist & Step-by-Step Runbook
+
+When continuing in OpenCode on the target VPS host, follow these exact phases in order:
+
+### Phase 1: Checkout and Directory Preparation
+1. Clone the repository and checkout `main`:
+   ```bash
+   git clone https://github.com/haikalthrq/RINGKAS.git
+   cd RINGKAS
+   git pull --ff-only origin main
+   git log -1 --oneline
+   ```
+2. Create isolated persistent storage directories with restricted permissions (`0700`):
+   ```bash
+   sudo install -d -m 0700 -o "$(id -u)" -g "$(id -g)" \
+     /data/ringkas/postgres /data/ringkas/pdfs /data/ringkas/qdrant /data/ringkas/keys
+   ```
+
+### Phase 2: Production Environment (`.env`)
+1. Create untracked `.env` from template:
+   ```bash
+   cp .env.production.example .env
+   chmod 600 .env
+   ```
+2. Fill real production secrets:
+   - Strong `POSTGRES_PASSWORD` and matching `DATABASE_URL`
+   - High-entropy `RAG_INTERNAL_TOKEN` (>= 32 chars)
+   - Real `BPS_API_KEY`, `PDF_ALLOWED_HOSTS`
+   - Real Cloudflare credentials (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, etc.)
+   - Real `NVIDIA_NIM_API_KEY`
+   - Real Google OAuth credentials (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`)
+   - Operator-defined `REGISTERED_DAILY_QUOTA` (e.g. 50)
+3. Validate Compose configuration:
+   ```bash
+   docker compose --env-file .env \
+     -f infra/docker-compose.yml \
+     -f infra/docker-compose.production.yml \
+     config --quiet
+   ```
+
+### Phase 3: Service Startup & EF Core Database Migrations
+1. Start core services:
+   ```bash
+   docker compose --env-file .env \
+     -f infra/docker-compose.yml \
+     -f infra/docker-compose.production.yml \
+     up -d --build
+   ```
+2. Apply database migrations inside the private Compose network:
+   ```bash
+   docker compose --env-file .env \
+     -f infra/docker-compose.yml \
+     -f infra/docker-compose.production.yml \
+     run --rm \
+     -v "${PWD}:/app" \
+     -w /app \
+     mcr.microsoft.com/dotnet/sdk:9.0 \
+     sh -c "dotnet tool install --global dotnet-ef && export PATH=\"\$PATH:/root/.dotnet/tools\" && dotnet ef database update --project apps/api/Ringkas.Api.csproj --connection \"\$DATABASE_URL\""
+   ```
+3. Verify migration record:
+   ```bash
+   docker compose --env-file .env \
+     -f infra/docker-compose.yml \
+     -f infra/docker-compose.production.yml \
+     exec postgres psql -U ringkas -d ringkas -c "SELECT \"MigrationId\" FROM \"__EFMigrationsHistory\" ORDER BY \"MigrationId\";"
+   ```
+   (Must include `20260810122540_AddIngestionJobHeartbeat`).
+
+### Phase 4: Corpus Population / Ingestion
+Choose ONE approach:
+- **Approach A (Restore from backup)**:
+  Follow `scripts/backup/README.md` and run `bash scripts/backup/restore.sh <backup-archive>`.
+- **Approach B (Fresh ingestion)**:
+  Start ingestion worker with profile:
+  ```bash
+  docker compose --env-file .env \
+    -f infra/docker-compose.yml \
+    -f infra/docker-compose.production.yml \
+    --profile ingestion up -d rag-worker
+  ```
+  Trigger initial ingestion job via admin endpoint or UI, monitor worker logs (`docker compose logs -f rag-worker`), and stop `rag-worker` once completed.
+
+### Phase 5: Reverse Proxy & Public Domain
+1. Configure Caddy or Nginx according to `infra/REVERSE_PROXY.md`:
+   - Terminate TLS with valid certificate (e.g. Let's Encrypt).
+   - Reverse proxy exclusively to `http://127.0.0.1:${WEB_PORT}`.
+   - Forward headers: `Host`, `X-Forwarded-For`, `X-Forwarded-Proto`.
+   - Never expose ports 5432, 6333, or 8000 to public network.
+2. In Google Cloud Console, register the OAuth callback URL:
+   `https://<public-domain>/api/auth/google/provider-callback`
+
+### Phase 6: Release Preflight & Operational Smoke Checks
+1. Run automated preflight:
+   ```bash
+   export ENV_FILE="$PWD/.env"
+   export COMPOSE_FILE="$PWD/infra/docker-compose.yml"
+   export COMPOSE_OVERRIDE_FILE="$PWD/infra/docker-compose.production.yml"
+   bash scripts/release/preflight.sh
+   ```
+2. Execute the 8 manual smoke checks described in "Required Operational Checks".
+
+### Phase 7: Off-host Backup & Disaster Recovery Drill
+1. Take a backup:
+   ```bash
+   export RINGKAS_DATA_ROOT=/data/ringkas
+   export BACKUP_DIR=/data/ringkas-backups
+   bash scripts/backup/backup.sh
+   ```
+2. Copy backup archive to off-host storage.
+3. Test restoration on a test/staging instance to verify recovery capability.
+
+### Phase 8: Complete 20-Question Manual Audit (Gate D-09)
+1. Open `services/rag-worker/manual_audit_template.csv`.
+2. Evaluate questions `q-001` through `q-020` against ground-truth BPS DKI Jakarta publications.
+3. Record accuracy checks (`citation_correctness`, `groundedness`, `number_accuracy`, `period_accuracy`, `region_accuracy`, `unit_accuracy`, `definition_accuracy`, `page_correctness`, `source_correctness`, `reviewer_verdict`, `reviewer_notes`).
+4. Update `audit_status` from `pending` to `verified` for all 20 questions.
 
 ## Commands For Code Changes
 
